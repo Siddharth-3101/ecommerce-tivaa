@@ -1,0 +1,310 @@
+:root {
+    /* Luxurious pearl white for a jewelry store feel */
+    --bg: #fffdfa;
+    --bg-card: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+
+    /* Rich charcoal for crisp, elegant text */
+    --text-main: #362e2a;
+    --text-muted: #8b8078;
+
+    /* Colors extracted from the Tivaa feather */
+    --accent-teal: #82b9c2;
+    --accent-mint: #b0d0a5;
+    --accent-yellow: #dca353;
+    /* Darker metallic gold */
+    --accent-peach: #e59374;
+    /* Richer Rose Gold/Peach */
+    --accent-pink: #d38b9e;
+    --accent-purple: #868bc3;
+
+    /* Gradients: Transitioning to Rose Gold and Gold for jewelry feel */
+    --gradient-logo: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-peach) 100%);
+    --gradient-logo-hover: linear-gradient(135deg, var(--accent-peach) 0%, var(--accent-yellow) 100%);
+
+    --accent: var(--accent-peach);
+    --accent-hover: #cc7858;
+    --accent-glow: rgba(229, 147, 116, 0.25);
+
+    --success: #75a363;
+    --danger: #b3566f;
+
+    /* Soft warm borders to match the pearl tone */
+    --border: #f2efe9;
+    --glass-border: rgba(229, 147, 116, 0.15);
+    --shadow-sm: 0 4px 12px rgba(54, 46, 42, 0.04);
+    --shadow-md: 0 12px 30px rgba(54, 46, 42, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Utilities */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Layout */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4 {
+    color: var(--text-main);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+.dropdown-item {
+    color: var(--text-main);
+}
+
+.dropdown-item:hover {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+/* Inputs & Buttons */
+.input-field {
+    width: 100%;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+    color: var(--text-muted);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: #fff;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--gradient-logo);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.btn-primary:hover {
+    background: var(--gradient-logo-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+    background: #fcfcfc;
+    border-color: var(--accent-teal);
+    color: var(--accent-teal);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+    background: rgba(199, 131, 167, 0.1);
+    color: var(--danger);
+}
+
+.btn-danger:hover {
+    background: rgba(199, 131, 167, 0.2);
+}
+
+.btn-lav {
+    background: var(--accent-purple);
+    color: #fff;
+}
+
+.btn-lav:hover {
+    background: #7277ad;
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+/* Cards & Grid */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-md);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* Auth Forms */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at top right, rgba(130, 185, 194, 0.15), transparent 40%),
+        radial-gradient(circle at bottom left, rgba(234, 209, 129, 0.15), transparent 40%),
+        radial-gradient(circle at center, rgba(199, 131, 167, 0.05), transparent 50%);
+}
+
+.auth-form {
+    width: 100%;
+    max-width: 440px;
+    padding: 40px;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid #fff;
+    border-radius: 24px;
+    box-shadow: 0 24px 48px rgba(134, 139, 195, 0.15);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    padding: 160px 0 100px;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: radial-gradient(circle at 80% 20%, rgba(130, 185, 194, 0.1), transparent 50%),
+        radial-gradient(circle at 20% 80%, rgba(231, 160, 116, 0.1), transparent 50%);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(199, 131, 167, 0.08) 0%, transparent 60%);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(80px);
+}
+
+.hero-title {
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+    background: var(--gradient-logo);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 40px;
+}
+
+/* Product Card specific */
+.product-image-container {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    position: relative;
+    background: #f7f9fa;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .product-image {
+    transform: scale(1.05);
+}
