@@ -1,18 +1,17 @@
 version: 1
 frontend:
-  appRoot: ecommerce-frontend
   phases:
     preBuild:
       commands:
-        - npm ci --legacy-peer-deps
+        - cd ecommerce-frontend && npm ci --legacy-peer-deps
     build:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: .next
+    baseDirectory: ecommerce-frontend/.next
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
-      - .next/cache/**/*
+      - ecommerce-frontend/node_modules/**/*
+      - ecommerce-frontend/.next/cache/**/*
