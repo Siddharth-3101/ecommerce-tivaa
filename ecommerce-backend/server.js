@@ -22,13 +22,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // =======================================================
-// DATABASE CONNECTION CHECK
+// DATABASE CONNECTION CHECK & AUTO MIGRATIONS
 // =======================================================
-db.getConnection((err) => {
+import { runSetup } from "./setup.js";
+
+db.getConnection(async (err, connection) => {
   if (err) {
     console.error("❌ MySQL Connection Failed:", err);
   } else {
     console.log("✅ MySQL Connected Successfully");
+    if (connection) connection.release();
+    
+    try {
+      console.log("Running automatic database migrations/setup...");
+      await runSetup();
+      console.log("✅ Database migration/setup completed successfully");
+    } catch (setupErr) {
+      console.error("❌ Automatic Database Setup Failed:", setupErr);
+    }
   }
 });
 
