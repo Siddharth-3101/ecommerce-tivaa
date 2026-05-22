@@ -1,4 +1,11 @@
 import db from "../config/db.js";
+import Razorpay from "razorpay";
+
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // =============================================================
 // CREATE ORDER
@@ -213,42 +220,91 @@ export const cancelOrder = (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (rows[0].order_status !== "pending") {
+    const status = rows[0].order_status;
+
+    if (status !== "pending" && status !== "paid") {
       return res
         .status(400)
-        .json({ message: "Order cannot be cancelled now" });
+        .json({ message: "Order cannot be cancelled now (only pending or paid orders can be cancelled)" });
     }
 
-    // Step 1 — Update order status
-    db.query(
-      "UPDATE orders SET order_status = 'cancelled' WHERE id = ?",
-      [orderId],
-      (err2) => {
-        if (err2) {
-          console.error("DB error:", err2);
-          return res.status(500).json({ message: "Database error" });
+    // Helper function to restore stock
+    const restoreStock = () => {
+      const sqlItems = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+      db.query(sqlItems, [orderId], (err3, items) => {
+        if (err3) {
+          console.error("DB error (restore stock):", err3);
+          return;
         }
-      }
-    );
-
-    // Step 2 — Restore stock
-    const sqlItems =
-      "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
-
-    db.query(sqlItems, [orderId], (err3, items) => {
-      if (err3) {
-        console.error("DB error:", err3);
-        return;
-      }
-
-      items.forEach((i) => {
-        db.query(
-          "UPDATE products SET stock = stock + ? WHERE id = ?",
-          [i.quantity, i.product_id]
-        );
+        items.forEach((i) => {
+          db.query(
+            "UPDATE products SET stock = stock + ? WHERE id = ?",
+            [i.quantity, i.product_id]
+          );
+        });
       });
-    });
+    };
 
-    return res.json({ message: "Order cancelled successfully" });
+    if (status === "paid") {
+      // 1. Fetch payment_reference from payments table
+      db.query(
+        "SELECT payment_reference, amount FROM payments WHERE order_id = ? AND status = 'success'",
+        [orderId],
+        (errPay, payments) => {
+          if (errPay || payments.length === 0) {
+            console.error("❌ Payment record not found for refund:", errPay);
+            return res.status(404).json({ message: "No successful payment found for this paid order" });
+          }
+
+          const { payment_reference: paymentId, amount } = payments[0];
+
+          // 2. Call Razorpay refund API
+          razorpay.payments.refund(paymentId, { amount: Math.round(amount * 100) }, (errRefund, refund) => {
+            if (errRefund) {
+              console.error("❌ Razorpay Refund Error:", errRefund);
+              return res.status(500).json({ message: "Failed to initiate refund with Razorpay" });
+            }
+
+            // 3. Update payment status to 'refunded'
+            db.query(
+              "UPDATE payments SET status = 'refunded', payment_reference = ? WHERE order_id = ?",
+              [refund.id, orderId]
+            );
+
+            // 4. Update order status to 'refunded'
+            db.query(
+              "UPDATE orders SET order_status = 'refunded' WHERE id = ?",
+              [orderId],
+              (err2) => {
+                if (err2) {
+                  console.error("DB error:", err2);
+                  return res.status(500).json({ message: "Database error" });
+                }
+
+                // 5. Restore product stock
+                restoreStock();
+                return res.json({ message: "Order cancelled and payment refunded successfully", refundId: refund.id });
+              }
+            );
+          });
+        }
+      );
+    } else {
+      // Standard pending cancellation (no payment made)
+      db.query(
+        "UPDATE orders SET order_status = 'cancelled' WHERE id = ?",
+        [orderId],
+        (err2) => {
+          if (err2) {
+            console.error("DB error:", err2);
+            return res.status(500).json({ message: "Database error" });
+          }
+
+          // Restore product stock
+          restoreStock();
+          return res.json({ message: "Order cancelled successfully" });
+        }
+      );
+    }
   });
 };

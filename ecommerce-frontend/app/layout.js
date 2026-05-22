@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 export const metadata = {
   title: "PremiumShop - Elevated E-Commerce",
@@ -21,6 +22,8 @@ export default function RootLayout({ children }) {
           {children}
         </main>
         <Footer />
+        {/* Load Google Identity Services SDK */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
       </body>
     </html>
   );

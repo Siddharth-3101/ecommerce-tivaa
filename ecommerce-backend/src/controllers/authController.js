@@ -115,3 +115,119 @@ export const loginUser = (req, res) => {
     }
   });
 };
+
+// =====================================================
+// GOOGLE SIGN-IN / REGISTER
+// =====================================================
+export const googleAuth = async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ message: "ID Token is required" });
+  }
+
+  try {
+    // Validate Google Token using Google's Tokeninfo API
+    const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    if (!googleRes.ok) {
+      return res.status(400).json({ message: "Invalid Google ID token" });
+    }
+
+    const payload = await googleRes.json();
+    const { email, name, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ message: "Google email is not verified" });
+    }
+
+    // Check if user already exists in our DB
+    const findUserQuery = "SELECT * FROM users WHERE email = ?";
+
+    db.query(findUserQuery, [email], async (err, users) => {
+      if (err) {
+        console.error("DB error:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (users.length > 0) {
+        // User exists, log them in
+        const user = users[0];
+        
+        // Generate JWT
+        const token = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        return res.json({
+          message: "Login successful",
+          token,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        });
+      } else {
+        // User does not exist, automatically register them
+        try {
+          const randomPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+          const insertUserQuery = `
+            INSERT INTO users (name, email, password)
+            VALUES (?, ?, ?)
+          `;
+
+          db.query(
+            insertUserQuery,
+            [name, email, hashedPassword],
+            (err2, result) => {
+              if (err2) {
+                console.error("DB error:", err2);
+                return res.status(500).json({ message: "Database error" });
+              }
+
+              const newUserId = result.insertId;
+
+              // Generate JWT for the newly registered user
+              const token = jwt.sign(
+                {
+                  id: newUserId,
+                  email: email,
+                  role: "user",
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" }
+              );
+
+              return res.json({
+                message: "Login successful",
+                token,
+                user: {
+                  id: newUserId,
+                  name: name,
+                  email: email,
+                  role: "user",
+                },
+              });
+            }
+          );
+        } catch (hashError) {
+          console.error("Hashing error:", hashError);
+          return res.status(500).json({ message: "Error registering new user" });
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    return res.status(500).json({ message: "Internal server error during Google auth" });
+  }
+};
+

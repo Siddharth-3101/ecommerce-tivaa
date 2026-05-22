@@ -172,3 +172,57 @@ export const razorpayWebhook = (req, res) => {
 
   return res.json({ status: "ok" });
 };
+
+// ==========================================================
+// STEP 4 — INITIATE REFUND (API Endpoint)
+// ==========================================================
+export const refundPayment = (req, res) => {
+  const { order_id } = req.body;
+
+  if (!order_id) {
+    return res.status(400).json({ message: "order_id is required" });
+  }
+
+  // 1. Fetch payment_reference from payments table
+  db.query(
+    "SELECT payment_reference, amount FROM payments WHERE order_id = ? AND status = 'success'",
+    [order_id],
+    (err, payments) => {
+      if (err || payments.length === 0) {
+        console.error("❌ Payment record not found for refund:", err);
+        return res.status(404).json({ message: "No successful payment found for this order" });
+      }
+
+      const { payment_reference: paymentId, amount } = payments[0];
+
+      // 2. Call Razorpay refund API
+      razorpay.payments.refund(paymentId, { amount: Math.round(amount * 100) }, (errRefund, refund) => {
+        if (errRefund) {
+          console.error("❌ Razorpay Refund Error:", errRefund);
+          return res.status(500).json({ message: "Failed to initiate refund with Razorpay" });
+        }
+
+        // 3. Update payment status to 'refunded'
+        db.query(
+          "UPDATE payments SET status = 'refunded', payment_reference = ? WHERE order_id = ?",
+          [refund.id, order_id],
+          (errUpdate) => {
+            if (errUpdate) console.error("❌ DB Payment Refund Status Update Error:", errUpdate);
+          }
+        );
+
+        // 4. Update order status to 'refunded'
+        db.query(
+          "UPDATE orders SET order_status = 'refunded' WHERE id = ?",
+          [order_id],
+          (errUpdateOrder) => {
+            if (errUpdateOrder) console.error("❌ DB Order Refund Status Update Error:", errUpdateOrder);
+          }
+        );
+
+        return res.json({ message: "Refund processed successfully", refundId: refund.id });
+      });
+    }
+  );
+};
+

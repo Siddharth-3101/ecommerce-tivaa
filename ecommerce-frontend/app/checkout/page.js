@@ -5,11 +5,13 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 
 export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [user, setUser] = useState(null);
     const [formData, setFormData] = useState({
         shipping_address: "",
         city: "",
@@ -20,11 +22,12 @@ export default function CheckoutPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const user = getUser();
-        if(!user) {
+        const loggedInUser = getUser();
+        if(!loggedInUser) {
             router.push("/login");
             return;
         }
+        setUser(loggedInUser);
 
         async function loadCart() {
             try {
@@ -50,12 +53,70 @@ export default function CheckoutPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
+            // 1. Create order in the local database
             const res = await api.post("/orders", formData);
-            window.dispatchEvent(new Event('cart-updated'));
-            router.push(`/orders/${res.data.orderId}?success=true`);
+            const { orderId, total } = res.data;
+
+            // 2. Generate Razorpay order on the backend
+            const payOrderRes = await api.post("/payment/order", {
+                amount: total,
+                currency: "INR",
+                order_id: orderId
+            });
+            const razorpayOrder = payOrderRes.data;
+
+            // 3. Open Razorpay checkout modal
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_51NgC2HSJ34m7p8", // Fallback for testing if env not set
+                amount: razorpayOrder.amount, // in paise
+                currency: razorpayOrder.currency,
+                name: "PremiumShop",
+                description: `Order #${orderId}`,
+                order_id: razorpayOrder.id,
+                handler: async function (response) {
+                    try {
+                        setSubmitting(true);
+                        // 4. Verify payment signature on the backend
+                        await api.post("/payment/verify", {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            order_id: orderId,
+                        });
+                        window.dispatchEvent(new Event('cart-updated'));
+                        router.push(`/orders/${orderId}?success=true`);
+                    } catch (verifyErr) {
+                        alert("Payment verification failed. Please contact support.");
+                        router.push(`/orders/${orderId}?success=false`);
+                    } finally {
+                        setSubmitting(false);
+                    }
+                },
+                prefill: {
+                    name: user?.name || "",
+                    email: user?.email || "",
+                },
+                theme: {
+                    color: "#0a0b10", // Sleek premium dark mode theme
+                },
+                modal: {
+                    ondismiss: function () {
+                        alert("Payment closed. You can retry payment from your Orders dashboard.");
+                        router.push(`/orders/${orderId}`);
+                    }
+                }
+            };
+
+            if (window.Razorpay) {
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } else {
+                alert("Razorpay SDK failed to load. Please refresh the page and try again.");
+                setSubmitting(false);
+            }
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to place order");
-        } finally {
+            console.error("❌ Checkout Error:", err);
+            alert(err.response?.data?.message || "Failed to place order. Please try again.");
             setSubmitting(false);
         }
     };
@@ -178,6 +239,7 @@ export default function CheckoutPage() {
                     </div>
                 </aside>
             </div>
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         </div>
     );
 }

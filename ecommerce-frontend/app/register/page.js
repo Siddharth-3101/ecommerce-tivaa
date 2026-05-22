@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { saveUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -14,6 +15,55 @@ export default function RegisterPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const handleGoogleLoginResponse = async (response) => {
+        setLoading(true);
+        setError("");
+        try {
+            const res = await api.post("/auth/google", {
+                idToken: response.credential,
+            });
+
+            saveUser(res.data.user, res.data.token);
+            window.dispatchEvent(new Event('cart-updated')); // Trick to force reload user on Navbar
+            router.push("/");
+            // wait for router to push then force reload to get context
+            setTimeout(() => window.location.reload(), 500);
+        } catch (err) {
+            setError(err.response?.data?.message || "Google Sign-In failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const initializeGoogle = () => {
+            if (window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1032336302521-placeholder.apps.googleusercontent.com", // Fallback to prompt client setup
+                    callback: handleGoogleLoginResponse,
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById("google-register-button"),
+                    { theme: "outline", size: "large", width: "100%" }
+                );
+            }
+        };
+
+        if (typeof window !== "undefined") {
+            if (window.google) {
+                initializeGoogle();
+            } else {
+                const checkInterval = setInterval(() => {
+                    if (window.google) {
+                        initializeGoogle();
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+                return () => clearInterval(checkInterval);
+            }
+        }
+    }, []);
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -91,6 +141,14 @@ export default function RegisterPage() {
                         ) : "Create Account"}
                     </button>
                 </form>
+
+                <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+                    <span style={{ padding: '0 16px' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+                </div>
+
+                <div id="google-register-button" style={{ width: '100%', display: 'flex', justifyContent: 'center', height: '44px' }}></div>
 
                 <div style={{ marginTop: '32px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                     Already have an account? <Link href="/login" style={{ color: 'var(--text-main)', fontWeight: 600 }}>Sign in</Link>

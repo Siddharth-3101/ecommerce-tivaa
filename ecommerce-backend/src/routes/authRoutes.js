@@ -1,7 +1,8 @@
 import express from "express";
 import {
   registerUser,
-  loginUser
+  loginUser,
+  googleAuth
 } from "../controllers/authController.js";
 
 import {
@@ -14,6 +15,9 @@ const router = express.Router();
 // ======================================================
 // AUTH ROUTES
 // ======================================================
+
+// Google Sign-In / Register
+router.post("/google", googleAuth);
 
 // Register new user
 router.post("/register", registerUser);
