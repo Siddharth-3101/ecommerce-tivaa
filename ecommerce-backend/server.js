@@ -52,10 +52,45 @@ initCache();
 app.use("/api", routes);
 
 // =======================================================
-// HEALTH CHECK ROUTE
+// HEALTH CHECK ROUTE (WITH RDS DATABASE DIAGNOSTICS)
 // =======================================================
 app.get("/", (req, res) => {
-  res.json({ message: "E-commerce API running..." });
+  db.query("SELECT 1", (err) => {
+    if (err) {
+      console.error("❌ Database health check failed:", err);
+      return res.status(500).json({
+        message: "E-commerce API is running, but database connection is FAILING!",
+        database_connected: false,
+        error_code: err.code,
+        error_message: err.message,
+        db_config: {
+          host: process.env.DB_HOST || "not set",
+          user: process.env.DB_USER || "not set",
+          database: process.env.DB_NAME || "not set",
+          port: process.env.DB_PORT || 3306
+        }
+      });
+    }
+
+    // Connection is healthy, query tables to see if they exist
+    db.query("SHOW TABLES", (err2, tables) => {
+      if (err2) {
+        return res.json({
+          message: "E-commerce API is running, database connected, but failed to retrieve tables.",
+          database_connected: true,
+          error_message: err2.message
+        });
+      }
+
+      const tableNames = tables.map(row => Object.values(row)[0]);
+      return res.json({
+        message: "E-commerce API is running and successfully connected to the database!",
+        database_connected: true,
+        database_name: process.env.DB_NAME || "unknown",
+        tables: tableNames
+      });
+    });
+  });
 });
 
 // =======================================================
