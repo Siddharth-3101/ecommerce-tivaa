@@ -150,6 +150,21 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Reviews table verified/created");
 
+        // 11. Create contact_messages table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                reply TEXT NULL,
+                status ENUM('pending', 'replied') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Contact messages table verified/created");
+
         // 11. Safe Column ALTER Migrations
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));

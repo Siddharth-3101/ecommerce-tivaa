@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag, Menu, X, ChevronRight } from "lucide-react";
+import { Search, Heart, ShoppingBag, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut } from "lucide-react";
 
 export default function Navbar() {
     const [count, setCount] = useState(0);
@@ -13,6 +13,16 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [categories, setCategories] = useState([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+
+    const getInitials = (name) => {
+        if (!name) return "";
+        const parts = name.split(" ");
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return name.slice(0, 2).toUpperCase();
+    };
 
     // Live Search
     const [searchQuery, setSearchQuery] = useState("");
@@ -82,8 +92,8 @@ export default function Navbar() {
             if (searchQuery.trim().length > 1) {
                 setIsSearching(true);
                 try {
-                    const res = await fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(searchQuery)}`);
-                    const data = await res.json();
+                    const res = await api.get(`/products/search?q=${encodeURIComponent(searchQuery)}`);
+                    const data = res.data;
                     setSearchResults(Array.isArray(data) ? data.slice(0, 5) : []);
                 } catch (err) {
                     setSearchResults([]);
@@ -197,14 +207,147 @@ export default function Navbar() {
                     <div className="desktop-only" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                         {user ? (
                             <>
-                                <Link href="/wishlist" style={{ color: 'var(--text-main)' }}>
+                                <Link href="/wishlist" style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}>
                                     <Heart size={20} />
                                 </Link>
-                                {user.role === 'admin' && (
-                                    <Link href="/admin" className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>Dashboard</Link>
-                                )}
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Hi, <strong style={{ color: 'var(--text-main)' }}>{user.name}</strong></span>
-                                <button onClick={handleLogout} className="btn" style={{ padding: '6px 12px', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'transparent' }}>Logout</button>
+
+                                <div
+                                    onMouseEnter={() => setProfileOpen(true)}
+                                    onMouseLeave={() => setProfileOpen(false)}
+                                    style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '100%', padding: '4px 0' }}
+                                >
+                                    <button 
+                                        style={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: '8px', 
+                                            background: 'transparent', 
+                                            border: 'none', 
+                                            cursor: 'pointer',
+                                            padding: '4px 8px',
+                                            borderRadius: '24px',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        className="profile-btn-hover"
+                                    >
+                                        <div style={{ 
+                                            width: '36px', 
+                                            height: '36px', 
+                                            borderRadius: '50%', 
+                                            background: 'linear-gradient(135deg, var(--accent) 0%, #c98e57 100%)', 
+                                            color: '#fff', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center', 
+                                            fontWeight: 700, 
+                                            fontSize: '0.9rem',
+                                            boxShadow: '0 4px 10px rgba(229,147,116,0.15)',
+                                            border: '2px solid rgba(255,255,255,0.1)'
+                                        }}>
+                                            {getInitials(user.name)}
+                                        </div>
+                                        <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                                    </button>
+
+                                    {profileOpen && (
+                                        <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '12px', width: '250px', zIndex: 250 }}>
+                                            <div className="card animate-slide-down" style={{ padding: '16px', background: 'var(--bg-glass)', backdropFilter: 'blur(20px)', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingBottom: '8px', borderBottom: '1px solid var(--glass-border)' }}>
+                                                    <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>{user.name}</span>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{user.email || 'Premium Member'}</span>
+                                                </div>
+
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                    <Link 
+                                                        href="/orders" 
+                                                        className="dropdown-item" 
+                                                        style={{ 
+                                                            display: 'flex', 
+                                                            alignItems: 'center', 
+                                                            gap: '10px', 
+                                                            padding: '8px 12px', 
+                                                            borderRadius: '8px', 
+                                                            fontSize: '0.9rem', 
+                                                            fontWeight: 500,
+                                                            color: 'var(--text-main)',
+                                                            transition: 'background 0.2s, color 0.2s'
+                                                        }}
+                                                    >
+                                                        <ShoppingBag size={16} style={{ color: 'var(--accent)' }} />
+                                                        My Orders
+                                                    </Link>
+                                                    
+                                                    <Link 
+                                                        href="/wishlist" 
+                                                        className="dropdown-item" 
+                                                        style={{ 
+                                                            display: 'flex', 
+                                                            alignItems: 'center', 
+                                                            gap: '10px', 
+                                                            padding: '8px 12px', 
+                                                            borderRadius: '8px', 
+                                                            fontSize: '0.9rem', 
+                                                            fontWeight: 500,
+                                                            color: 'var(--text-main)',
+                                                            transition: 'background 0.2s, color 0.2s'
+                                                        }}
+                                                    >
+                                                        <Heart size={16} style={{ color: 'var(--accent)' }} />
+                                                        My Wishlist
+                                                    </Link>
+
+                                                    {user.role === 'admin' && (
+                                                        <Link 
+                                                            href="/admin" 
+                                                            className="dropdown-item" 
+                                                            style={{ 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                gap: '10px', 
+                                                                padding: '8px 12px', 
+                                                                borderRadius: '8px', 
+                                                                fontSize: '0.9rem', 
+                                                                fontWeight: 500,
+                                                                color: 'var(--text-main)',
+                                                                transition: 'background 0.2s, color 0.2s'
+                                                            }}
+                                                        >
+                                                            <Shield size={16} style={{ color: 'var(--accent-teal)' }} />
+                                                            Admin Panel
+                                                        </Link>
+                                                    )}
+                                                </div>
+
+                                                <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
+
+                                                <button 
+                                                    onClick={handleLogout} 
+                                                    className="dropdown-item" 
+                                                    style={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: '10px', 
+                                                        padding: '8px 12px', 
+                                                        borderRadius: '8px', 
+                                                        fontSize: '0.9rem', 
+                                                        fontWeight: 500, 
+                                                        color: '#ff6b6b', 
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        cursor: 'pointer',
+                                                        textAlign: 'left',
+                                                        width: '100%',
+                                                        transition: 'background 0.2s, color 0.2s'
+                                                    }}
+                                                >
+                                                    <LogOut size={16} />
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </>
                         ) : (
                             <>
@@ -255,9 +398,35 @@ export default function Navbar() {
 
                         {user ? (
                             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <p style={{ margin: 0 }}>Logged in as <strong>{user.name}</strong></p>
-                                {user.role === 'admin' && <Link href="/admin" className="btn btn-primary" style={{ textAlign: 'center' }}>Dashboard</Link>}
-                                <button onClick={handleLogout} className="btn btn-danger">Logout</button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                    <div style={{ 
+                                        width: '40px', 
+                                        height: '40px', 
+                                        borderRadius: '50%', 
+                                        background: 'linear-gradient(135deg, var(--accent) 0%, #c98e57 100%)', 
+                                        color: '#fff', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        fontWeight: 700, 
+                                        fontSize: '1rem',
+                                        border: '1px solid rgba(255,255,255,0.1)'
+                                    }}>
+                                        {getInitials(user.name)}
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+                                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email || 'Premium Member'}</span>
+                                    </div>
+                                </div>
+                                <Link href="/orders" className="btn btn-secondary" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}>
+                                    <ShoppingBag size={18} /> My Orders
+                                </Link>
+                                <Link href="/wishlist" className="btn" style={{ textAlign: 'center', background: 'transparent', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}>
+                                    <Heart size={18} /> My Wishlist
+                                </Link>
+                                {user.role === 'admin' && <Link href="/admin" className="btn btn-primary" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}><Shield size={18} /> Dashboard</Link>}
+                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><LogOut size={18} /> Logout</button>
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -274,6 +443,21 @@ export default function Navbar() {
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
                 
+                .dropdown-item:hover {
+                    background: rgba(229, 147, 116, 0.08) !important;
+                    color: var(--accent) !important;
+                }
+                .profile-btn-hover:hover {
+                    background: rgba(255, 255, 255, 0.04) !important;
+                }
+                @keyframes slideDown {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-slide-down {
+                    animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+
                 @media (min-width: 900px) {
                     .mobile-only { display: none !important; }
                 }

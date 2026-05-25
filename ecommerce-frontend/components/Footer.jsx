@@ -17,17 +17,15 @@ export default function Footer() {
                     <h4 style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem' }}>Shop</h4>
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', color: 'var(--text-muted)' }}>
                         <li><Link href="/products" style={{ transition: 'color 0.2s' }}>All Products</Link></li>
-                        <li><Link href="/products?category=New Arrivals" style={{ transition: 'color 0.2s' }}>New Arrivals</Link></li>
-                        <li><Link href="/products?category=Bestsellers" style={{ transition: 'color 0.2s' }}>Bestsellers</Link></li>
                     </ul>
                 </div>
 
                 <div>
                     <h4 style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem' }}>Support</h4>
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', color: 'var(--text-muted)' }}>
-                        <li><Link href="/" style={{ transition: 'color 0.2s' }}>FAQ</Link></li>
-                        <li><Link href="/" style={{ transition: 'color 0.2s' }}>Shipping & Returns</Link></li>
-                        <li><Link href="/" style={{ transition: 'color 0.2s' }}>Contact Us</Link></li>
+                        <li><Link href="/faq" style={{ transition: 'color 0.2s' }}>FAQ</Link></li>
+                        <li><Link href="/orders" style={{ transition: 'color 0.2s' }}>Shipping & Returns</Link></li>
+                        <li><Link href="/faq" style={{ transition: 'color 0.2s' }}>Contact Us</Link></li>
                     </ul>
                 </div>
             </div>
