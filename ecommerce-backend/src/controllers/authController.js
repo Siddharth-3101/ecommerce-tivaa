@@ -117,7 +117,7 @@ export const loginUser = (req, res) => {
           email: user.email,
           role: user.role,
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || "mysupersecretkey",
         { expiresIn: "7d" }
       );
 
@@ -195,7 +195,7 @@ export const googleAuth = async (req, res) => {
             email: user.email,
             role: user.role,
           },
-          process.env.JWT_SECRET,
+          process.env.JWT_SECRET || "mysupersecretkey",
           { expiresIn: "7d" }
         );
 
@@ -240,7 +240,7 @@ export const googleAuth = async (req, res) => {
                   email: email,
                   role: role,
                 },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET || "mysupersecretkey",
                 { expiresIn: "7d" }
               );
 
