@@ -2,7 +2,9 @@ import express from "express";
 import {
   registerUser,
   loginUser,
-  googleAuth
+  googleAuth,
+  forgotPassword,
+  resetPassword
 } from "../controllers/authController.js";
 
 import {
@@ -24,6 +26,12 @@ router.post("/register", registerUser);
 
 // Login existing user
 router.post("/login", loginUser);
+
+// Forgot Password request link
+router.post("/forgot-password", forgotPassword);
+
+// Reset Password confirmation
+router.post("/reset-password", resetPassword);
 
 // Get logged-in user details (profile)
 router.get("/me", verifyToken, currentUser);
