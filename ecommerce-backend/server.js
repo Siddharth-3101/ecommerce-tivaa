@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import routes from "./src/routes/index.js";
 import db from "./src/config/db.js";
+import mysql from "mysql2";
 import { initCache } from "./src/utils/cache.js";
 
 dotenv.config();
@@ -22,26 +23,55 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // =======================================================
-// DATABASE CONNECTION CHECK & AUTO MIGRATIONS
+// DATABASE AUTO-CREATION & AUTO-MIGRATIONS
 // =======================================================
 import { runSetup } from "./setup.js";
 
-db.getConnection(async (err, connection) => {
-  if (err) {
-    console.error("❌ MySQL Connection Failed:", err);
-  } else {
-    console.log("✅ MySQL Connected Successfully");
-    if (connection) connection.release();
-    
-    try {
-      console.log("Running automatic database migrations/setup...");
-      await runSetup();
-      console.log("✅ Database migration/setup completed successfully");
-    } catch (setupErr) {
-      console.error("❌ Automatic Database Setup Failed:", setupErr);
-    }
+const ensureDatabaseAndRunMigrations = async () => {
+  try {
+    console.log("Checking if RDS database exists...");
+    const tempConnection = mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT || 3306,
+    });
+
+    await new Promise((resolve, reject) => {
+      tempConnection.query(
+        `CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME || "ecommerce"}\``,
+        (err) => {
+          tempConnection.end();
+          if (err) reject(err);
+          else resolve();
+        }
+      );
+    });
+    console.log(`✅ Database "${process.env.DB_NAME || "ecommerce"}" verified/created successfully`);
+
+    // Now check pool connection and run migrations
+    db.getConnection(async (poolErr, connection) => {
+      if (poolErr) {
+        console.error("❌ MySQL Connection Failed after auto-creation:", poolErr);
+      } else {
+        console.log("✅ MySQL Connected Successfully to database");
+        if (connection) connection.release();
+        
+        try {
+          console.log("Running automatic database migrations/setup...");
+          await runSetup();
+          console.log("✅ Database migration/setup completed successfully");
+        } catch (setupErr) {
+          console.error("❌ Automatic Database Setup Failed:", setupErr);
+        }
+      }
+    });
+  } catch (err) {
+    console.error("❌ Database auto-creation/initialization failed:", err);
   }
-});
+};
+
+ensureDatabaseAndRunMigrations();
 
 // Initialize caching
 initCache();
