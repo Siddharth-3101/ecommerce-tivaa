@@ -22,9 +22,6 @@ export default function Hero() {
                         <Link href="/products" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
                             Explore Collection
                         </Link>
-                        <Link href="/about" className="btn btn-secondary" style={{ padding: '16px 32px', fontSize: '1.1rem' }}>
-                            Our Story
-                        </Link>
                     </div>
                 </div>
             </div>

@@ -332,15 +332,15 @@ export const forgotPassword = async (req, res) => {
         };
 
         const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-          port: process.env.SMTP_PORT || 2525,
+          service: "gmail",
           auth: {
-            user: process.env.SMTP_USER || "",
-            pass: process.env.SMTP_PASS || "",
+            user: process.env.SMTP_USER,  // Your Gmail address e.g. yourname@gmail.com
+            pass: process.env.SMTP_PASS,  // Gmail App Password (NOT your regular password)
           },
         });
 
         await transporter.sendMail(mailOptions);
+        console.log(`✅ OTP email sent successfully to ${email}`);
         return res.json({ message: "Password reset OTP sent to your email" });
       } catch (mailError) {
         console.warn("📧 Email sending failed, fallback to console log:", mailError.message);
