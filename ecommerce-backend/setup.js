@@ -17,29 +17,42 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Users table verified/created");
 
-        // 2. Create products table
+        // 2. Create categories table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Categories table verified/created");
+
+        // 3. Create products table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS products (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
-                description TEXT,
+                description TEXT NULL,
                 price DECIMAL(10, 2) NOT NULL,
                 stock INT DEFAULT 0,
-                category VARCHAR(100),
-                image_url VARCHAR(255),
+                category_id INT NULL,
+                image_url VARCHAR(255) NULL,
                 is_active BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
             )
         `, (err) => err ? rej(err) : res()));
         console.log("Products table verified/created");
 
-        // 3. Create orders table
+        // 4. Create orders table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
-                total_amount DECIMAL(10, 2) NOT NULL,
-                status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+                total DECIMAL(10, 2) NOT NULL,
+                payment_method VARCHAR(100) NOT NULL,
+                order_status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
                 razorpay_order_id VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -47,7 +60,22 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Orders table verified/created");
 
-        // 4. Create payments table
+        // 5. Create order_items table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS order_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                order_id INT NOT NULL,
+                product_id INT NOT NULL,
+                quantity INT NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Order items table verified/created");
+
+        // 6. Create payments table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS payments (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +90,36 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Payments table verified/created");
 
-        // 5. Create wishlists table
+        // 7. Create shipping_details table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS shipping_details (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                order_id INT NOT NULL,
+                address VARCHAR(255) NOT NULL,
+                city VARCHAR(100) NOT NULL,
+                state VARCHAR(100) NOT NULL,
+                pincode VARCHAR(20) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Shipping details table verified/created");
+
+        // 8. Create cart table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS cart (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                product_id INT NOT NULL,
+                quantity INT NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Cart table verified/created");
+
+        // 9. Create wishlists table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS wishlists (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,7 +133,22 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Wishlists table verified/created");
 
-        // 6. Safeguards / ALTER migrations (in case tables existed previously but lacked these new fields)
+        // 10. Create reviews table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                product_id INT NOT NULL,
+                rating INT NOT NULL,
+                review TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Reviews table verified/created");
+
+        // 11. Safe Column ALTER Migrations
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
