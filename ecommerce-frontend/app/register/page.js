@@ -34,6 +34,7 @@ export default function RegisterPage() {
         }
     };
 
+    useEffect(() => {
         // If user is already logged in, redirect away from register page immediately
         const user = getUser();
         if (user) {

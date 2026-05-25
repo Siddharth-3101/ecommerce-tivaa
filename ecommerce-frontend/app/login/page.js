@@ -31,6 +31,7 @@ export default function LoginPage() {
         }
     };
 
+    useEffect(() => {
         // If user is already logged in, redirect away from login page immediately
         const user = getUser();
         if (user) {
