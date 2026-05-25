@@ -32,7 +32,11 @@ export default async function ProductPage({ params }) {
     return (
         <div className="animate-fade-in" style={{ padding: '120px 0 40px' }}>
             <div className="container">
-                <Link href="/products" className="btn btn-secondary" style={{ display: 'inline-flex', padding: '8px 16px', marginBottom: '32px', fontSize: '0.9rem' }}>
+                <Link 
+                    href={product.category_name ? `/products?category=${encodeURIComponent(product.category_name)}` : "/products"} 
+                    className="btn btn-secondary" 
+                    style={{ display: 'inline-flex', padding: '8px 16px', marginBottom: '32px', fontSize: '0.9rem' }}
+                >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     Back to collection
                 </Link>
