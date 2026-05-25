@@ -26,9 +26,7 @@ export default function RegisterPage() {
 
             saveUser(res.data.user, res.data.token);
             window.dispatchEvent(new Event('cart-updated')); // Trick to force reload user on Navbar
-            router.push("/");
-            // wait for router to push then force reload to get context
-            setTimeout(() => window.location.reload(), 500);
+            window.location.href = "/";
         } catch (err) {
             setError(err.response?.data?.message || "Google Sign-In failed. Please try again.");
         } finally {
@@ -36,7 +34,13 @@ export default function RegisterPage() {
         }
     };
 
-    useEffect(() => {
+        // If user is already logged in, redirect away from register page immediately
+        const user = getUser();
+        if (user) {
+            window.location.href = "/";
+            return;
+        }
+
         const initializeGoogle = () => {
             if (window.google) {
                 window.google.accounts.id.initialize({
