@@ -1,71 +1,52 @@
-import AWS from "aws-sdk";
+import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
-import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
 // ===========================================================
-// Validate AWS ENV variables
+// Configure Cloudinary
 // ===========================================================
-const requiredEnv = [
-  "AWS_ACCESS_KEY_ID",
-  "AWS_SECRET_ACCESS_KEY",
-  "AWS_REGION",
-  "S3_BUCKET"
-];
-
-requiredEnv.forEach((key) => {
-  if (!process.env[key]) {
-    console.warn(`⚠️ Missing environment variable: ${key}`);
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "dft1i2ozo",
+  api_key: process.env.CLOUDINARY_API_KEY || "597131352343776",
+  api_secret: process.env.CLOUDINARY_API_SECRET || "0uCnHoCFWbEy1FYrZey5W6ykHW0",
 });
 
 // ===========================================================
-// Initialize AWS S3
-// ===========================================================
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
-});
-
-// ===========================================================
-// UPLOAD IMAGE TO S3
+// UPLOAD IMAGE TO CLOUDINARY
 // ===========================================================
 export const uploadImage = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const file = req.file;
+  // Upload the in-memory buffer to Cloudinary via upload_stream
+  const uploadStream = cloudinary.uploader.upload_stream(
+    {
+      folder: "tivaa-products",
+      resource_type: "image",
+      transformation: [
+        { quality: "auto:good" },  // Auto-optimize quality
+        { fetch_format: "auto" },  // Auto-convert to WebP where supported
+      ],
+    },
+    (error, result) => {
+      if (error) {
+        console.error("❌ Cloudinary Upload Error:", error);
+        return res.status(500).json({
+          message: "Failed to upload image",
+          error: error.message,
+        });
+      }
 
-  // Generate unique, safe file name
-  const fileName = `products/${uuidv4()}-${file.originalname
-    .replace(/\s+/g, "_")
-    .toLowerCase()}`;
-
-  const params = {
-    Bucket: process.env.S3_BUCKET,
-    Key: fileName,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-    ACL: "public-read" // Set to private if you need restricted access
-  };
-
-  // Upload to AWS S3
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.error("❌ S3 Upload Error:", err);
-      return res.status(500).json({
-        message: "Failed to upload image",
-        error: err.message
+      return res.json({
+        message: "Image uploaded successfully",
+        url: result.secure_url,   // HTTPS CDN URL — use this as image_url in DB
+        public_id: result.public_id,
       });
     }
+  );
 
-    return res.json({
-      message: "Image uploaded successfully",
-      url: data.Location,
-      key: data.Key
-    });
-  });
+  // Pipe the file buffer into the upload stream
+  uploadStream.end(req.file.buffer);
 };

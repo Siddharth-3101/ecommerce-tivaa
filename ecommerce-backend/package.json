@@ -12,8 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
