@@ -33,7 +33,7 @@ export default function AddProductPage() {
             setProduct((prev) => ({ ...prev, image_url: res.data.url }));
         } catch (err) {
             console.error("Upload error:", err);
-            alert(err.response?.data?.message || err.response?.data?.error || "Failed to upload image. Please check your AWS S3 bucket environment variables.");
+            alert(err.response?.data?.message || err.response?.data?.error || "Failed to upload image. Please try again.");
         } finally {
             setUploading(false);
         }
