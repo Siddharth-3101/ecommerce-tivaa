@@ -1,4 +1,6 @@
 import AddToCartButton from "@/components/AddToCartButton";
+import WishlistButton from "@/components/WishlistButton";
+import ProductReviews from "@/components/ProductReviews";
 import Link from "next/link";
 
 async function fetchProduct(id) {
@@ -82,6 +84,9 @@ export default async function ProductPage({ params }) {
                             <div style={{ flex: '1' }}>
                                 <AddToCartButton productId={product.id} disabled={product.stock <= 0} />
                             </div>
+                            <div>
+                                <WishlistButton productId={product.id} />
+                            </div>
                         </div>
 
                         {product.stock <= 0 ? (
@@ -106,6 +111,9 @@ export default async function ProductPage({ params }) {
                         </div>
                     </div>
                 </div>
+
+                {/* PRODUCT CUSTOMER REVIEWS */}
+                <ProductReviews productId={product.id} />
             </div>
         </div>
     );
