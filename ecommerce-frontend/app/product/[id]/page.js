@@ -3,7 +3,8 @@ import Link from "next/link";
 
 async function fetchProduct(id) {
     try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const res = await fetch(`${backendUrl}/api/products/${id}`, {
             cache: "no-store",
         });
         if (!res.ok) return null;

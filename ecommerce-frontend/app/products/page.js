@@ -3,12 +3,13 @@ import Link from "next/link";
 
 async function fetchProducts(categoryName, query) {
     try {
-        let url = "http://localhost:5000/api/products";
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        let url = `${backendUrl}/api/products`;
 
         if (query) {
-            url = `http://localhost:5000/api/products/search?q=${encodeURIComponent(query)}`;
+            url = `${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`;
         } else if (categoryName) {
-            url = `http://localhost:5000/api/products/filter?category=${encodeURIComponent(categoryName)}`;
+            url = `${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`;
         }
 
         const res = await fetch(url, {
@@ -29,7 +30,8 @@ async function fetchProducts(categoryName, query) {
 
 async function fetchCategories() {
     try {
-        const res = await fetch("http://localhost:5000/api/categories", {
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const res = await fetch(`${backendUrl}/api/categories`, {
             cache: 'no-store'
         });
         if (!res.ok) {

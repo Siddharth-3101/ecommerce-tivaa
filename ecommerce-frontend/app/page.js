@@ -4,7 +4,8 @@ import Link from "next/link";
 
 async function fetchSampleProducts() {
     try {
-        const res = await fetch("http://localhost:5000/api/products", {
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const res = await fetch(`${backendUrl}/api/products`, {
             cache: 'no-store'
         });
 
