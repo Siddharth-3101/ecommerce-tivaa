@@ -31,7 +31,7 @@ export default async function Home() {
             <section className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
                 <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', letterSpacing: '-0.5px' }}>
-                        Welcome to PremiumShop
+                        Welcome to Tivaa Jewellery
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', lineHeight: 1.8, marginBottom: '32px' }}>
                         We are passionate creators and curators of exquisite jewelry.
