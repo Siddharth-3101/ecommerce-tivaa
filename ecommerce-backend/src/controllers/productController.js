@@ -1,5 +1,5 @@
 import db from "../config/db.js";
-import { getCache, setCache } from "../utils/cache.js";
+import { getCache, setCache, clearCache } from "../utils/cache.js";
 
 // ===========================================================
 // GET PRODUCTS WITH PAGINATION
@@ -90,11 +90,14 @@ export const addProduct = (req, res) => {
   db.query(
     sql,
     [name, description, price, stock, category_id, image_url],
-    (err) => {
+    async (err) => {
       if (err) {
         console.error("DB Error:", err);
         return res.status(500).json({ message: "Database error" });
       }
+
+      // Clear cache to ensure instant visibility
+      await clearCache("products");
 
       return res.json({ message: "Product added successfully" });
     }
@@ -117,7 +120,7 @@ export const updateProduct = (req, res) => {
   db.query(
     sql,
     [name, description, price, stock, category_id, image_url, id],
-    (err, result) => {
+    async (err, result) => {
       if (err) {
         console.error("DB Error:", err);
         return res.status(500).json({ message: "Database error" });
@@ -126,6 +129,9 @@ export const updateProduct = (req, res) => {
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Product not found" });
       }
+
+      // Clear cache to ensure instant visibility
+      await clearCache("products");
 
       return res.json({ message: "Product updated successfully" });
     }
@@ -138,7 +144,7 @@ export const updateProduct = (req, res) => {
 export const deleteProduct = (req, res) => {
   const { id } = req.params;
 
-  db.query("UPDATE products SET is_active=false WHERE id = ?", [id], (err, result) => {
+  db.query("UPDATE products SET is_active=false WHERE id = ?", [id], async (err, result) => {
     if (err) {
       console.error("DB Error:", err);
       return res.status(500).json({ message: "Database error" });
@@ -147,6 +153,9 @@ export const deleteProduct = (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    // Clear cache to ensure instant visibility
+    await clearCache("products");
 
     return res.json({ message: "Product deleted successfully" });
   });
