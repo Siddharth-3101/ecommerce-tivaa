@@ -29,15 +29,17 @@ export const registerUser = (req, res) => {
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
+      const adminEmail = process.env.ADMIN_EMAIL || "siddharth310107@gmail.com";
+      const role = email === adminEmail ? "admin" : "user";
 
       const insertUserQuery = `
-        INSERT INTO users (name, email, password, phone, address)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO users (name, email, password, role, phone, address)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
 
       db.query(
         insertUserQuery,
-        [name, email, hashedPassword, phone || null, address || null],
+        [name, email, hashedPassword, role, phone || null, address || null],
         (err2) => {
           if (err2) {
             console.error("DB error:", err2);
@@ -86,6 +88,19 @@ export const loginUser = (req, res) => {
 
       if (!isValidPassword) {
         return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      // Automatically promote user to admin in DB if their email matches ADMIN_EMAIL or default owner
+      const adminEmail = process.env.ADMIN_EMAIL || "siddharth310107@gmail.com";
+      if (user.email === adminEmail && user.role !== "admin") {
+        db.query("UPDATE users SET role = 'admin' WHERE id = ?", [user.id], (updateErr) => {
+          if (updateErr) {
+            console.error("Failed to dynamically upgrade user to admin:", updateErr);
+          } else {
+            console.log(`Successfully upgraded ${user.email} to admin dynamically`);
+          }
+        });
+        user.role = "admin";
       }
 
       // Generate JWT
@@ -153,6 +168,19 @@ export const googleAuth = async (req, res) => {
         // User exists, log them in
         const user = users[0];
         
+        // Automatically promote user to admin in DB if their email matches ADMIN_EMAIL or default owner
+        const adminEmail = process.env.ADMIN_EMAIL || "siddharth310107@gmail.com";
+        if (user.email === adminEmail && user.role !== "admin") {
+          db.query("UPDATE users SET role = 'admin' WHERE id = ?", [user.id], (updateErr) => {
+            if (updateErr) {
+              console.error("Failed to dynamically upgrade Google user to admin:", updateErr);
+            } else {
+              console.log(`Successfully upgraded Google user ${user.email} to admin dynamically`);
+            }
+          });
+          user.role = "admin";
+        }
+        
         // Generate JWT
         const token = jwt.sign(
           {
@@ -179,15 +207,17 @@ export const googleAuth = async (req, res) => {
         try {
           const randomPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
           const hashedPassword = await bcrypt.hash(randomPassword, 10);
+          const adminEmail = process.env.ADMIN_EMAIL || "siddharth310107@gmail.com";
+          const role = email === adminEmail ? "admin" : "user";
 
           const insertUserQuery = `
-            INSERT INTO users (name, email, password)
-            VALUES (?, ?, ?)
+            INSERT INTO users (name, email, password, role)
+            VALUES (?, ?, ?, ?)
           `;
 
           db.query(
             insertUserQuery,
-            [name, email, hashedPassword],
+            [name, email, hashedPassword, role],
             (err2, result) => {
               if (err2) {
                 console.error("DB error:", err2);
@@ -201,7 +231,7 @@ export const googleAuth = async (req, res) => {
                 {
                   id: newUserId,
                   email: email,
-                  role: "user",
+                  role: role,
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: "7d" }
@@ -214,7 +244,7 @@ export const googleAuth = async (req, res) => {
                   id: newUserId,
                   name: name,
                   email: email,
-                  role: "user",
+                  role: role,
                 },
               });
             }
