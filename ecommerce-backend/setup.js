@@ -2,22 +2,52 @@ import db from "./src/config/db.js";
 
 export const runSetup = async () => {
     try {
-        // Ensure products is_active column exists
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        console.log("Added is_active to products");
+        // 1. Create users table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                role ENUM('user', 'admin') DEFAULT 'user',
+                phone VARCHAR(50) NULL,
+                address TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Users table verified/created");
 
-        // Ensure users phone and address columns exist
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        console.log("Added phone to users");
+        // 2. Create products table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS products (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                price DECIMAL(10, 2) NOT NULL,
+                stock INT DEFAULT 0,
+                category VARCHAR(100),
+                image_url VARCHAR(255),
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Products table verified/created");
 
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        console.log("Added address to users");
+        // 3. Create orders table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS orders (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                total_amount DECIMAL(10, 2) NOT NULL,
+                status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+                razorpay_order_id VARCHAR(255) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Orders table verified/created");
 
-        // Ensure razorpay_order_id is in orders table
-        await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        console.log("Added razorpay_order_id to orders table");
-
-        // Create payments table
+        // 4. Create payments table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS payments (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,9 +60,9 @@ export const runSetup = async () => {
                 FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
             )
         `, (err) => err ? rej(err) : res()));
-        console.log("Payments table verified/created successfully");
+        console.log("Payments table verified/created");
 
-        // Create wishlists table
+        // 5. Create wishlists table
         await new Promise((res, rej) => db.query(`
             CREATE TABLE IF NOT EXISTS wishlists (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,7 +74,15 @@ export const runSetup = async () => {
                 FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
             )
         `, (err) => err ? rej(err) : res()));
-        console.log("Wishlists table created");
+        console.log("Wishlists table verified/created");
+
+        // 6. Safeguards / ALTER migrations (in case tables existed previously but lacked these new fields)
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        console.log("Database schema migrations verified successfully");
+
     } catch (err) {
         console.error("Setup failed:", err);
         throw err;
