@@ -87,10 +87,10 @@ export default function WishlistPage() {
     return (
         <div className="animate-fade-in" style={{ padding: '120px 0 80px' }}>
             <div className="container" style={{ marginBottom: '40px' }}>
-                <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '24px' }}>
+                <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '16px' }}>
                     <ArrowLeft size={16} /> Continue Shopping
                 </Link>
-                <h1 style={{ fontSize: '3rem', marginBottom: '8px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>My Wishlist</h1>
+                <h1 style={{ fontSize: '3rem', marginBottom: '8px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'block' }}>My Wishlist</h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Your hand-picked collection of timeless, premium jewels.</p>
             </div>
 
