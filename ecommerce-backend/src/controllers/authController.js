@@ -34,7 +34,7 @@ export const registerUser = (req, res) => {
 
       const insertUserQuery = `
         INSERT INTO users (name, email, password, role, phone, address)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
       `;
 
       db.query(
