@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { saveUser } from "@/lib/auth";
+import { saveUser, getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
