@@ -1,6 +1,48 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import api from "@/lib/api";
+import { getUser } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export default function ProductCard({ product }) {
+    const [loading, setLoading] = useState(false);
+    const [added, setAdded] = useState(false);
+    const router = useRouter();
+
+    const handleAddToCart = async (e) => {
+        // Prevent navigating to the product details page
+        e.preventDefault();
+        e.stopPropagation();
+
+        const user = getUser();
+        if (!user) {
+            router.push("/login");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await api.post("/cart", {
+                product_id: product.id,
+                quantity: 1,
+            });
+
+            setAdded(true);
+            window.dispatchEvent(new Event("cart-updated")); // Notify Navbar to increment count
+            
+            setTimeout(() => {
+                setAdded(false);
+            }, 2000);
+        } catch (err) {
+            console.error("Cart addition failed:", err);
+            alert("Failed to add item to cart. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Link href={`/product/${product.id}`} className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none' }}>
             <div className="product-image-container">
@@ -32,11 +74,61 @@ export default function ProductCard({ product }) {
                     <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
                         ₹{product.price}
                     </span>
-                    <span style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', transition: 'all 0.2s', border: '1px solid var(--border)' }} className="product-cart-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </span>
+                    
+                    {product.stock > 0 && (
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={loading || added}
+                            className={`product-cart-btn ${added ? 'added' : ''}`}
+                            style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                background: added ? 'var(--success)' : 'var(--bg)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: added ? '#fff' : 'var(--accent)',
+                                transition: 'all 0.2s ease',
+                                border: '1px solid var(--border)',
+                                cursor: loading || added ? 'default' : 'pointer',
+                                padding: 0
+                            }}
+                        >
+                            {loading ? (
+                                <span className="cart-btn-spinner"></span>
+                            ) : added ? (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
+
+            <style jsx>{`
+                .cart-btn-spinner {
+                    width: 14px;
+                    height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    border-top-color: var(--accent);
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                .product-cart-btn:hover {
+                    background: var(--accent) !important;
+                    color: #fff !important;
+                    transform: scale(1.05);
+                }
+                .product-cart-btn.added:hover {
+                    background: var(--success) !important;
+                    transform: none;
+                }
+            `}</style>
         </Link>
     );
 }
