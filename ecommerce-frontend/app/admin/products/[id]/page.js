@@ -52,7 +52,23 @@ export default function EditProductPage({ params }) {
         async function fetchInitialData() {
             try {
                 const res = await api.get(`/products/${id}`);
-                setProduct(res.data);
+                const fetchedProduct = res.data;
+                // Hydrate variations JSON back to readable text format for editing
+                let variationsText = "";
+                if (fetchedProduct.variations) {
+                    try {
+                        const parsedObj = typeof fetchedProduct.variations === 'string' ? JSON.parse(fetchedProduct.variations) : fetchedProduct.variations;
+                        variationsText = Object.entries(parsedObj)
+                            .map(([name, options]) => `${name}: ${options.join(", ")}`)
+                            .join("\n");
+                    } catch (e) {
+                        variationsText = fetchedProduct.variations;
+                    }
+                }
+                setProduct({
+                    ...fetchedProduct,
+                    variations: variationsText
+                });
                 
                 const catRes = await api.get("/categories");
                 setCategories(catRes.data || []);
@@ -67,8 +83,33 @@ export default function EditProductPage({ params }) {
         e.preventDefault();
         setLoading(true);
         try {
+            // Parse variations text to JSON
+            let parsedVariations = null;
+            if (product.variations && product.variations.trim()) {
+                const result = {};
+                const lines = product.variations.split("\n");
+                for (const line of lines) {
+                    const parts = line.split(":");
+                    if (parts.length >= 2) {
+                        const name = parts[0].trim();
+                        const options = parts[1].split(",").map(o => o.trim()).filter(Boolean);
+                        if (name && options.length > 0) {
+                            result[name] = options;
+                        }
+                    }
+                }
+                if (Object.keys(result).length > 0) {
+                    parsedVariations = JSON.stringify(result);
+                }
+            }
+
+            const payload = {
+                ...product,
+                variations: parsedVariations
+            };
+
             // Correct format mapping for Admin product updating
-            await api.put(`/admin/product/${id}`, product);
+            await api.put(`/admin/product/${id}`, payload);
             router.push("/admin/products");
             setTimeout(() => alert("Product updated securely."), 100);
         } catch (err) {
@@ -298,6 +339,22 @@ export default function EditProductPage({ params }) {
                             onChange={(e) => setProduct({ ...product, description: e.target.value })}
                             style={{ minHeight: "120px", resize: "vertical" }}
                         ></textarea>
+                    </div>
+
+                    <div>
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                            Product Variations (Optional)
+                        </label>
+                        <textarea
+                            className="input-field"
+                            placeholder="Format: [Name]: [Option1], [Option2]&#10;E.g.:&#10;Size: Small, Medium, Large&#10;Finish: Matte, Glossy"
+                            value={product.variations || ""}
+                            onChange={(e) => setProduct({ ...product, variations: e.target.value })}
+                            style={{ minHeight: "100px", resize: "vertical", fontFamily: "monospace", fontSize: "0.85rem" }}
+                        ></textarea>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
+                            Place each variation group on its own line. Options must be separated by commas.
+                        </span>
                     </div>
 
                     <div style={{ borderTop: "1px solid var(--border)", paddingTop: "24px", display: "flex", justifyContent: "flex-end" }}>

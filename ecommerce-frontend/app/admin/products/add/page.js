@@ -14,6 +14,7 @@ export default function AddProductPage() {
         description: "",
         category_id: "",
         image_url: "",
+        variations: ""
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -67,7 +68,32 @@ export default function AddProductPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post("/admin/product", product);
+            // Parse variations text to JSON
+            let parsedVariations = null;
+            if (product.variations && product.variations.trim()) {
+                const result = {};
+                const lines = product.variations.split("\n");
+                for (const line of lines) {
+                    const parts = line.split(":");
+                    if (parts.length >= 2) {
+                        const name = parts[0].trim();
+                        const options = parts[1].split(",").map(o => o.trim()).filter(Boolean);
+                        if (name && options.length > 0) {
+                            result[name] = options;
+                        }
+                    }
+                }
+                if (Object.keys(result).length > 0) {
+                    parsedVariations = JSON.stringify(result);
+                }
+            }
+
+            const payload = {
+                ...product,
+                variations: parsedVariations
+            };
+
+            await api.post("/admin/product", payload);
             router.push("/admin/products");
             setTimeout(() => alert("Product added securely."), 100);
         } catch (err) {
@@ -288,6 +314,22 @@ export default function AddProductPage() {
                             onChange={(e) => setProduct({ ...product, description: e.target.value })}
                             style={{ minHeight: "120px", resize: "vertical" }}
                         ></textarea>
+                    </div>
+
+                    <div>
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                            Product Variations (Optional)
+                        </label>
+                        <textarea
+                            className="input-field"
+                            placeholder="Format: [Name]: [Option1], [Option2]&#10;E.g.:&#10;Size: Small, Medium, Large&#10;Finish: Matte, Glossy"
+                            value={product.variations}
+                            onChange={(e) => setProduct({ ...product, variations: e.target.value })}
+                            style={{ minHeight: "100px", resize: "vertical", fontFamily: "monospace", fontSize: "0.85rem" }}
+                        ></textarea>
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
+                            Place each variation group on its own line. Options must be separated by commas.
+                        </span>
                     </div>
 
                     <div style={{ borderTop: "1px solid var(--border)", paddingTop: "24px", display: "flex", justifyContent: "flex-end" }}>

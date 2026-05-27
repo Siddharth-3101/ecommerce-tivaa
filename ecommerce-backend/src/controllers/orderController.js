@@ -25,7 +25,8 @@ export const createOrder = (req, res) => {
             c.quantity, 
             p.price, 
             p.stock, 
-            p.name
+            p.name,
+            c.selected_variation
         FROM cart c
         JOIN products p ON p.id = c.product_id
         WHERE c.user_id = ?
@@ -72,7 +73,7 @@ export const createOrder = (req, res) => {
 
       // Step 5 — Insert order items
       const itemsSql = `
-                INSERT INTO order_items (order_id, product_id, quantity, price)
+                INSERT INTO order_items (order_id, product_id, quantity, price, selected_variation)
                 VALUES ?
             `;
 
@@ -81,6 +82,7 @@ export const createOrder = (req, res) => {
         item.product_id,
         item.quantity,
         item.price,
+        item.selected_variation || null,
       ]);
 
       db.query(itemsSql, [values], (err3) => {

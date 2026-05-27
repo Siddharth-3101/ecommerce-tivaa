@@ -399,7 +399,7 @@ export default function Navbar() {
                             {categories.map(c => (
                                 <Link 
                                     key={c.id} 
-                                    href={`/products?category=${c.name}`} 
+                                    href={`/products?category=${encodeURIComponent(c.name)}`} 
                                     className="btn" 
                                     style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '8px 12px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }} 
                                     onClick={() => setMobileMenuOpen(false)}

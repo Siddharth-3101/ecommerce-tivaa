@@ -226,6 +226,11 @@ export default function CheckoutPage() {
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <h4 style={{ fontSize: '0.95rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</h4>
+                                        {item.selected_variation && (
+                                            <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-main)', fontWeight: 500 }}>
+                                                {item.selected_variation}
+                                            </p>
+                                        )}
                                         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Qty: {item.quantity}</p>
                                     </div>
                                     <span style={{ fontWeight: 600 }}>₹{item.price * item.quantity}</span>

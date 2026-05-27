@@ -3,30 +3,53 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-async function fetchProducts(categoryName, query) {
+async function fetchProducts(categoryName, query, page = 1) {
     try {
         const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
-        let url = `${backendUrl}/api/products`;
+        const limit = 12;
 
         if (query) {
-            url = `${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`;
+            const url = `${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`;
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
+            const data = await res.json();
+            const total = data.length;
+            const totalPages = Math.ceil(total / limit) || 1;
+            const offset = (page - 1) * limit;
+            return {
+                products: data.slice(offset, offset + limit),
+                page,
+                totalPages,
+                total
+            };
         } else if (categoryName) {
-            url = `${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`;
+            const url = `${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`;
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
+            const data = await res.json();
+            const total = data.length;
+            const totalPages = Math.ceil(total / limit) || 1;
+            const offset = (page - 1) * limit;
+            return {
+                products: data.slice(offset, offset + limit),
+                page,
+                totalPages,
+                total
+            };
+        } else {
+            const url = `${backendUrl}/api/products?page=${page}&limit=${limit}`;
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
+            const data = await res.json();
+            return {
+                products: data.products || [],
+                page: data.page || page,
+                totalPages: data.totalPages || 1,
+                total: data.total || 0
+            };
         }
-
-        const res = await fetch(url, {
-            cache: 'no-store'
-        });
-
-        if (!res.ok) {
-            return { products: [] };
-        }
-
-        const data = await res.json();
-        // /filter and /search endpoints return an array, while / endpoint returns { products: [] }
-        return Array.isArray(data) ? { products: data } : data;
     } catch (err) {
-        return { products: [] };
+        return { products: [], page: 1, totalPages: 1, total: 0 };
     }
 }
 
@@ -49,9 +72,11 @@ export default async function ProductsPage({ searchParams }) {
     const resolvedParams = await searchParams || {};
     const category = resolvedParams.category;
     const query = resolvedParams.q;
+    const page = parseInt(resolvedParams.page) || 1;
 
-    const data = await fetchProducts(category, query);
+    const data = await fetchProducts(category, query, page);
     const categories = await fetchCategories();
+    const totalPages = data.totalPages || 1;
 
     return (
         <div className="animate-fade-in" style={{ padding: '40px 0 80px' }}>
@@ -60,7 +85,7 @@ export default async function ProductsPage({ searchParams }) {
                     {query ? `Search results` : category ? `${category}` : "Our Collections"}
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
-                    {query ? `${data.products?.length || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
+                    {query ? `${data.total || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
                 </p>
 
                 {/* Categories Filter Links */}
@@ -100,6 +125,58 @@ export default async function ProductsPage({ searchParams }) {
                         </div>
                     )}
                 </div>
+
+                {/* Sleek Boutique Pagination Selector */}
+                {totalPages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '60px' }}>
+                        {page > 1 && (
+                            <Link
+                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${page - 1}`}
+                                className="btn btn-secondary"
+                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                            >
+                                Prev
+                            </Link>
+                        )}
+                        
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                            const isActive = p === page;
+                            return (
+                                <Link
+                                    key={p}
+                                    href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${p}`}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        fontSize: '0.9rem',
+                                        fontWeight: isActive ? '600' : '400',
+                                        textDecoration: 'none',
+                                        transition: 'all 0.2s ease',
+                                        border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
+                                        background: isActive ? 'var(--text-main)' : 'transparent',
+                                        color: isActive ? '#ffffff' : 'var(--text-main)',
+                                    }}
+                                >
+                                    {p}
+                                </Link>
+                            );
+                        })}
+                        
+                        {page < totalPages && (
+                            <Link
+                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${page + 1}`}
+                                className="btn btn-secondary"
+                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                            >
+                                Next
+                            </Link>
+                        )}
+                    </div>
+                )}
             </section>
         </div>
     );

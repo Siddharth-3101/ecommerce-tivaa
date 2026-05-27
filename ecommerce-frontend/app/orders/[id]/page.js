@@ -81,7 +81,14 @@ export default function OrderDetailsPage({ params }) {
                                             <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', background: '#1e2130' }}>
                                                 <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
-                                            <span style={{ fontWeight: 500 }}>{item.name}</span>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontWeight: 500 }}>{item.name}</span>
+                                                {item.selected_variation && (
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px', fontWeight: 500 }}>
+                                                        Variant: {item.selected_variation}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td style={{ textAlign: 'center', padding: '16px 24px' }}>{item.quantity}</td>
                                         <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 600 }}>₹{item.price * item.quantity}</td>

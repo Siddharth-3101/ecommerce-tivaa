@@ -5,10 +5,10 @@ import { getCache, setCache, clearCache } from "../utils/cache.js";
 // GET PRODUCTS WITH PAGINATION
 // ===========================================================
 export const getProducts = async (req, res) => {
-  let { page = 1, limit = 10 } = req.query;
+  let { page = 1, limit = 12 } = req.query;
 
-  page = Number(page);
-  limit = Number(limit);
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 12;
 
   const offset = (page - 1) * limit;
   const cacheKey = `products_${page}_${limit}`;
@@ -18,30 +18,41 @@ export const getProducts = async (req, res) => {
     return res.json(cachedData);
   }
 
-  const sql = `
-        SELECT p.*, c.name AS category_name
-        FROM products p
-        LEFT JOIN categories c ON p.category_id = c.id
-        WHERE p.is_active = true
-        LIMIT ? OFFSET ?
-    `;
-
-  db.query(sql, [limit, offset], async (err, rows) => {
-    if (err) {
-      console.error("DB Error:", err);
+  const countSql = "SELECT COUNT(*) as total FROM products WHERE is_active = true";
+  db.query(countSql, (countErr, countRows) => {
+    if (countErr) {
+      console.error("DB Error:", countErr);
       return res.status(500).json({ message: "Database error" });
     }
 
-    const response = {
-      page,
-      limit,
-      count: rows.length,
-      products: rows,
-    };
+    const total = countRows[0]?.total || 0;
 
-    await setCache(cacheKey, response, 300); // cache for 5 minutes
+    const sql = `
+          SELECT p.*, c.name AS category_name
+          FROM products p
+          LEFT JOIN categories c ON p.category_id = c.id
+          WHERE p.is_active = true
+          LIMIT ? OFFSET ?
+      `;
 
-    return res.json(response);
+    db.query(sql, [limit, offset], async (err, rows) => {
+      if (err) {
+        console.error("DB Error:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      const response = {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        products: rows,
+      };
+
+      await setCache(cacheKey, response, 300); // cache for 5 minutes
+
+      return res.json(response);
+    });
   });
 };
 
@@ -76,20 +87,20 @@ export const getProductById = (req, res) => {
 // ADD NEW PRODUCT
 // ===========================================================
 export const addProduct = (req, res) => {
-  const { name, description, price, stock, category_id, image_url } = req.body;
+  const { name, description, price, stock, category_id, image_url, variations } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
   }
 
   const sql = `
-        INSERT INTO products (name, description, price, stock, category_id, image_url)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO products (name, description, price, stock, category_id, image_url, variations)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url],
+    [name, description, price, stock, category_id, image_url, variations || null],
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
@@ -109,17 +120,17 @@ export const addProduct = (req, res) => {
 // ===========================================================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { name, description, price, stock, category_id, image_url } = req.body;
+  const { name, description, price, stock, category_id, image_url, variations } = req.body;
 
   const sql = `
         UPDATE products 
-        SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?
+        SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?, variations=?
         WHERE id=?
     `;
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url, id],
+    [name, description, price, stock, category_id, image_url, variations || null, id],
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);

@@ -22,6 +22,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Global Cache prevention for all JSON API endpoints to ensure CDN/Amplify updates are instant
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  next();
+});
+
 // =======================================================
 // DATABASE AUTO-CREATION & AUTO-MIGRATIONS
 // =======================================================

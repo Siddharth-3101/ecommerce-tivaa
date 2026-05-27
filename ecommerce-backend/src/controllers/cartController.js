@@ -5,7 +5,7 @@ import db from "../config/db.js";
 // ===========================================================
 export const addToCart = (req, res) => {
   const userId = req.user.id;
-  let { product_id, quantity } = req.body;
+  let { product_id, quantity, selected_variation } = req.body;
 
   quantity = Number(quantity);
 
@@ -25,20 +25,35 @@ export const addToCart = (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Insert OR update item in cart
-    const insertOrUpdate = `
-      INSERT INTO cart (user_id, product_id, quantity)
-      VALUES (?, ?, ?)
-      ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
-    `;
-
-    db.query(insertOrUpdate, [userId, product_id, quantity], (err2) => {
-      if (err2) {
-        console.error("DB error:", err2);
+    // Dynamic grouping: check if product_id + selected_variation already in cart
+    const checkCart = "SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND (selected_variation = ? OR (selected_variation IS NULL AND ? IS NULL))";
+    db.query(checkCart, [userId, product_id, selected_variation || null, selected_variation || null], (errCart, cartRows) => {
+      if (errCart) {
+        console.error("DB error:", errCart);
         return res.status(500).json({ message: "Database error" });
       }
 
-      return res.json({ message: "Item added to cart" });
+      if (cartRows.length > 0) {
+        // Increment quantity of existing row
+        const updateQty = "UPDATE cart SET quantity = quantity + ? WHERE id = ?";
+        db.query(updateQty, [quantity, cartRows[0].id], (errUpdate) => {
+          if (errUpdate) {
+            console.error("DB error:", errUpdate);
+            return res.status(500).json({ message: "Database error" });
+          }
+          return res.json({ message: "Item quantity updated in cart" });
+        });
+      } else {
+        // Insert new variation row
+        const insertRow = "INSERT INTO cart (user_id, product_id, quantity, selected_variation) VALUES (?, ?, ?, ?)";
+        db.query(insertRow, [userId, product_id, quantity, selected_variation || null], (errInsert) => {
+          if (errInsert) {
+            console.error("DB error:", errInsert);
+            return res.status(500).json({ message: "Database error" });
+          }
+          return res.json({ message: "Item added to cart" });
+        });
+      }
     });
   });
 };
@@ -57,6 +72,7 @@ export const getCart = (req, res) => {
       p.price,
       p.image_url,
       c.quantity,
+      c.selected_variation,
       (p.price * c.quantity) AS total
     FROM cart c
     JOIN products p ON p.id = c.product_id

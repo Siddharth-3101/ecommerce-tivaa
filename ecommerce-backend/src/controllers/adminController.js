@@ -6,14 +6,14 @@ import db from "../config/db.js";
 
 // Add Category
 export const addCategory = (req, res) => {
-    const { name, description } = req.body;
+    const { name, description, image_url } = req.body;
 
     if (!name)
         return res.status(400).json({ message: "Category name required" });
 
-    const sql = "INSERT INTO categories (name, description) VALUES (?, ?)";
+    const sql = "INSERT INTO categories (name, description, image_url) VALUES (?, ?, ?)";
 
-    db.query(sql, [name, description || null], (err) => {
+    db.query(sql, [name, description || null, image_url || null], (err) => {
         if (err) {
             console.error("DB error:", err);
             return res.status(500).json({ message: "DB error" });
@@ -44,12 +44,12 @@ export const deleteCategory = (req, res) => {
 // Update Category
 export const updateCategory = (req, res) => {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name, description, image_url } = req.body;
 
     const sql =
-        "UPDATE categories SET name = ?, description = ? WHERE id = ?";
+        "UPDATE categories SET name = ?, description = ?, image_url = ? WHERE id = ?";
 
-    db.query(sql, [name, description, id], (err, result) => {
+    db.query(sql, [name, description, image_url || null, id], (err, result) => {
         if (err) {
             console.error("DB error:", err);
             return res.status(500).json({ message: "DB error" });

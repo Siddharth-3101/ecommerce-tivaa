@@ -40,6 +40,11 @@ export default async function Home() {
     // Map each category to a representative image dynamically
     // If a product in that category has an image, we use it!
     const getCategoryImage = (category) => {
+        // Prioritize category's own custom image_url if stored in the database
+        if (category.image_url && category.image_url.trim()) {
+            return category.image_url.trim();
+        }
+
         // Fallback curated graphics matching the boutique aesthetic
         const fallbacks = {
             'hairbows': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg',

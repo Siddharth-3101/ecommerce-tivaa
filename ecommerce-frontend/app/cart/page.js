@@ -111,6 +111,11 @@ export default function CartPage() {
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                         </button>
                                     </div>
+                                    {item.selected_variation && (
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', background: 'rgba(0,0,0,0.03)', padding: '4px 10px', borderRadius: '4px', display: 'inline-block', marginBottom: '12px', fontWeight: 500 }}>
+                                            Variant: {item.selected_variation}
+                                        </div>
+                                    )}
                                     <p style={{ color: "var(--text-muted)", fontSize: '0.85rem', marginBottom: '16px' }}>Quantity: <strong>{item.quantity}</strong></p>
                                     
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -172,6 +172,10 @@ export const runSetup = async () => {
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN variations TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE cart ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {
