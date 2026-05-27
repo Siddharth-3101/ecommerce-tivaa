@@ -1,6 +1,7 @@
 import AddToCartButton from "@/components/AddToCartButton";
 import WishlistButton from "@/components/WishlistButton";
 import ProductReviews from "@/components/ProductReviews";
+import ProductImageGallery from "@/components/ProductImageGallery";
 import Link from "next/link";
 
 async function fetchProduct(id) {
@@ -20,14 +21,17 @@ export default async function ProductPage({ params }) {
     const { id } = await params;
     const product = await fetchProduct(id);
 
-    if (!product)
+    if (!product) {
         return (
-            <div className="container" style={{ paddingTop: '100px', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '2rem', marginBottom: '16px' }}>Product not found</h1>
+            <div className="container" style={{ paddingTop: '140px', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '2rem', marginBottom: '16px', fontWeight: 300 }}>Product not found</h1>
                 <p style={{ color: 'var(--text-muted)' }}>The product you are looking for does not exist or has been removed.</p>
-                <Link href="/" className="btn btn-primary" style={{ marginTop: '24px' }}>Back to Home</Link>
+                <Link href="/" className="btn btn-black-solid" style={{ marginTop: '24px' }}>Back to Home</Link>
             </div>
         );
+    }
+
+    const images = product.image_url ? product.image_url.split(',') : [];
 
     return (
         <div className="animate-fade-in" style={{ padding: '120px 0 40px' }}>
@@ -49,15 +53,9 @@ export default async function ProductPage({ params }) {
                         alignItems: "start"
                     }}
                 >
-                    {/* LEFT SECTION (IMAGE) */}
-                    <div style={{ position: 'sticky', top: '120px' }}>
-                        <div className="card" style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                            <img
-                                src={product.image_url || "/placeholder.png"}
-                                alt={product.name}
-                                style={{ width: '100%', height: 'auto', borderRadius: '12px', objectFit: 'cover' }}
-                            />
-                        </div>
+                    {/* LEFT SECTION (IMAGE GALLERY) */}
+                    <div style={{ position: 'sticky', top: '140px' }}>
+                        <ProductImageGallery images={images} productName={product.name} />
                     </div>
 
                     {/* RIGHT SECTION (DETAILS) */}

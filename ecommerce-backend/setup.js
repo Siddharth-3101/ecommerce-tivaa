@@ -39,7 +39,7 @@ export const runSetup = async () => {
                 price DECIMAL(10, 2) NOT NULL,
                 stock INT DEFAULT 0,
                 category_id INT NULL,
-                image_url VARCHAR(255) NULL,
+                image_url TEXT NULL,
                 is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL

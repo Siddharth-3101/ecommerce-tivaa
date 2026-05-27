@@ -28,16 +28,29 @@ export default function Footer() {
 
                 {/* Column 2: Logo and Brand (Centered or Right Column) */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                    <Link href="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
-                        <img 
-                            src="/logo.png" 
-                            alt="Tivaa Logo" 
-                            style={{ 
-                                height: '70px', 
-                                objectFit: 'contain',
-                                filter: 'brightness(0) invert(1)' /* Inverse logo for dark footer context */
-                            }} 
-                        />
+                    <Link href="/" style={{ display: 'inline-flex', marginBottom: '16px' }}>
+                        <div style={{ 
+                            background: '#ffffff', 
+                            borderRadius: '50%', 
+                            width: '72px', 
+                            height: '72px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            border: '1.5px solid #2d3545', 
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                        }}>
+                            <img 
+                                src="/logo.png" 
+                                alt="Tivaa Logo" 
+                                style={{ 
+                                    height: '52px', 
+                                    width: '52px',
+                                    objectFit: 'contain'
+                                }} 
+                            />
+                        </div>
                     </Link>
                     <p style={{ color: '#8c98a9', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6, margin: 0 }}>
                         Exquisite boutique styles designed to elevate your aesthetic with quality and luxury.
@@ -51,7 +64,7 @@ export default function Footer() {
                 {/* Instagram Social Icon */}
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <a 
-                        href="https://instagram.com" 
+                        href="https://www.instagram.com/tivaa_elegance_jewellery?igsh=OXYzajJ6MndvcjVi" 
                         target="_blank" 
                         rel="noreferrer" 
                         style={{ 
