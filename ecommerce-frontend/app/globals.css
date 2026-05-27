@@ -34,6 +34,17 @@
     /* Clean flat or near-flat layout shadows */
     --shadow-sm: none;
     --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.03);
+
+    /* Dynamic responsive header heights and logo sizes */
+    --nav-height: 120px;
+    --logo-height: 96px;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --nav-height: 80px;
+        --logo-height: 60px;
+    }
 }
 
 * {

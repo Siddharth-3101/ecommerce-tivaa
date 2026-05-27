@@ -54,19 +54,19 @@ export default async function ProductsPage({ searchParams }) {
     const categories = await fetchCategories();
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 80px' }}>
-            <div className="container" style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '3rem', marginBottom: '16px' }}>
-                    {query ? `Search results for "${query}"` : category ? `${category} Collection` : "Our Collections"}
+        <div className="animate-fade-in" style={{ padding: '40px 0 80px' }}>
+            <div className="container" style={{ marginBottom: '24px' }}>
+                <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', marginBottom: '12px', fontWeight: 300, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-main)' }}>
+                    {query ? `Search results` : category ? `${category}` : "Our Collections"}
                 </h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
                     {query ? `${data.products?.length || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
                 </p>
 
                 {/* Categories Filter Links */}
                 {categories && categories.length > 0 && (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '32px' }}>
-                        <Link href="/products" className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
+                        <Link href="/products" className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}>
                             All Collections
                         </Link>
                         {categories.map(c => (
@@ -74,7 +74,7 @@ export default async function ProductsPage({ searchParams }) {
                                 key={c.id}
                                 href={`/products?category=${encodeURIComponent(c.name)}`}
                                 className={`btn ${category === c.name ? 'btn-primary' : 'btn-secondary'}`}
-                                style={{ padding: '8px 16px', fontSize: '0.9rem' }}
+                                style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
                             >
                                 {c.name}
                             </Link>

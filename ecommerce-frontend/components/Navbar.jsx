@@ -132,7 +132,7 @@ export default function Navbar() {
             }}
         >
             {/* Header Main Bar */}
-            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100px", padding: "0 24px" }}>
+            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 120px)", padding: "0 24px" }}>
 
                 {/* LEFT: Nav Links (Desktop Only) */}
                 <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '28px' }}>
@@ -144,7 +144,7 @@ export default function Navbar() {
                     <div
                         onMouseEnter={() => setDropdownOpen(true)}
                         onMouseLeave={() => setDropdownOpen(false)}
-                        style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '100px' }}
+                        style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)' }}
                     >
                         <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
                             Categories
@@ -152,7 +152,7 @@ export default function Navbar() {
                         </span>
 
                         {dropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100px', left: 0, width: '220px', zIndex: 1100 }}>
+                            <div style={{ position: 'absolute', top: 'var(--nav-height, 120px)', left: 0, width: '220px', zIndex: 1100 }}>
                                 <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '4px', border: '1px solid var(--border)', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
                                     <Link href="/products" className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '2px', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
                                         All Products
@@ -189,7 +189,7 @@ export default function Navbar() {
                             src="/logo.png" 
                             alt="Tivaa Elegance" 
                             style={{ 
-                                height: '84px', 
+                                height: 'var(--logo-height, 96px)', 
                                 width: 'auto', 
                                 objectFit: 'contain'
                             }} 
@@ -220,7 +220,7 @@ export default function Navbar() {
                             <div
                                 onMouseEnter={() => setProfileOpen(true)}
                                 onMouseLeave={() => setProfileOpen(false)}
-                                style={{ display: 'flex', alignItems: 'center', height: '100px', cursor: 'pointer' }}
+                                style={{ display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)', cursor: 'pointer' }}
                             >
                                 <div style={{ 
                                     width: '32px', 
@@ -239,7 +239,7 @@ export default function Navbar() {
                                 </div>
 
                                 {profileOpen && (
-                                    <div style={{ position: 'absolute', top: '95px', right: 0, width: '220px', zIndex: 1100 }}>
+                                    <div style={{ position: 'absolute', top: 'calc(var(--nav-height, 120px) - 5px)', right: 0, width: '220px', zIndex: 1100 }}>
                                         <div className="card animate-slide-down" style={{ padding: '8px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '4px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
