@@ -91,7 +91,7 @@ export default function AdminOrderDetails({ params }) {
                             {items.map((item) => (
                                 <div key={item.product_id} style={{ display: "flex", gap: "16px", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
                                     <div style={{ width: "64px", height: "64px", borderRadius: "8px", overflow: "hidden", background: "#1e2130" }}>
-                                        <img src={item.image_url || "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={item.name} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={item.name} />
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <strong style={{ fontSize: '1.1rem', display: 'block', marginBottom: '4px' }}>{item.name}</strong>  

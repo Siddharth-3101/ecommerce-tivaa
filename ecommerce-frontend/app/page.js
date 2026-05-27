@@ -52,7 +52,7 @@ export default async function Home() {
         // Search in fetched products for an image matching this category ID
         const matchedProd = products.find(p => p.category_id === category.id && p.image_url);
         if (matchedProd && matchedProd.image_url) {
-            return matchedProd.image_url;
+            return matchedProd.image_url.split(",")[0].trim();
         }
 
         return fallbacks[catNameLower] || fallbacks['general'];

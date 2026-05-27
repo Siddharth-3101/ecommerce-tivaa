@@ -65,7 +65,7 @@ export default function AdminProductsPage() {
                                 <tr key={p.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseOut={(e) => e.currentTarget.style.background = "transparent"}>
                                     <td style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: "16px" }}>
                                         <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#1e2130" }}>
-                                            <img src={p.image_url || "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={p.name} />
+                                            <img src={p.image_url ? p.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={p.name} />
                                         </div>
                                         <span style={{ fontWeight: 500 }}>{p.name}</span>
                                     </td>

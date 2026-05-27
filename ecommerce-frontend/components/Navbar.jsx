@@ -357,7 +357,7 @@ export default function Navbar() {
                                         className="dropdown-item" 
                                         style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '2px' }}
                                     >
-                                        <img src={item.image_url || "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '2px' }} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '2px' }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
                                             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Rs. {item.price}</p>

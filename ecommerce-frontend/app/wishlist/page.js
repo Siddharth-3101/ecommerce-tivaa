@@ -155,7 +155,7 @@ export default function WishlistPage() {
                                 <Link href={`/product/${p.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
                                     <div className="product-image-container">
                                         <img
-                                            src={p.image_url || "/placeholder.png"}
+                                            src={p.image_url ? p.image_url.split(",")[0].trim() : "/placeholder.png"}
                                             className="product-image"
                                             alt={p.name}
                                             loading="lazy"

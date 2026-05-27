@@ -79,7 +79,7 @@ export default function OrderDetailsPage({ params }) {
                                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
                                         <td style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                                             <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', background: '#1e2130' }}>
-                                                <img src={item.image_url || "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
                                             <span style={{ fontWeight: 500 }}>{item.name}</span>
                                         </td>

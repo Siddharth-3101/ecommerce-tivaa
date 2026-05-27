@@ -222,7 +222,7 @@ export default function CheckoutPage() {
                             {cartItems.map(item => (
                                 <div key={item.id} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                                     <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', background: '#1e2130', flexShrink: 0 }}>
-                                        <img src={item.image_url || "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <h4 style={{ fontSize: '0.95rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</h4>

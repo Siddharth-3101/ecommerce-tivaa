@@ -47,7 +47,7 @@ export default function ProductCard({ product }) {
         <Link href={`/product/${product.id}`} className="card-borderless">
             <div className="product-image-container">
                 <img
-                    src={product.image_url || "/placeholder.png"}
+                    src={product.image_url ? product.image_url.split(",")[0].trim() : "/placeholder.png"}
                     className="product-image"
                     alt={product.name}
                     loading="lazy"

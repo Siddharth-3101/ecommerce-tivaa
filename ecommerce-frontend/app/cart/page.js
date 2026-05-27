@@ -98,7 +98,7 @@ export default function CartPage() {
                             <div key={item.id} className="card" style={{ display: "flex", gap: "24px", padding: "20px", alignItems: "center", background: "#ffffff" }}>
                                 <Link href={`/product/${item.product_id || item.id}`}>
                                     <div style={{ width: "100px", height: "100px", borderRadius: "4px", overflow: "hidden", background: "#f9f9f9", border: "1px solid var(--border)", flexShrink: 0 }}>
-                                        <img src={item.image_url || "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                     </div>
                                 </Link>
 
