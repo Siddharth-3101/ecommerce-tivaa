@@ -1,6 +1,8 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function fetchProducts(categoryName, query) {
     try {
         const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
@@ -58,7 +60,7 @@ export default async function ProductsPage({ searchParams }) {
                     {query ? `Search results for "${query}"` : category ? `${category} Collection` : "Our Collections"}
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px' }}>
-                    {query ? `${data.products?.length || 0} items found matching your search.` : "Explore our hand-picked selection of premium jewelry crafted for perfection."}
+                    {query ? `${data.products?.length || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
                 </p>
 
                 {/* Categories Filter Links */}
@@ -82,7 +84,7 @@ export default async function ProductsPage({ searchParams }) {
             </div>
 
             <section className="container">
-                <div className="grid">
+                <div className="product-grid-boutique">
                     {data.products && data.products.length > 0 ? (
                         data.products.map((p) => (
                             <ProductCard key={p.id} product={p} />

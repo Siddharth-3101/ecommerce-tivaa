@@ -44,13 +44,13 @@ export default async function ProductPage({ params }) {
                 <div
                     style={{
                         display: "grid",
-                        gridTemplateColumns: "minmax(300px, 1fr) minmax(300px, 1fr)",
-                        gap: "60px",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                        gap: "40px",
                         alignItems: "start"
                     }}
                 >
                     {/* LEFT SECTION (IMAGE) */}
-                    <div style={{ position: 'sticky', top: '100px' }}>
+                    <div style={{ position: 'sticky', top: '120px' }}>
                         <div className="card" style={{ padding: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                             <img
                                 src={product.image_url || "/placeholder.png"}
@@ -71,7 +71,7 @@ export default async function ProductPage({ params }) {
                             </h1>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <span style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                                    ₹{product.price}
+                                    Rs. {product.price}
                                 </span>
                             </div>
                         </div>

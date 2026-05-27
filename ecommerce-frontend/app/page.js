@@ -2,84 +2,155 @@ import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
-async function fetchSampleProducts() {
+export const dynamic = "force-dynamic";
+
+async function fetchLandingData() {
+    const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
+    let products = [];
+    let categories = [];
+    
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
-        const res = await fetch(`${backendUrl}/api/products`, {
-            cache: 'no-store'
-        });
-
-        if (!res.ok) {
-            return { products: [] };
+        const prodRes = await fetch(`${backendUrl}/api/products`, { cache: 'no-store' });
+        if (prodRes.ok) {
+            const data = await prodRes.json();
+            products = Array.isArray(data) ? data : (data.products || []);
         }
-
-        const data = await res.json();
-        return Array.isArray(data) ? { products: data.slice(0, 4) } : { products: (data.products || []).slice(0, 4) };
     } catch (err) {
-        return { products: [] };
+        console.error("Error fetching products:", err);
     }
+
+    try {
+        const catRes = await fetch(`${backendUrl}/api/categories`, { cache: 'no-store' });
+        if (catRes.ok) {
+            categories = await catRes.json();
+        }
+    } catch (err) {
+        console.error("Error fetching categories:", err);
+    }
+
+    return { 
+        products: products.slice(0, 8), // Show latest 8 products in Newly Added
+        categories 
+    };
 }
 
 export default async function Home() {
-    const data = await fetchSampleProducts();
+    const { products, categories } = await fetchLandingData();
+
+    // Map each category to a representative image dynamically
+    // If a product in that category has an image, we use it!
+    const getCategoryImage = (category) => {
+        // Fallback curated graphics matching the boutique aesthetic
+        const fallbacks = {
+            'hairbows': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg',
+            'meenakaari bangles': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700873/tivaa-products/dr1hiyiwgdfhphf4f8cz.jpg',
+            'general': '/placeholder.png'
+        };
+        
+        const catNameLower = category.name.trim().toLowerCase();
+        
+        // Search in fetched products for an image matching this category ID
+        const matchedProd = products.find(p => p.category_id === category.id && p.image_url);
+        if (matchedProd && matchedProd.image_url) {
+            return matchedProd.image_url;
+        }
+
+        return fallbacks[catNameLower] || fallbacks['general'];
+    };
 
     return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in" style={{ background: '#ffffff', minHeight: '100vh' }}>
+            
+            {/* Redesigned Wide Hero Banner */}
             <Hero />
 
-            {/* Basic Company Details / About Section */}
-            <section className="container" style={{ padding: '80px 24px', textAlign: 'center' }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                    <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', letterSpacing: '-0.5px' }}>
-                        Welcome to Tivaa Jewellery
-                    </h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', lineHeight: 1.8, marginBottom: '32px' }}>
-                        We are passionate creators and curators of exquisite jewelry.
-                        Every piece in our collection is carefully crafted with the highest quality materials
-                        to ensure perfection in every detail. With over a decade of excellence, we specialize in timeless
-                        masterpieces that embody elegance, luxury, and sophistication.
-                    </p>
-                    <div style={{ display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <div style={{ textAlign: 'center', flex: 1, minWidth: '150px' }}>
-                            <h4 style={{ fontSize: '2rem', color: 'var(--accent)', margin: '0 0 8px' }}>10+</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Years of Excellence</p>
+            {/* SHOP BY CATEGORY SECTION */}
+            <section className="container" style={{ padding: '80px 24px 60px' }}>
+                <h2 
+                    style={{ 
+                        fontSize: '1.8rem', 
+                        fontWeight: 300, 
+                        textAlign: 'center', 
+                        marginBottom: '40px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '3px',
+                        color: 'var(--text-main)'
+                    }}
+                >
+                    Shop By Category
+                </h2>
+
+                <div 
+                    style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                        gap: '30px',
+                        justifyContent: 'center'
+                    }}
+                >
+                    {categories && categories.length > 0 ? (
+                        categories.map((cat) => (
+                            <Link 
+                                key={cat.id} 
+                                href={`/products?category=${encodeURIComponent(cat.name)}`} 
+                                className="category-item animate-fade-in"
+                            >
+                                <div className="category-image-container">
+                                    <img 
+                                        src={getCategoryImage(cat)} 
+                                        alt={cat.name} 
+                                        className="category-image"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <div className="category-title">
+                                    {cat.name} 
+                                    <span style={{ fontSize: '1.1rem', transition: 'transform 0.2s' }}>→</span>
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <div style={{ padding: '40px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            No categories available at the moment.
                         </div>
-                        <div style={{ width: '1px', background: 'var(--border)' }}></div>
-                        <div style={{ textAlign: 'center', flex: 1, minWidth: '150px' }}>
-                            <h4 style={{ fontSize: '2rem', color: 'var(--accent)', margin: '0 0 8px' }}>100%</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Pure Materials</p>
-                        </div>
-                        <div style={{ width: '1px', background: 'var(--border)' }}></div>
-                        <div style={{ textAlign: 'center', flex: 1, minWidth: '150px' }}>
-                            <h4 style={{ fontSize: '2rem', color: 'var(--accent)', margin: '0 0 8px' }}>Lifetime</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Craftsmanship Warranty</p>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </section>
 
-            {/* Sample Products Section */}
-            <section className="container" style={{ paddingBottom: '100px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
-                    <div>
-                        <h2 style={{ fontSize: '2.2rem', margin: '0 0 8px 0' }}>Featured Collections</h2>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', margin: 0 }}>Discover a glimpse of our most exquisite artifacts.</p>
-                    </div>
-                    <Link href="/products" className="btn btn-primary" style={{ padding: '12px 24px' }}>
-                        View All Collections
-                    </Link>
-                </div>
+            {/* NEWLY ADDED SECTION */}
+            <section className="container" style={{ padding: '20px 24px 100px' }}>
+                <h2 
+                    style={{ 
+                        fontSize: '1.8rem', 
+                        fontWeight: 300, 
+                        textAlign: 'center', 
+                        marginBottom: '48px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '3px',
+                        color: 'var(--text-main)'
+                    }}
+                >
+                    Newly Added
+                </h2>
 
-                <div className="grid">
-                    {data.products && data.products.length > 0 ? (
-                        data.products.map((p) => (
+                {/* Borderless Boutique Product Card Grid (Fully Responsive) */}
+                <div className="product-grid-boutique">
+                    {products && products.length > 0 ? (
+                        products.map((p) => (
                             <ProductCard key={p.id} product={p} />
                         ))
                     ) : (
-                        <div style={{ padding: '60px', background: 'var(--bg-card)', borderRadius: '16px', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)' }}>
-                            No sample products currently available.
+                        <div style={{ padding: '60px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            No newly added products available at the moment.
                         </div>
                     )}
+                </div>
+
+                {/* Centered Solid Black View All Button */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
+                    <Link href="/products" className="btn-black-solid">
+                        View all
+                    </Link>
                 </div>
             </section>
         </div>

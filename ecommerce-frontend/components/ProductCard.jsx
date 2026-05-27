@@ -44,7 +44,7 @@ export default function ProductCard({ product }) {
     };
 
     return (
-        <Link href={`/product/${product.id}`} className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none' }}>
+        <Link href={`/product/${product.id}`} className="card-borderless">
             <div className="product-image-container">
                 <img
                     src={product.image_url || "/placeholder.png"}
@@ -53,79 +53,87 @@ export default function ProductCard({ product }) {
                     loading="lazy"
                 />
                 {product.stock === 0 && (
-                    <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(239, 68, 68, 0.9)', color: '#fff', fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px', fontWeight: 700, backdropFilter: 'blur(4px)' }}>
-                        Out of Stock
+                    <div className="badge-soldout">
+                        Sold out
                     </div>
                 )}
             </div>
 
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <h3 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 600, color: 'var(--text-main)' }}>
+            {/* Content info below image */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, paddingRight: '8px' }}>
+                    <span 
+                        style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: 400, 
+                            color: '#1a1a1a', 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 1, 
+                            WebkitBoxOrient: 'vertical', 
+                            overflow: 'hidden', 
+                            marginBottom: '4px',
+                            textTransform: 'capitalize'
+                        }}
+                    >
                         {product.name}
-                    </h3>
+                    </span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1a1a1a' }}>
+                        Rs. {product.price}
+                    </span>
                 </div>
                 
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '16px', flexGrow: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {product.description || "A premium choice for exquisite taste."}
-                </p>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                        ₹{product.price}
-                    </span>
-                    
-                    {product.stock > 0 && (
-                        <button
-                            onClick={handleAddToCart}
-                            disabled={loading || added}
-                            className={`product-cart-btn ${added ? 'added' : ''}`}
-                            style={{
-                                width: '36px',
-                                height: '36px',
-                                borderRadius: '50%',
-                                background: added ? 'var(--success)' : 'var(--bg)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: added ? '#fff' : 'var(--accent)',
-                                transition: 'all 0.2s ease',
-                                border: '1px solid var(--border)',
-                                cursor: loading || added ? 'default' : 'pointer',
-                                padding: 0
-                            }}
-                        >
-                            {loading ? (
-                                <span className="cart-btn-spinner"></span>
-                            ) : added ? (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            ) : (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            )}
-                        </button>
-                    )}
-                </div>
+                {product.stock > 0 && (
+                    <button
+                        onClick={handleAddToCart}
+                        disabled={loading || added}
+                        className={`product-cart-btn ${added ? 'added' : ''}`}
+                        aria-label="Add to Cart"
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: added ? '#1a1a1a' : '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: added ? '#ffffff' : '#1a1a1a',
+                            transition: 'all 0.2s ease',
+                            border: '1.5px solid #1a1a1a',
+                            cursor: loading || added ? 'default' : 'pointer',
+                            flexShrink: 0,
+                            padding: 0
+                        }}
+                    >
+                        {loading ? (
+                            <span className="cart-btn-spinner"></span>
+                        ) : added ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        )}
+                    </button>
+                )}
             </div>
 
             <style jsx>{`
                 .cart-btn-spinner {
-                    width: 14px;
-                    height: 14px;
-                    border: 2px solid rgba(255,255,255,0.3);
+                    width: 12px;
+                    height: 12px;
+                    border: 2px solid rgba(26,26,26,0.2);
                     border-radius: 50%;
-                    border-top-color: var(--accent);
-                    animation: spin 1s linear infinite;
+                    border-top-color: #1a1a1a;
+                    animation: spin 0.8s linear infinite;
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
                 }
                 .product-cart-btn:hover {
-                    background: var(--accent) !important;
-                    color: #fff !important;
-                    transform: scale(1.05);
+                    background: #1a1a1a !important;
+                    color: #ffffff !important;
+                    transform: scale(1.06);
                 }
                 .product-cart-btn.added:hover {
-                    background: var(--success) !important;
+                    background: #1a1a1a !important;
                     transform: none;
                 }
             `}</style>

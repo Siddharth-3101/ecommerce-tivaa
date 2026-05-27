@@ -14,6 +14,7 @@ export default function Navbar() {
     const [categories, setCategories] = useState([]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
 
     const getInitials = (name) => {
         if (!name) return "";
@@ -82,6 +83,7 @@ export default function Navbar() {
         Promise.resolve().then(() => {
             setMobileMenuOpen(false);
             setDropdownOpen(false);
+            setSearchOpen(false);
             setSearchResults([]);
         });
     }, [pathname]);
@@ -109,51 +111,54 @@ export default function Navbar() {
     const handleLogout = () => {
         logout();
         setUser(null);
-        router.push("/login");
+        window.location.href = "/login";
     };
 
     if (pathname?.startsWith("/admin")) return null;
 
     return (
-        <header className="navbar" style={{ padding: scrolled ? "12px 0" : "20px 0", borderBottom: scrolled ? "1px solid var(--glass-border)" : "1px solid transparent", background: scrolled ? "var(--bg-glass)" : "transparent" }}>
-            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <header 
+            className="navbar" 
+            style={{ 
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                background: "var(--bg-glass)", 
+                borderBottom: "1px solid var(--border)",
+                boxShadow: scrolled ? "0 2px 10px rgba(0,0,0,0.02)" : "none",
+                transition: "all 0.3s ease",
+                zIndex: 1000
+            }}
+        >
+            {/* Header Main Bar */}
+            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100px", padding: "0 24px" }}>
 
-                {/* Mobile Menu Toggle */}
-                <button
-                    className="mobile-only btn"
-                    onClick={() => setMobileMenuOpen(true)}
-                    style={{ padding: '8px', background: 'transparent', border: 'none' }}
-                >
-                    <Menu size={24} />
-                </button>
+                {/* LEFT: Nav Links (Desktop Only) */}
+                <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '28px' }}>
+                    <Link href="/" style={{ fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                        Home
+                    </Link>
 
-                {/* Logo */}
-                <Link href="/" style={{ display: 'flex', alignItems: 'center' }} className="nav-logo">
-                    <img src="/logo.png" alt="Tivaa Elegance" style={{ height: '70px', width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
-                </Link>
-
-                {/* DESKTOP NAV CENTER */}
-                <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-
-                    {/* Products Dropdown */}
+                    {/* Categories Dropdown */}
                     <div
                         onMouseEnter={() => setDropdownOpen(true)}
                         onMouseLeave={() => setDropdownOpen(false)}
-                        style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '100%' }}
+                        style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '100px' }}
                     >
-                        <Link href="/products" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '1rem' }}>
-                            Collections
-                            <ChevronRight size={16} style={{ transform: dropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        </Link>
+                        <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                            Categories
+                            <ChevronDown size={14} style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                        </span>
 
                         {dropdownOpen && (
-                            <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', paddingTop: '20px', width: '220px', zIndex: 200 }}>
-                                <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', background: 'var(--bg-glass)', backdropFilter: 'blur(20px)', boxShadow: 'var(--shadow-md)' }}>
-                                    <Link href="/products" className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.95rem', fontWeight: 500, display: 'block' }}>
-                                        All Collections
+                            <div style={{ position: 'absolute', top: '100px', left: 0, width: '220px', zIndex: 1100 }}>
+                                <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '4px', border: '1px solid var(--border)', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+                                    <Link href="/products" className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '2px', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
+                                        All Products
                                     </Link>
                                     {categories.map(c => (
-                                        <Link key={c.id} href={`/products?category=${encodeURIComponent(c.name)}`} className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '8px', fontSize: '0.95rem', fontWeight: 500, display: 'block' }}>
+                                        <Link key={c.id} href={`/products?category=${encodeURIComponent(c.name)}`} className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '2px', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
                                             {c.name}
                                         </Link>
                                     ))}
@@ -162,14 +167,162 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* Live Search Bar */}
-                    <div ref={searchRef} style={{ position: "relative" }}>
+                    <Link href="/faq" style={{ fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                        Contact
+                    </Link>
+                </div>
+
+                {/* LEFT: Hamburger Menu Toggle (Mobile Only) */}
+                <div className="mobile-only" style={{ flex: 1 }}>
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}
+                    >
+                        <Menu size={24} />
+                    </button>
+                </div>
+
+                {/* CENTER: Logo (Centered on Laptop and Mobile) */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+                        <img 
+                            src="/logo.png" 
+                            alt="Tivaa Elegance" 
+                            style={{ 
+                                height: '84px', 
+                                width: 'auto', 
+                                objectFit: 'contain'
+                            }} 
+                        />
+                    </Link>
+                </div>
+
+                {/* RIGHT: Utility Icons (Laptop and Mobile) */}
+                <div style={{ flex: 1, display: "flex", gap: "20px", alignItems: "center", justifyContent: "flex-end" }}>
+                    
+                    {/* Search Icon */}
+                    <button
+                        onClick={() => setSearchOpen(!searchOpen)}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', padding: '6px' }}
+                        aria-label="Search Toggle"
+                    >
+                        {searchOpen ? <X size={20} /> : <Search size={20} />}
+                    </button>
+
+                    {/* Wishlist Link (Desktop Only) */}
+                    <Link href="/wishlist" className="desktop-only" style={{ color: 'var(--text-main)', padding: '6px' }}>
+                        <Heart size={20} />
+                    </Link>
+
+                    {/* Profile Dropdown / Login */}
+                    <div style={{ position: 'relative' }}>
+                        {user ? (
+                            <div
+                                onMouseEnter={() => setProfileOpen(true)}
+                                onMouseLeave={() => setProfileOpen(false)}
+                                style={{ display: 'flex', alignItems: 'center', height: '100px', cursor: 'pointer' }}
+                            >
+                                <div style={{ 
+                                    width: '32px', 
+                                    height: '32px', 
+                                    borderRadius: '50%', 
+                                    background: '#1a1a1a', 
+                                    color: '#ffffff', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    fontWeight: 600, 
+                                    fontSize: '0.8rem',
+                                    border: '1px solid var(--border)'
+                                }}>
+                                    {getInitials(user.name)}
+                                </div>
+
+                                {profileOpen && (
+                                    <div style={{ position: 'absolute', top: '95px', right: 0, width: '220px', zIndex: 1100 }}>
+                                        <div className="card animate-slide-down" style={{ padding: '8px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '4px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
+                                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
+                                            </div>
+                                            <Link href="/orders" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                My Orders
+                                            </Link>
+                                            <Link href="/wishlist" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                My Wishlist
+                                            </Link>
+                                            {user.role === 'admin' && (
+                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent-peach)' }}>
+                                                    Admin Panel
+                                                </Link>
+                                            )}
+                                            <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }}></div>
+                                            <button 
+                                                onClick={handleLogout} 
+                                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#ff4d4d', background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
+                                            >
+                                                Logout
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link href="/login" style={{ color: 'var(--text-main)', padding: '6px', display: 'flex', alignItems: 'center' }}>
+                                <User size={20} />
+                            </Link>
+                        )}
+                    </div>
+
+                    {/* Cart Shopping Bag */}
+                    <Link href="/cart" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--text-main)', padding: '6px' }}>
+                        <div style={{ position: 'relative' }}>
+                            <ShoppingBag size={20} />
+                            {count > 0 && (
+                                <span style={{ 
+                                    position: 'absolute',
+                                    top: '-6px',
+                                    right: '-6px',
+                                    background: '#1a1a1a', 
+                                    color: '#ffffff', 
+                                    minWidth: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%', 
+                                    fontSize: '0.65rem', 
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '2px'
+                                }}>
+                                    {count}
+                                </span>
+                            )}
+                        </div>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Slide Down Search Panel */}
+            {searchOpen && (
+                <div 
+                    ref={searchRef} 
+                    style={{ 
+                        background: '#ffffff', 
+                        borderBottom: '1px solid var(--border)',
+                        padding: '16px 24px',
+                        animation: 'slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        position: 'relative',
+                        zIndex: 999
+                    }}
+                >
+                    <div className="container" style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
                                 if (searchQuery.trim()) {
                                     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
-                                    setSearchResults([]);
+                                    setSearchOpen(false);
                                 }
                             }}
                             style={{ display: "flex", alignItems: "center", position: "relative" }}
@@ -179,20 +332,35 @@ export default function Navbar() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for perfection..."
                                 className="input-field"
-                                style={{ width: "300px", padding: "10px 16px 10px 40px", borderRadius: "20px", background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", height: '42px' }}
+                                autoFocus
+                                style={{ 
+                                    width: "100%", 
+                                    padding: "12px 16px 12px 44px", 
+                                    borderRadius: "0px", 
+                                    border: "1px solid #1a1a1a", 
+                                    height: '46px',
+                                    fontSize: '0.95rem'
+                                }}
                             />
-                            <Search size={18} style={{ position: 'absolute', left: '14px', color: 'var(--text-muted)' }} />
-                            {isSearching && <span className="loader" style={{ position: 'absolute', right: '14px' }}></span>}
+                            <Search size={20} style={{ position: 'absolute', left: '16px', color: '#1a1a1a' }} />
+                            {isSearching && <span className="search-loader"></span>}
                         </form>
 
+                        {/* Live Search dropdown overlay */}
                         {searchResults.length > 0 && (
-                            <div className="card" style={{ position: 'absolute', top: 'calc(100% + 10px)', left: 0, width: '100%', padding: '8px', zIndex: 200, background: 'var(--bg-glass)', backdropFilter: 'blur(20px)' }}>
+                            <div className="card" style={{ position: 'absolute', top: '52px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: '4px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
                                 {searchResults.map(item => (
-                                    <Link key={item.id} href={`/product/${item.id}`} onClick={() => setSearchResults([])} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}>
-                                        <img src={item.image_url || "/placeholder.png"} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
+                                    <Link 
+                                        key={item.id} 
+                                        href={`/product/${item.id}`} 
+                                        onClick={() => { setSearchResults([]); setSearchOpen(false); }} 
+                                        className="dropdown-item" 
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '2px' }}
+                                    >
+                                        <img src={item.image_url || "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '2px' }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
+                                            <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
+                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Rs. {item.price}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -200,238 +368,91 @@ export default function Navbar() {
                         )}
                     </div>
                 </div>
+            )}
 
-                {/* Right Area */}
-                <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                    {/* User Actions */}
-                    <div className="desktop-only" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                        {user ? (
-                            <>
-                                <Link href="/wishlist" style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}>
-                                    <Heart size={20} />
-                                </Link>
-
-                                <div
-                                    onMouseEnter={() => setProfileOpen(true)}
-                                    onMouseLeave={() => setProfileOpen(false)}
-                                    style={{ position: 'relative', display: 'flex', alignItems: 'center', height: '100%', padding: '4px 0' }}
-                                >
-                                    <button 
-                                        style={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            gap: '8px', 
-                                            background: 'transparent', 
-                                            border: 'none', 
-                                            cursor: 'pointer',
-                                            padding: '4px 8px',
-                                            borderRadius: '24px',
-                                            transition: 'background 0.2s'
-                                        }}
-                                        className="profile-btn-hover"
-                                    >
-                                        <div style={{ 
-                                            width: '36px', 
-                                            height: '36px', 
-                                            borderRadius: '50%', 
-                                            background: 'linear-gradient(135deg, var(--accent) 0%, #c98e57 100%)', 
-                                            color: '#fff', 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'center', 
-                                            fontWeight: 700, 
-                                            fontSize: '0.9rem',
-                                            boxShadow: '0 4px 10px rgba(229,147,116,0.15)',
-                                            border: '2px solid rgba(255,255,255,0.1)'
-                                        }}>
-                                            {getInitials(user.name)}
-                                        </div>
-                                        <ChevronDown size={14} style={{ color: 'var(--text-muted)', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                                    </button>
-
-                                    {profileOpen && (
-                                        <div style={{ position: 'absolute', top: '100%', right: 0, paddingTop: '12px', width: '250px', zIndex: 250 }}>
-                                            <div className="card animate-slide-down" style={{ padding: '16px', background: 'var(--bg-glass)', backdropFilter: 'blur(20px)', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingBottom: '8px', borderBottom: '1px solid var(--glass-border)' }}>
-                                                    <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>{user.name}</span>
-                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{user.email || 'Premium Member'}</span>
-                                                </div>
-
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                    <Link 
-                                                        href="/orders" 
-                                                        className="dropdown-item" 
-                                                        style={{ 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
-                                                            gap: '10px', 
-                                                            padding: '8px 12px', 
-                                                            borderRadius: '8px', 
-                                                            fontSize: '0.9rem', 
-                                                            fontWeight: 500,
-                                                            color: 'var(--text-main)',
-                                                            transition: 'background 0.2s, color 0.2s'
-                                                        }}
-                                                    >
-                                                        <ShoppingBag size={16} style={{ color: 'var(--accent)' }} />
-                                                        My Orders
-                                                    </Link>
-                                                    
-                                                    <Link 
-                                                        href="/wishlist" 
-                                                        className="dropdown-item" 
-                                                        style={{ 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
-                                                            gap: '10px', 
-                                                            padding: '8px 12px', 
-                                                            borderRadius: '8px', 
-                                                            fontSize: '0.9rem', 
-                                                            fontWeight: 500,
-                                                            color: 'var(--text-main)',
-                                                            transition: 'background 0.2s, color 0.2s'
-                                                        }}
-                                                    >
-                                                        <Heart size={16} style={{ color: 'var(--accent)' }} />
-                                                        My Wishlist
-                                                    </Link>
-
-                                                    {user.role === 'admin' && (
-                                                        <Link 
-                                                            href="/admin" 
-                                                            className="dropdown-item" 
-                                                            style={{ 
-                                                                display: 'flex', 
-                                                                alignItems: 'center', 
-                                                                gap: '10px', 
-                                                                padding: '8px 12px', 
-                                                                borderRadius: '8px', 
-                                                                fontSize: '0.9rem', 
-                                                                fontWeight: 500,
-                                                                color: 'var(--text-main)',
-                                                                transition: 'background 0.2s, color 0.2s'
-                                                            }}
-                                                        >
-                                                            <Shield size={16} style={{ color: 'var(--accent-teal)' }} />
-                                                            Admin Panel
-                                                        </Link>
-                                                    )}
-                                                </div>
-
-                                                <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
-
-                                                <button 
-                                                    onClick={handleLogout} 
-                                                    className="dropdown-item" 
-                                                    style={{ 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
-                                                        gap: '10px', 
-                                                        padding: '8px 12px', 
-                                                        borderRadius: '8px', 
-                                                        fontSize: '0.9rem', 
-                                                        fontWeight: 500, 
-                                                        color: '#ff6b6b', 
-                                                        background: 'transparent',
-                                                        border: 'none',
-                                                        cursor: 'pointer',
-                                                        textAlign: 'left',
-                                                        width: '100%',
-                                                        transition: 'background 0.2s, color 0.2s'
-                                                    }}
-                                                >
-                                                    <LogOut size={16} />
-                                                    Logout
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <Link href="/login" className="btn btn-secondary" style={{ padding: '8px 16px' }}>Sign in</Link>
-                                <Link href="/register" className="btn btn-primary" style={{ padding: '8px 16px' }}>Create Account</Link>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Mobile Only Wishlist (if logged in) */}
-                    <Link href="/wishlist" className="mobile-only" style={{ color: 'var(--text-main)' }}>
-                        {user && <Heart size={20} />}
-                    </Link>
-
-                    {/* Cart */}
-                    <Link href="/cart" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
-                        <ShoppingBag size={20} />
-                        <span style={{ background: 'var(--accent)', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700 }}>
-                            {count}
-                        </span>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Mobile Drawer */}
+            {/* Mobile Sidebar Navigation Drawer */}
             {mobileMenuOpen && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex' }}>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex' }}>
+                    {/* Drawer Backdrop */}
                     <div
-                        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}
+                        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }}
                         onClick={() => setMobileMenuOpen(false)}
                     />
-                    <div className="card" style={{ position: 'relative', width: '300px', height: '100%', background: 'var(--bg)', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', animation: 'slideRight 0.3s ease' }}>
+                    
+                    {/* Drawer Content */}
+                    <div className="card animate-slide-right" style={{ position: 'relative', width: '300px', height: '100%', background: '#ffffff', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <img src="/logo.png" style={{ height: '50px', mixBlendMode: 'multiply' }} />
-                            <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer' }}><X size={24} /></button>
+                            <img src="/logo.png" style={{ height: '48px', objectFit: 'contain' }} alt="Tivaa Logo" />
+                            <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>
                         </div>
 
+                        {/* Search in Drawer */}
                         <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); }}>
-                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%' }} />
+                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: '0px', borderColor: 'var(--border)' }} />
                         </form>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
-                            <Link href="/products" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>All Collections</Link>
+                        {/* Navigation links inside Mobile Drawer */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflowY: 'auto' }}>
+                            <Link href="/" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Home</Link>
+                            <Link href="/products" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>All Products</Link>
+                            
                             {categories.map(c => (
-                                <Link key={c.id} href={`/products?category=${c.name}`} className="btn" style={{ justifyContent: 'flex-start', background: 'transparent' }}>{c.name}</Link>
+                                <Link 
+                                    key={c.id} 
+                                    href={`/products?category=${c.name}`} 
+                                    className="btn" 
+                                    style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '8px 12px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }} 
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    {c.name}
+                                </Link>
                             ))}
+                            
+                            <Link href="/faq" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Contact</Link>
                         </div>
 
+                        {/* User Account / Profile Section inside Mobile Drawer */}
                         {user ? (
-                            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', background: '#fafafa' }}>
                                     <div style={{ 
-                                        width: '40px', 
-                                        height: '40px', 
+                                        width: '36px', 
+                                        height: '36px', 
                                         borderRadius: '50%', 
-                                        background: 'linear-gradient(135deg, var(--accent) 0%, #c98e57 100%)', 
-                                        color: '#fff', 
+                                        background: '#1a1a1a', 
+                                        color: '#ffffff', 
                                         display: 'flex', 
                                         alignItems: 'center', 
                                         justifyContent: 'center', 
-                                        fontWeight: 700, 
-                                        fontSize: '1rem',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        fontWeight: 600, 
+                                        fontSize: '0.8rem'
                                     }}>
                                         {getInitials(user.name)}
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-                                        <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</span>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email || 'Premium Member'}</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', minWidth: 0 }}>
+                                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</span>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</span>
                                     </div>
                                 </div>
-                                <Link href="/orders" className="btn btn-secondary" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}>
-                                    <ShoppingBag size={18} /> My Orders
+                                <Link href="/orders" className="btn btn-secondary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
+                                    My Orders
                                 </Link>
-                                <Link href="/wishlist" className="btn" style={{ textAlign: 'center', background: 'transparent', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}>
-                                    <Heart size={18} /> My Wishlist
+                                <Link href="/wishlist" className="btn btn-secondary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
+                                    My Wishlist
                                 </Link>
-                                {user.role === 'admin' && <Link href="/admin" className="btn btn-primary" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={() => setMobileMenuOpen(false)}><Shield size={18} /> Dashboard</Link>}
-                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><LogOut size={18} /> Logout</button>
+                                {user.role === 'admin' && (
+                                    <Link href="/admin" className="btn btn-primary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
+                                        Admin Panel
+                                    </Link>
+                                )}
+                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px', background: '#ffebeb', color: '#ff4d4d', border: 'none', cursor: 'pointer' }}>
+                                    Logout
+                                </button>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <Link href="/login" className="btn btn-secondary">Sign In</Link>
-                                <Link href="/register" className="btn btn-primary">Create Account</Link>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                                <Link href="/login" className="btn btn-black-solid" style={{ textAlign: 'center', padding: '12px', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                                <Link href="/register" className="btn btn-secondary" style={{ textAlign: 'center', padding: '12px', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => setMobileMenuOpen(false)}>Create Account</Link>
                             </div>
                         )}
                     </div>
@@ -439,23 +460,35 @@ export default function Navbar() {
             )}
 
             <style jsx global>{`
-                .loader { width: 14px; height: 14px; border: 2px solid var(--text-muted); border-bottom-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+                .search-loader { 
+                    position: absolute; 
+                    right: 16px; 
+                    width: 16px; 
+                    height: 16px; 
+                    border: 2px solid #1a1a1a; 
+                    border-bottom-color: transparent; 
+                    border-radius: 50%; 
+                    animation: spin 0.8s linear infinite; 
+                }
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 @keyframes slideRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-                
-                .dropdown-item:hover {
-                    background: rgba(229, 147, 116, 0.08) !important;
-                    color: var(--accent) !important;
-                }
-                .profile-btn-hover:hover {
-                    background: rgba(255, 255, 255, 0.04) !important;
+                .animate-slide-right {
+                    animation: slideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
                 @keyframes slideDown {
-                    from { opacity: 0; transform: translateY(-10px); }
+                    from { opacity: 0; transform: translateY(-12px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
                 .animate-slide-down {
                     animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                
+                .dropdown-item {
+                    transition: all 0.2s ease;
+                }
+                .dropdown-item:hover {
+                    background: #f8f8f8 !important;
+                    color: #1a1a1a !important;
                 }
 
                 @media (min-width: 900px) {
@@ -463,7 +496,6 @@ export default function Navbar() {
                 }
                 @media (max-width: 899px) {
                     .desktop-only { display: none !important; }
-                    .nav-logo { flex: 1; justify-content: center; }
                 }
             `}</style>
         </header>

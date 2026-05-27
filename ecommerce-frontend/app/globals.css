@@ -1,39 +1,39 @@
 :root {
-    /* Luxurious pearl white for a jewelry store feel */
-    --bg: #fffdfa;
+    /* Minimalist boutique white background */
+    --bg: #ffffff;
     --bg-card: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.85);
+    --bg-glass: rgba(255, 255, 255, 0.98);
 
-    /* Rich charcoal for crisp, elegant text */
-    --text-main: #362e2a;
-    --text-muted: #8b8078;
+    /* Crisp black for elegant high-end text */
+    --text-main: #1a1a1a;
+    --text-muted: #7a7a7a;
 
-    /* Colors extracted from the Tivaa feather */
+    /* Elegant pastel feather highlight colors preserved for accents if needed */
     --accent-teal: #82b9c2;
     --accent-mint: #b0d0a5;
     --accent-yellow: #dca353;
-    /* Darker metallic gold */
     --accent-peach: #e59374;
-    /* Richer Rose Gold/Peach */
     --accent-pink: #d38b9e;
     --accent-purple: #868bc3;
 
-    /* Gradients: Transitioning to Rose Gold and Gold for jewelry feel */
-    --gradient-logo: linear-gradient(135deg, var(--accent-yellow) 0%, var(--accent-peach) 100%);
-    --gradient-logo-hover: linear-gradient(135deg, var(--accent-peach) 0%, var(--accent-yellow) 100%);
+    /* Elegant, premium boutique dark slate/black gradients */
+    --gradient-logo: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+    --gradient-logo-hover: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
 
-    --accent: var(--accent-peach);
-    --accent-hover: #cc7858;
-    --accent-glow: rgba(229, 147, 116, 0.25);
+    --accent: #1a1a1a;
+    --accent-hover: #404040;
+    --accent-glow: rgba(0, 0, 0, 0.05);
 
-    --success: #75a363;
+    --success: #1a1a1a; /* Clean solid checkmark */
     --danger: #b3566f;
 
-    /* Soft warm borders to match the pearl tone */
-    --border: #f2efe9;
-    --glass-border: rgba(229, 147, 116, 0.15);
-    --shadow-sm: 0 4px 12px rgba(54, 46, 42, 0.04);
-    --shadow-md: 0 12px 30px rgba(54, 46, 42, 0.08);
+    /* Subtle thin light borders to match the boutique aesthetic */
+    --border: #e8e8e8;
+    --glass-border: rgba(0, 0, 0, 0.06);
+    
+    /* Clean flat or near-flat layout shadows */
+    --shadow-sm: none;
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
 * {
@@ -307,4 +307,215 @@ a:hover {
 
 .card:hover .product-image {
     transform: scale(1.05);
+}
+
+/* Boutique Custom Styling */
+.announcement-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border);
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-main);
+    width: 100%;
+}
+
+.card-borderless {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card-borderless .product-image-container {
+    width: 100%;
+    aspect-ratio: 4/5;
+    height: auto;
+    overflow: hidden;
+    position: relative;
+    background: #fdfdfd;
+    border-radius: 4px;
+}
+
+.card-borderless .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.card-borderless:hover .product-image {
+    transform: scale(1.03);
+}
+
+.badge-soldout {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-black-solid {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid #1a1a1a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 14px 36px;
+    border-radius: 0px; /* Rectangular as shown in screenshot */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-black-solid:hover {
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+.btn-outline-white {
+    background-color: transparent;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 12px 28px;
+    border-radius: 0px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-white:hover {
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+/* Category grid specific styling */
+.category-item {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.category-image-container {
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    position: relative;
+    background-color: #fafafa;
+    border-radius: 4px;
+}
+
+.category-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.category-item:hover .category-image {
+    transform: scale(1.03);
+}
+
+.category-title {
+    margin-top: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.category-title:hover {
+    color: var(--accent-peach);
+}
+
+/* Global Boutique Responsive Product Grid */
+.product-grid-boutique {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px 24px;
+}
+
+@media (max-width: 1024px) {
+    .product-grid-boutique {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid-boutique {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px 16px;
+    }
+}
+
+/* Global Hero Boutique responsive heights */
+.hero-boutique {
+    height: 60vh;
+    min-height: 480px;
+}
+
+@media (max-width: 768px) {
+    .hero-boutique {
+        height: 45vh;
+        min-height: 320px;
+    }
+}
+
+/* Global Footer links and social icons boutique states */
+.footer-link:hover {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+.social-btn:hover {
+    color: #ffffff !important;
+    background: #1a1a1a !important;
+    transform: translateY(-2px);
+    border-color: #ffffff !important;
+}
+
+/* Global black outline button class for boutique elements */
+.btn-outline-black {
+    background-color: transparent;
+    color: #1a1a1a;
+    border: 1.5px solid #1a1a1a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 12px 28px;
+    border-radius: 0px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-outline-black:hover {
+    background-color: #1a1a1a;
+    color: #ffffff;
 }
