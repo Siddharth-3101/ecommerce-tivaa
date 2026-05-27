@@ -15,12 +15,18 @@ export default function AdminQueriesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState("pending"); // "pending" or "replied"
+    const [page, setPage] = useState(1);
+    const limit = 8;
     
     // Modal & Reply State
     const [selectedQuery, setSelectedQuery] = useState(null);
     const [replyText, setReplyText] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [successMsg, setSuccessMsg] = useState("");
+
+    useEffect(() => {
+        setPage(1);
+    }, [activeTab]);
 
     const currentUser = getUser();
 
@@ -89,6 +95,11 @@ export default function AdminQueriesPage() {
     };
 
     const filteredQueries = queries.filter(q => q.status === activeTab);
+    const total = filteredQueries.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const offset = (page - 1) * limit;
+    const paginatedQueries = filteredQueries.slice(offset, offset + limit);
+
     const pendingCount = queries.filter(q => q.status === "pending").length;
     const repliedCount = queries.filter(q => q.status === "replied").length;
 
@@ -204,7 +215,7 @@ export default function AdminQueriesPage() {
             </div>
 
             {/* List Queries */}
-            {filteredQueries.length === 0 ? (
+            {paginatedQueries.length === 0 ? (
                 <div style={{ padding: '60px 24px', background: 'var(--bg-glass)', border: '1px dashed var(--border)', borderRadius: '16px', textAlign: 'center' }}>
                     <MessageSquare size={36} style={{ color: 'var(--text-muted)', marginBottom: '16px' }} />
                     <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>No queries found</h3>
@@ -213,80 +224,134 @@ export default function AdminQueriesPage() {
                     </p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {filteredQueries.map(q => (
-                        <div 
-                            key={q.id} 
-                            className="card animate-fade-in" 
-                            style={{ 
-                                padding: '24px', 
-                                background: 'var(--bg-glass)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: '16px',
-                                boxShadow: 'var(--shadow-sm)'
-                            }}
-                        >
-                            {/* Card Header metadata */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '16px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '14px' }}>
-                                <div>
-                                    <h3 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 700, color: 'var(--text-main)' }}>{q.subject}</h3>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '6px', flexWrap: 'wrap', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <User size={14} style={{ color: 'var(--accent)' }} /> {q.name}
-                                        </span>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Mail size={14} style={{ color: 'var(--accent-teal)' }} /> {q.email}
-                                        </span>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Calendar size={14} /> {new Date(q.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div style={{ 
-                                    padding: '4px 12px', 
-                                    borderRadius: '12px', 
-                                    fontSize: '0.75rem', 
-                                    fontWeight: 700, 
-                                    textTransform: 'uppercase',
-                                    border: q.status === 'replied' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(220, 163, 83, 0.2)',
-                                    color: q.status === 'replied' ? 'var(--success)' : 'var(--accent-yellow)',
-                                    background: q.status === 'replied' ? 'rgba(16, 185, 129, 0.04)' : 'rgba(220, 163, 83, 0.04)'
-                                }}>
-                                    {q.status}
-                                </div>
-                            </div>
-
-                            {/* Question body */}
-                            <div style={{ marginBottom: '16px' }}>
-                                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                                    {q.message}
-                                </p>
-                            </div>
-
-                            {/* Reply block (if exists) */}
-                            {q.status === 'replied' ? (
-                                <div style={{ display: 'flex', gap: '10px', background: 'rgba(229,147,116,0.03)', padding: '16px', borderRadius: '12px', borderLeft: '3px solid var(--accent)' }}>
-                                    <CornerDownRight size={18} style={{ color: 'var(--accent)', marginTop: '2px', flexShrink: 0 }} />
+                <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {paginatedQueries.map(q => (
+                            <div 
+                                key={q.id} 
+                                className="card animate-fade-in" 
+                                style={{ 
+                                    padding: '24px', 
+                                    background: 'var(--bg-glass)', 
+                                    border: '1px solid var(--border)', 
+                                    borderRadius: '16px',
+                                    boxShadow: 'var(--shadow-sm)'
+                                }}
+                            >
+                                {/* Card Header metadata */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '16px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '14px' }}>
                                     <div>
-                                        <strong style={{ display: 'block', fontSize: '0.85rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Admin Response</strong>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                                            {q.reply}
-                                        </p>
+                                        <h3 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 700, color: 'var(--text-main)' }}>{q.subject}</h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '6px', flexWrap: 'wrap', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <User size={14} style={{ color: 'var(--accent)' }} /> {q.name}
+                                            </span>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Mail size={14} style={{ color: 'var(--accent-teal)' }} /> {q.email}
+                                            </span>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Calendar size={14} /> {new Date(q.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ 
+                                        padding: '4px 12px', 
+                                        borderRadius: '12px', 
+                                        fontSize: '0.75rem', 
+                                        fontWeight: 700, 
+                                        textTransform: 'uppercase',
+                                        border: q.status === 'replied' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(220, 163, 83, 0.2)',
+                                        color: q.status === 'replied' ? 'var(--success)' : 'var(--accent-yellow)',
+                                        background: q.status === 'replied' ? 'rgba(16, 185, 129, 0.04)' : 'rgba(220, 163, 83, 0.04)'
+                                    }}>
+                                        {q.status}
                                     </div>
                                 </div>
-                            ) : (
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-                                    <button 
-                                        onClick={() => handleOpenReplyModal(q)} 
-                                        className="btn btn-primary" 
-                                        style={{ padding: '8px 18px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                    >
-                                        <Send size={14} /> Send Response
-                                    </button>
+
+                                {/* Question body */}
+                                <div style={{ marginBottom: '16px' }}>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                                        {q.message}
+                                    </p>
                                 </div>
+
+                                {/* Reply block (if exists) */}
+                                {q.status === 'replied' ? (
+                                    <div style={{ display: 'flex', gap: '10px', background: 'rgba(229,147,116,0.03)', padding: '16px', borderRadius: '12px', borderLeft: '3px solid var(--accent)' }}>
+                                        <CornerDownRight size={18} style={{ color: 'var(--accent)', marginTop: '2px', flexShrink: 0 }} />
+                                        <div>
+                                            <strong style={{ display: 'block', fontSize: '0.85rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Admin Response</strong>
+                                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                                                {q.reply}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                                        <button 
+                                            onClick={() => handleOpenReplyModal(q)} 
+                                            className="btn btn-primary" 
+                                            style={{ padding: '8px 18px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                        >
+                                            <Send size={14} /> Send Response
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Sleek circular boutique pagination selector */}
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '32px' }}>
+                            {page > 1 && (
+                                <button
+                                    onClick={() => setPage(page - 1)}
+                                    className="btn btn-secondary"
+                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                >
+                                    Prev
+                                </button>
+                            )}
+                            
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                                const isActive = p === page;
+                                return (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPage(p)}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            fontSize: '0.9rem',
+                                            fontWeight: isActive ? '600' : '400',
+                                            border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
+                                            background: isActive ? 'var(--text-main)' : 'transparent',
+                                            color: isActive ? '#ffffff' : 'var(--text-main)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        {p}
+                                    </button>
+                                );
+                            })}
+                            
+                            {page < totalPages && (
+                                <button
+                                    onClick={() => setPage(page + 1)}
+                                    className="btn btn-secondary"
+                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                >
+                                    Next
+                                </button>
                             )}
                         </div>
-                    ))}
+                    )}
                 </div>
             )}
 
