@@ -80,14 +80,7 @@ export default async function Home() {
                     Shop By Category
                 </h2>
 
-                <div 
-                    style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-                        gap: '30px',
-                        justifyContent: 'center'
-                    }}
-                >
+                <div className="category-container">
                     {categories && categories.length > 0 ? (
                         categories.map((cat) => (
                             <Link 
