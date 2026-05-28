@@ -8,7 +8,7 @@ export default function Hero() {
                 style={{ 
                     display: 'block', 
                     width: '100%', 
-                    height: '100%',
+                    height: 'auto',
                     cursor: 'pointer',
                     outline: 'none'
                 }}

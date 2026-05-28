@@ -631,37 +631,32 @@ a:hover {
 .hero-adaptive-container {
     position: relative;
     width: 100%;
+    max-width: 1600px; /* Safety cap for ultra-wide screens */
+    margin: 0 auto;
     background-color: transparent;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
     overflow: hidden;
     z-index: 1;
     padding: 0;
-    height: 55vh; /* Occupy exactly 55% of the screen height */
-    max-height: 500px; /* Bounded ceiling to prevent flooding on massive desktop screens */
-    min-height: 380px; /* Bounded floor to prevent being too small on short viewports */
+    height: auto; /* Natural height matching the 1024x420 widescreen ratio */
 }
 
 .hero-adaptive-img {
     width: 100%;
-    height: 100%;
+    height: auto; /* Scale fluidly based on width */
     display: block;
-    object-fit: cover;
-    object-position: center;
+    object-fit: contain; /* Maintain 100% full visibility of slogans, jewelry, and buttons */
     image-rendering: -webkit-optimize-contrast;
     transform: translate3d(0, 0, 0);
 }
 
 @media (max-width: 768px) {
     .hero-adaptive-container {
-        height: auto; /* Allow natural aspect ratio scale on mobile/tablets */
-        max-height: none;
-        min-height: none;
+        height: auto;
     }
     
     .hero-adaptive-img {
         height: auto;
-        object-fit: contain; /* Full aspect contain on hand-helds */
+        object-fit: contain;
     }
 }
