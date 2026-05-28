@@ -3,40 +3,45 @@ import Link from "next/link";
 export default function Hero() {
     return (
         <section 
-            className="hero-boutique"
             style={{
                 position: 'relative',
                 width: '100%',
-                backgroundColor: '#f9f9f9',
-                borderBottom: '1px solid var(--border)',
+                backgroundColor: '#FAF8FD',
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                textAlign: 'center',
+                alignItems: 'center',
                 overflow: 'hidden',
-                zIndex: 1
+                zIndex: 1,
+                padding: 0,
+                borderBottom: '1px solid var(--border)'
             }}
         >
-            <div style={{ padding: '0 24px', zIndex: 2 }}>
-                <h1 
+            <Link 
+                href="/products" 
+                style={{ 
+                    display: 'block', 
+                    width: '100%', 
+                    maxWidth: '1280px', // Prevents over-stretching beyond crisp resolution bounds
+                    margin: '0 auto',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    outline: 'none'
+                }}
+                className="hero-banner-link"
+            >
+                <img 
+                    src="/hero_banner.jpg" 
+                    alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
                     style={{ 
-                        fontSize: 'clamp(2rem, 5.5vw, 4.2rem)', 
-                        fontWeight: 300, 
-                        color: '#1a1a1a', 
-                        marginBottom: '24px',
-                        letterSpacing: '2px',
-                        lineHeight: 1.2
-                    }}
-                >
-                    Browse our latest products
-                </h1>
-                
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Link href="/products" className="btn-outline-black">
-                        Shop all
-                    </Link>
-                </div>
-            </div>
+                        width: '100%', 
+                        height: 'auto', 
+                        display: 'block',
+                        objectFit: 'contain',
+                        imageRendering: '-webkit-optimize-contrast', // High-density screen sharpening
+                        transform: 'translateZ(0)', // Force hardware acceleration
+                    }} 
+                />
+            </Link>
         </section>
     );
 }
