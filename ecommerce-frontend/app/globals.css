@@ -626,3 +626,42 @@ a:hover {
 .nav-link-premium.active::after {
     transform: scaleX(1);
 }
+
+/* Premium Viewport-Adaptive Bounded Full-Bleed Hero Banner */
+.hero-adaptive-container {
+    position: relative;
+    width: 100%;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    z-index: 1;
+    padding: 0;
+    height: 55vh; /* Occupy exactly 55% of the screen height */
+    max-height: 500px; /* Bounded ceiling to prevent flooding on massive desktop screens */
+    min-height: 380px; /* Bounded floor to prevent being too small on short viewports */
+}
+
+.hero-adaptive-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    image-rendering: -webkit-optimize-contrast;
+    transform: translate3d(0, 0, 0);
+}
+
+@media (max-width: 768px) {
+    .hero-adaptive-container {
+        height: auto; /* Allow natural aspect ratio scale on mobile/tablets */
+        max-height: none;
+        min-height: none;
+    }
+    
+    .hero-adaptive-img {
+        height: auto;
+        object-fit: contain; /* Full aspect contain on hand-helds */
+    }
+}

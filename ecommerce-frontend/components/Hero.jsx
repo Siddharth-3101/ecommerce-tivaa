@@ -2,24 +2,13 @@ import Link from "next/link";
 
 export default function Hero() {
     return (
-        <section 
-            style={{
-                position: 'relative',
-                width: '100%',
-                backgroundColor: 'transparent',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden',
-                zIndex: 1,
-                padding: 0, // Cover the page edge-to-edge flush with sides
-            }}
-        >
+        <section className="hero-adaptive-container">
             <Link 
                 href="/products" 
                 style={{ 
                     display: 'block', 
                     width: '100%', 
+                    height: '100%',
                     cursor: 'pointer',
                     outline: 'none'
                 }}
@@ -28,14 +17,7 @@ export default function Hero() {
                 <img 
                     src="/hero_banner.jpg" 
                     alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
-                    style={{ 
-                        width: '100%', 
-                        height: 'auto', 
-                        display: 'block',
-                        objectFit: 'contain',
-                        imageRendering: '-webkit-optimize-contrast', // Keep graphics and gold script razor-sharp
-                        transform: 'translate3d(0, 0, 0)', // Force GPU rendering to prevent blurring
-                    }} 
+                    className="hero-adaptive-img"
                 />
             </Link>
         </section>
