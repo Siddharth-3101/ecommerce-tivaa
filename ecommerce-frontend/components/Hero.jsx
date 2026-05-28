@@ -15,7 +15,7 @@ export default function Hero() {
                 className="hero-banner-link"
             >
                 <img 
-                    src="/hero_banner.jpg" 
+                    src="/hero_banner.png" 
                     alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
                     className="hero-adaptive-img"
                 />
