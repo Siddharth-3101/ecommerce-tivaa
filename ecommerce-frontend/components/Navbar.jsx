@@ -169,17 +169,7 @@ export default function Navbar() {
                 <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '28px' }}>
                     <Link 
                         href="/" 
-                        style={{ 
-                            fontWeight: 600, 
-                            fontSize: '0.85rem', 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '1.5px', 
-                            color: 'var(--text-main)',
-                            border: '1.5px solid ' + (pathname === '/' ? 'var(--text-main)' : 'transparent'),
-                            padding: '6px 14px',
-                            borderRadius: '2px',
-                            transition: 'all 0.2s ease'
-                        }}
+                        className={`nav-link-premium ${pathname === '/' ? 'active' : ''}`}
                     >
                         Home
                     </Link>
@@ -190,10 +180,14 @@ export default function Navbar() {
                         onMouseLeave={() => setDropdownOpen(false)}
                         style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)' }}
                     >
-                        <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                        <Link 
+                            href="/products" 
+                            className={`nav-link-premium ${pathname.startsWith('/products') ? 'active' : ''}`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
                             Categories
                             <ChevronDown size={14} style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        </span>
+                        </Link>
 
                         {dropdownOpen && (
                             <div style={{ position: 'absolute', top: 'var(--nav-height, 120px)', left: 0, width: '220px', zIndex: 1100 }}>
@@ -211,7 +205,10 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    <Link href="/faq" style={{ fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                    <Link 
+                        href="/faq" 
+                        className={`nav-link-premium ${pathname === '/faq' ? 'active' : ''}`}
+                    >
                         Contact
                     </Link>
                 </div>

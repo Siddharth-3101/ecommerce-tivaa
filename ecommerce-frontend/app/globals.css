@@ -579,3 +579,36 @@ a:hover {
     opacity: 0.95;
     transform: scale(1.002);
 }
+
+/* Premium Navigation Link Underline styling */
+.nav-link-premium {
+    position: relative;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-main) !important;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-link-premium::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background-color: var(--text-main);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link-premium:hover::after,
+.nav-link-premium.active::after {
+    transform: scaleX(1);
+}
