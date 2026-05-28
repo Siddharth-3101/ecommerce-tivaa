@@ -21,7 +21,6 @@ export default function Hero() {
                 style={{ 
                     display: 'block', 
                     width: '100%', 
-                    maxWidth: '1280px', // Prevents over-stretching beyond crisp resolution bounds
                     margin: '0 auto',
                     cursor: 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
