@@ -22,10 +22,8 @@
     --gradient-logo-hover: linear-gradient(135deg, #B96EFF 0%, #7A38C2 100%);
     --gradient-bg: linear-gradient(135deg, #FAF8FD 0%, #F5ECFC 50%, #FAF8FD 100%);
     
-    /* Beautiful satin wave navbar background */
-    --gradient-navbar: radial-gradient(circle at 15% 10%, rgba(255, 214, 236, 0.4) 0%, transparent 50%), 
-                       radial-gradient(circle at 85% 90%, rgba(207, 167, 255, 0.4) 0%, transparent 50%), 
-                       linear-gradient(135deg, rgba(250, 248, 253, 0.96) 0%, rgba(234, 220, 248, 0.96) 100%);
+    /* Extremely vibrant, multi-stop satin-glowing pink-to-lavender silk gradient */
+    --gradient-navbar: linear-gradient(to right, #ae83de 0%, #e5ccf4 20%, #fd93b4 40%, #eed1ba 55%, #f27f8d 70%, #e3cdf4 85%, #c387df 100%);
 
     --accent: #7A38C2;
     --accent-hover: #8B3DFF;

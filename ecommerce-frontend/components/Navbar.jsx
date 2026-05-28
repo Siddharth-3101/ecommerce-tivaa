@@ -153,9 +153,11 @@ export default function Navbar() {
                 top: 0,
                 left: 0,
                 width: "100%",
-                background: scrolled ? "var(--bg-glass)" : "var(--gradient-navbar)", 
-                borderBottom: "1.5px solid var(--border)",
-                boxShadow: scrolled ? "0 4px 30px rgba(122, 56, 194, 0.05)" : "none",
+                background: "var(--gradient-navbar)", 
+                borderBottom: scrolled ? "1.5px solid rgba(122, 56, 194, 0.25)" : "1.5px solid rgba(255, 255, 255, 0.25)",
+                boxShadow: scrolled ? "0 8px 32px rgba(122, 56, 194, 0.15)" : "none",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
                 transition: "all 0.3s ease",
                 zIndex: 1000
             }}
@@ -173,8 +175,8 @@ export default function Navbar() {
                             textTransform: 'uppercase', 
                             letterSpacing: '1.5px', 
                             color: 'var(--text-main)',
-                            border: pathname === '/' ? '1.5px solid var(--text-main)' : 'none',
-                            padding: pathname === '/' ? '6px 14px' : '0px',
+                            border: '1.5px solid ' + (pathname === '/' ? 'var(--text-main)' : 'transparent'),
+                            padding: '6px 14px',
                             borderRadius: '2px',
                             transition: 'all 0.2s ease'
                         }}
@@ -233,7 +235,8 @@ export default function Navbar() {
                             style={{ 
                                 height: 'var(--logo-height, 96px)', 
                                 width: 'auto', 
-                                objectFit: 'contain'
+                                objectFit: 'contain',
+                                mixBlendMode: 'multiply'
                             }} 
                         />
                     </Link>
