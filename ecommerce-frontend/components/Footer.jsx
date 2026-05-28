@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Footer() {
     return (
-        <footer style={{ background: '#1F1128', color: '#EADCF8', paddingTop: '80px', paddingBottom: '40px', borderTop: '1px solid rgba(234, 220, 248, 0.15)' }}>
+        <footer style={{ background: '#562e74', color: '#EADCF8', paddingTop: '80px', paddingBottom: '40px', borderTop: '1px solid rgba(255, 255, 255, 0.15)' }}>
             <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '40px', marginBottom: '60px', padding: '0 24px' }}>
                 
                 {/* Column 1: Quick Links */}
@@ -25,7 +25,7 @@ export default function Footer() {
                         <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Terms of Service</Link></li>
                     </ul>
                 </div>
-
+ 
                 {/* Column 2: Logo and Brand (Centered or Right Column) */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                     <Link href="/" style={{ display: 'inline-flex', marginBottom: '16px' }}>
@@ -37,7 +37,7 @@ export default function Footer() {
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
-                            border: '1.5px solid rgba(234, 220, 248, 0.3)', 
+                            border: '1.5px solid rgba(255, 255, 255, 0.3)', 
                             overflow: 'hidden',
                             boxShadow: '0 8px 30px rgba(0,0,0,0.2)'
                         }}>
@@ -53,14 +53,14 @@ export default function Footer() {
                             />
                         </div>
                     </Link>
-                    <p style={{ color: '#A292B0', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ color: '#EADCF8', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6, margin: 0 }}>
                         Exquisite boutique styles designed to elevate your aesthetic with quality and luxury.
                     </p>
                 </div>
             </div>
 
             {/* Bottom Part: Socials & Copyright */}
-            <div className="container" style={{ borderTop: '1px solid rgba(234, 220, 248, 0.15)', paddingTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingLeft: '24px', paddingRight: '24px' }}>
+            <div className="container" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingLeft: '24px', paddingRight: '24px' }}>
                 
                 {/* Instagram Social Icon */}
                 <div style={{ display: 'flex', gap: '16px' }}>
@@ -86,9 +86,9 @@ export default function Footer() {
                         </svg>
                     </a>
                 </div>
-
+ 
                 {/* Copyright text */}
-                <p style={{ color: '#8D7C98', fontSize: '0.85rem', margin: 0, textAlign: 'center', letterSpacing: '0.5px' }}>
+                <p style={{ color: '#CFA7F5', fontSize: '0.85rem', margin: 0, textAlign: 'center', letterSpacing: '0.5px' }}>
                     © 2026 Tivaa Elegance. All rights reserved.
                 </p>
             </div>

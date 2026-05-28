@@ -554,11 +554,11 @@ a:hover {
 }
 
 .social-btn:hover {
-    color: #1F1128 !important; /* Deep midnight purple */
+    color: #562e74 !important; /* Premium brand royal purple */
     background: #ffffff !important;
     transform: translateY(-3px);
     border-color: #ffffff !important;
-    box-shadow: 0 8px 24px rgba(234, 220, 248, 0.2);
+    box-shadow: 0 8px 24px rgba(234, 220, 248, 0.25);
 }
 
 /* Global black outline button class for boutique elements */
