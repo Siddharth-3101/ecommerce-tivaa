@@ -2,13 +2,13 @@ import Link from 'next/link';
 
 export default function Footer() {
     return (
-        <footer style={{ background: '#181c24', color: '#ffffff', paddingTop: '80px', paddingBottom: '40px', borderTop: '1px solid #232a36' }}>
+        <footer style={{ background: '#FAF8FD', color: 'var(--text-main)', paddingTop: '80px', paddingBottom: '40px', borderTop: '1px solid var(--border)' }}>
             <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '40px', marginBottom: '60px', padding: '0 24px' }}>
                 
                 {/* Column 1: Quick Links */}
                 <div>
                     <h4 style={{ 
-                        color: '#ffffff', 
+                        color: 'var(--text-main)', 
                         marginBottom: '24px', 
                         fontSize: '1rem', 
                         textTransform: 'uppercase', 
@@ -18,11 +18,11 @@ export default function Footer() {
                         Quick Links
                     </h4>
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '14px', margin: 0 }}>
-                        <li><Link href="/products" className="footer-link" style={{ color: '#b5bdc9', fontSize: '0.9rem', transition: 'color 0.2s', letterSpacing: '0.5px' }}>Search</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ color: '#b5bdc9', fontSize: '0.9rem', transition: 'color 0.2s', letterSpacing: '0.5px' }}>Contact Information</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ color: '#b5bdc9', fontSize: '0.9rem', transition: 'color 0.2s', letterSpacing: '0.5px' }}>Privacy Policy</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ color: '#b5bdc9', fontSize: '0.9rem', transition: 'color 0.2s', letterSpacing: '0.5px' }}>Refund Policy</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ color: '#b5bdc9', fontSize: '0.9rem', transition: 'color 0.2s', letterSpacing: '0.5px' }}>Terms of Service</Link></li>
+                        <li><Link href="/products" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Search</Link></li>
+                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Contact Information</Link></li>
+                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Privacy Policy</Link></li>
+                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Refund Policy</Link></li>
+                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Terms of Service</Link></li>
                     </ul>
                 </div>
 
@@ -37,9 +37,9 @@ export default function Footer() {
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
-                            border: '1.5px solid #2d3545', 
+                            border: '1.5px solid var(--border)', 
                             overflow: 'hidden',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                            boxShadow: 'var(--shadow-sm)'
                         }}>
                             <img 
                                 src="/logo.png" 
@@ -47,19 +47,20 @@ export default function Footer() {
                                 style={{ 
                                     height: '52px', 
                                     width: '52px',
-                                    objectFit: 'contain'
+                                    objectFit: 'contain',
+                                    mixBlendMode: 'multiply'
                                 }} 
                             />
                         </div>
                     </Link>
-                    <p style={{ color: '#8c98a9', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', maxWidth: '300px', lineHeight: 1.6, margin: 0 }}>
                         Exquisite boutique styles designed to elevate your aesthetic with quality and luxury.
                     </p>
                 </div>
             </div>
 
             {/* Bottom Part: Socials & Copyright */}
-            <div className="container" style={{ borderTop: '1px solid #232a36', paddingTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingLeft: '24px', paddingRight: '24px' }}>
+            <div className="container" style={{ borderTop: '1px solid var(--border)', paddingTop: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingLeft: '24px', paddingRight: '24px' }}>
                 
                 {/* Instagram Social Icon */}
                 <div style={{ display: 'flex', gap: '16px' }}>
@@ -68,16 +69,12 @@ export default function Footer() {
                         target="_blank" 
                         rel="noreferrer" 
                         style={{ 
-                            color: '#b5bdc9', 
-                            transition: 'all 0.2s ease',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             width: '40px',
                             height: '40px',
-                            borderRadius: '50%',
-                            background: '#222833',
-                            border: '1px solid #2d3545'
+                            borderRadius: '50%'
                         }}
                         className="social-btn"
                         aria-label="Instagram Link"
@@ -91,7 +88,7 @@ export default function Footer() {
                 </div>
 
                 {/* Copyright text */}
-                <p style={{ color: '#8c98a9', fontSize: '0.85rem', margin: 0, textAlign: 'center', letterSpacing: '0.5px' }}>
+                <p style={{ color: 'var(--text-light)', fontSize: '0.85rem', margin: 0, textAlign: 'center', letterSpacing: '0.5px' }}>
                     © 2026 Tivaa Elegance. All rights reserved.
                 </p>
             </div>

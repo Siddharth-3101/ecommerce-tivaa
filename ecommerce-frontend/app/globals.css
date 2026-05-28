@@ -535,16 +535,29 @@ a:hover {
 }
 
 /* Global Footer links and social icons boutique states */
+.footer-link {
+    color: var(--text-muted);
+    transition: color 0.25s ease;
+}
+
 .footer-link:hover {
-    color: #ffffff !important;
-    text-decoration: underline;
+    color: var(--accent) !important;
+    text-decoration: none;
+}
+
+.social-btn {
+    color: var(--text-muted);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .social-btn:hover {
     color: #ffffff !important;
-    background: #1a1a1a !important;
-    transform: translateY(-2px);
-    border-color: #ffffff !important;
+    background: var(--accent) !important;
+    transform: translateY(-3px);
+    border-color: var(--accent) !important;
+    box-shadow: 0 4px 14px rgba(122, 56, 194, 0.2);
 }
 
 /* Global black outline button class for boutique elements */
