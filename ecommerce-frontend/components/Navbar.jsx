@@ -45,6 +45,31 @@ export default function Navbar() {
     const [profileOpen, setProfileOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
 
+    const profileTimeoutRef = useRef(null);
+    const categoriesTimeoutRef = useRef(null);
+
+    const handleProfileMouseEnter = () => {
+        if (profileTimeoutRef.current) clearTimeout(profileTimeoutRef.current);
+        setProfileOpen(true);
+    };
+
+    const handleProfileMouseLeave = () => {
+        profileTimeoutRef.current = setTimeout(() => {
+            setProfileOpen(false);
+        }, 300); // 300ms grace period
+    };
+
+    const handleCategoriesMouseEnter = () => {
+        if (categoriesTimeoutRef.current) clearTimeout(categoriesTimeoutRef.current);
+        setDropdownOpen(true);
+    };
+
+    const handleCategoriesMouseLeave = () => {
+        categoriesTimeoutRef.current = setTimeout(() => {
+            setDropdownOpen(false);
+        }, 300); // 300ms grace period
+    };
+
     const getInitials = (name) => {
         if (!name) return "";
         const parts = name.split(" ");
@@ -105,6 +130,8 @@ export default function Navbar() {
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('cart-updated', handleCartUpdate);
             document.removeEventListener('mousedown', handleClickOutside);
+            if (profileTimeoutRef.current) clearTimeout(profileTimeoutRef.current);
+            if (categoriesTimeoutRef.current) clearTimeout(categoriesTimeoutRef.current);
         };
     }, []);
 
@@ -176,8 +203,8 @@ export default function Navbar() {
 
                     {/* Categories Dropdown */}
                     <div
-                        onMouseEnter={() => setDropdownOpen(true)}
-                        onMouseLeave={() => setDropdownOpen(false)}
+                        onMouseEnter={handleCategoriesMouseEnter}
+                        onMouseLeave={handleCategoriesMouseLeave}
                         style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)' }}
                     >
                         <Link 
@@ -280,8 +307,8 @@ export default function Navbar() {
                     <div style={{ position: 'relative' }}>
                         {user ? (
                             <div
-                                onMouseEnter={() => setProfileOpen(true)}
-                                onMouseLeave={() => setProfileOpen(false)}
+                                onMouseEnter={handleProfileMouseEnter}
+                                onMouseLeave={handleProfileMouseLeave}
                                 style={{ display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)', cursor: 'pointer' }}
                             >
                                 <div style={{ 
