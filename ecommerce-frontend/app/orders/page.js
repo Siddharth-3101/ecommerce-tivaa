@@ -12,6 +12,8 @@ export default function MyOrdersPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [page, setPage] = useState(1);
+    const limit = 10;
 
     const user = getUser();
 
@@ -67,6 +69,12 @@ export default function MyOrdersPage() {
         );
     }
 
+    // Calculate paginated slice
+    const total = orders.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const offset = (page - 1) * limit;
+    const paginatedOrders = orders.slice(offset, offset + limit);
+
     return (
         <div className="animate-fade-in" style={{ padding: '120px 0 80px' }}>
             <div className="container" style={{ marginBottom: '40px' }}>
@@ -98,69 +106,123 @@ export default function MyOrdersPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px', margin: '0 auto' }}>
-                        {orders.map((order) => (
-                            <div key={order.id} className="card animate-fade-in" style={{ padding: '24px', background: 'var(--bg-glass)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                                    
-                                    {/* Order Meta */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <h3 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>
-                                            Order #{order.id}
-                                        </h3>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                            <Calendar size={14} />
-                                            <span>{new Date(order.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px', margin: '0 auto' }}>
+                            {paginatedOrders.map((order) => (
+                                <div key={order.id} className="card animate-fade-in" style={{ padding: '24px', background: 'var(--bg-glass)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                                        
+                                        {/* Order Meta */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <h3 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>
+                                                Order #{order.id}
+                                            </h3>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                <Calendar size={14} />
+                                                <span>{new Date(order.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                            </div>
                                         </div>
+
+                                        {/* Order stats */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Price</span>
+                                                <strong style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>₹{order.total}</strong>
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Payment Method</span>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{order.payment_method}</span>
+                                            </div>
+
+                                            {/* Status Badge */}
+                                            <div 
+                                                style={{ 
+                                                    padding: '6px 14px', 
+                                                    borderRadius: '20px', 
+                                                    fontSize: '0.8rem', 
+                                                    fontWeight: 700, 
+                                                    textTransform: 'uppercase', 
+                                                    letterSpacing: '0.5px',
+                                                    ...getStatusStyle(order.order_status)
+                                                }}
+                                            >
+                                                {order.order_status}
+                                            </div>
+
+                                            {/* Details button */}
+                                            <Link 
+                                                href={`/orders/${order.id}`} 
+                                                className="btn btn-secondary" 
+                                                style={{ 
+                                                    padding: '8px 16px', 
+                                                    fontSize: '0.85rem', 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    gap: '6px',
+                                                    background: '#ffffff'
+                                                }}
+                                            >
+                                                Details <ArrowRight size={14} />
+                                            </Link>
+                                        </div>
+
                                     </div>
-
-                                    {/* Order stats */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Price</span>
-                                            <strong style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>₹{order.total}</strong>
-                                        </div>
-
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Payment Method</span>
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{order.payment_method}</span>
-                                        </div>
-
-                                        {/* Status Badge */}
-                                        <div 
-                                            style={{ 
-                                                padding: '6px 14px', 
-                                                borderRadius: '20px', 
-                                                fontSize: '0.8rem', 
-                                                fontWeight: 700, 
-                                                textTransform: 'uppercase', 
-                                                letterSpacing: '0.5px',
-                                                ...getStatusStyle(order.order_status)
-                                            }}
-                                        >
-                                            {order.order_status}
-                                        </div>
-
-                                        {/* Details button */}
-                                        <Link 
-                                            href={`/orders/${order.id}`} 
-                                            className="btn btn-secondary" 
-                                            style={{ 
-                                                padding: '8px 16px', 
-                                                fontSize: '0.85rem', 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                gap: '6px',
-                                                background: '#ffffff'
-                                            }}
-                                        >
-                                            Details <ArrowRight size={14} />
-                                        </Link>
-                                    </div>
-
                                 </div>
+                            ))}
+                        </div>
+
+                        {/* Sleek circular boutique pagination selector */}
+                        {totalPages > 1 && (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '40px' }}>
+                                {page > 1 && (
+                                    <button
+                                        onClick={() => setPage(page - 1)}
+                                        className="btn btn-secondary"
+                                        style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                    >
+                                        Prev
+                                    </button>
+                                )}
+                                
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                                    const isActive = p === page;
+                                    return (
+                                        <button
+                                            key={p}
+                                            onClick={() => setPage(p)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                fontSize: '0.9rem',
+                                                fontWeight: isActive ? '600' : '400',
+                                                border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
+                                                background: isActive ? 'var(--text-main)' : 'transparent',
+                                                color: isActive ? '#ffffff' : 'var(--text-main)',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            {p}
+                                        </button>
+                                    );
+                                })}
+                                
+                                {page < totalPages && (
+                                    <button
+                                        onClick={() => setPage(page + 1)}
+                                        className="btn btn-secondary"
+                                        style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                    >
+                                        Next
+                                    </button>
+                                )}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </section>
