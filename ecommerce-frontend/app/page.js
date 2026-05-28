@@ -64,7 +64,7 @@ export default async function Home() {
     };
 
     return (
-        <div className="animate-fade-in" style={{ background: '#ffffff', minHeight: '100vh' }}>
+        <div className="animate-fade-in" style={{ background: 'var(--gradient-bg)', minHeight: '100vh' }}>
             
             {/* Redesigned Wide Hero Banner */}
             <Hero />

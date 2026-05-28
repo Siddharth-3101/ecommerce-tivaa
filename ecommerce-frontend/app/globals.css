@@ -536,28 +536,29 @@ a:hover {
 
 /* Global Footer links and social icons boutique states */
 .footer-link {
-    color: var(--text-muted);
-    transition: color 0.25s ease;
+    color: #CFA7F5; /* Soft purple brand color */
+    transition: all 0.25s ease;
 }
 
 .footer-link:hover {
-    color: var(--accent) !important;
+    color: #ffffff !important;
     text-decoration: none;
+    text-shadow: 0 0 10px rgba(207, 167, 245, 0.4); /* Premium soft purple glow */
 }
 
 .social-btn {
-    color: var(--text-muted);
-    background: #ffffff;
-    border: 1px solid var(--border);
+    color: #EADCF8; /* Light lavender */
+    background: rgba(234, 220, 248, 0.08);
+    border: 1px solid rgba(234, 220, 248, 0.15);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .social-btn:hover {
-    color: #ffffff !important;
-    background: var(--accent) !important;
+    color: #1F1128 !important; /* Deep midnight purple */
+    background: #ffffff !important;
     transform: translateY(-3px);
-    border-color: var(--accent) !important;
-    box-shadow: 0 4px 14px rgba(122, 56, 194, 0.2);
+    border-color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(234, 220, 248, 0.2);
 }
 
 /* Global black outline button class for boutique elements */
