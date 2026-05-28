@@ -7,6 +7,35 @@ import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, Heart, ShoppingBag, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut } from "lucide-react";
 
+// Recreated premium line-art vector icons from the theme assets
+const CustomSearchIcon = ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="11" cy="11" r="6" />
+        <line x1="15.5" y1="15.5" x2="20.5" y2="20.5" />
+        <path d="M8.5 8.5 A 3.5 3.5 0 0 1 12 7.5" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+);
+
+const CustomHeartIcon = ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M12 20.5 C12 20.5 3.5 14.5 3.5 8.5 C3.5 5.5 5.5 3.5 8.5 3.5 C10.2 3.5 11.3 4.5 12 5.5 C12.7 4.5 13.8 3.5 15.5 3.5 C18.5 3.5 20.5 5.5 20.5 8.5 C20.5 14.5 12 20.5 12 20.5 Z" />
+    </svg>
+);
+
+const CustomUserIcon = ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="7" r="4.2" />
+        <path d="M4.5 19.5 C5.5 15.5 8.5 13.5 12 13.5 C15.5 13.5 18.5 15.5 19.5 19.5" />
+    </svg>
+);
+
+const CustomBagIcon = ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="4.5" y="8.5" width="15" height="12" rx="2.5" />
+        <path d="M9 8.5 C9 5.5 10 4.5 12 4.5 C14 4.5 15 5.5 15 8.5" />
+    </svg>
+);
+
 export default function Navbar() {
     const [count, setCount] = useState(0);
     const [user, setUser] = useState(null);
@@ -124,9 +153,9 @@ export default function Navbar() {
                 top: 0,
                 left: 0,
                 width: "100%",
-                background: "var(--bg-glass)", 
-                borderBottom: "1px solid var(--border)",
-                boxShadow: scrolled ? "0 2px 10px rgba(0,0,0,0.02)" : "none",
+                background: scrolled ? "var(--bg-glass)" : "var(--gradient-navbar)", 
+                borderBottom: "1.5px solid var(--border)",
+                boxShadow: scrolled ? "0 4px 30px rgba(122, 56, 194, 0.05)" : "none",
                 transition: "all 0.3s ease",
                 zIndex: 1000
             }}
@@ -136,7 +165,20 @@ export default function Navbar() {
 
                 {/* LEFT: Nav Links (Desktop Only) */}
                 <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '28px' }}>
-                    <Link href="/" style={{ fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                    <Link 
+                        href="/" 
+                        style={{ 
+                            fontWeight: 600, 
+                            fontSize: '0.85rem', 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '1.5px', 
+                            color: 'var(--text-main)',
+                            border: pathname === '/' ? '1.5px solid var(--text-main)' : 'none',
+                            padding: pathname === '/' ? '6px 14px' : '0px',
+                            borderRadius: '2px',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
                         Home
                     </Link>
 
@@ -146,7 +188,7 @@ export default function Navbar() {
                         onMouseLeave={() => setDropdownOpen(false)}
                         style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)' }}
                     >
-                        <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                        <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
                             Categories
                             <ChevronDown size={14} style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                         </span>
@@ -167,7 +209,7 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    <Link href="/faq" style={{ fontWeight: 500, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
+                    <Link href="/faq" style={{ fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-main)' }}>
                         Contact
                     </Link>
                 </div>
@@ -203,15 +245,35 @@ export default function Navbar() {
                     {/* Search Icon */}
                     <button
                         onClick={() => setSearchOpen(!searchOpen)}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', padding: '6px' }}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                            e.currentTarget.style.color = 'var(--accent-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = 'var(--accent)';
+                        }}
                         aria-label="Search Toggle"
                     >
-                        {searchOpen ? <X size={20} /> : <Search size={20} />}
+                        {searchOpen ? <X size={20} /> : <CustomSearchIcon size={20} />}
                     </button>
 
                     {/* Wishlist Link (Desktop Only) */}
-                    <Link href="/wishlist" className="desktop-only" style={{ color: 'var(--text-main)', padding: '6px' }}>
-                        <Heart size={20} />
+                    <Link 
+                        href="/wishlist" 
+                        className="desktop-only" 
+                        style={{ color: 'var(--accent)', padding: '6px', display: 'inline-flex', alignItems: 'center', transition: 'all 0.2s ease' }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                            e.currentTarget.style.color = 'var(--accent-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = 'var(--accent)';
+                        }}
+                    >
+                        <CustomHeartIcon size={20} />
                     </Link>
 
                     {/* Profile Dropdown / Login */}
@@ -226,12 +288,12 @@ export default function Navbar() {
                                     width: '32px', 
                                     height: '32px', 
                                     borderRadius: '50%', 
-                                    background: '#1a1a1a', 
+                                    background: '#2B1B35', 
                                     color: '#ffffff', 
                                     display: 'flex', 
                                     alignItems: 'center', 
                                     justifyContent: 'center', 
-                                    fontWeight: 600, 
+                                    fontWeight: 700, 
                                     fontSize: '0.8rem',
                                     border: '1px solid var(--border)'
                                 }}>
@@ -252,7 +314,7 @@ export default function Navbar() {
                                                 My Wishlist
                                             </Link>
                                             {user.role === 'admin' && (
-                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent-peach)' }}>
+                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)' }}>
                                                     Admin Panel
                                                 </Link>
                                             )}
@@ -268,22 +330,44 @@ export default function Navbar() {
                                 )}
                             </div>
                         ) : (
-                            <Link href="/login" style={{ color: 'var(--text-main)', padding: '6px', display: 'flex', alignItems: 'center' }}>
-                                <User size={20} />
+                            <Link 
+                                href="/login" 
+                                style={{ color: 'var(--accent)', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease' }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.1)';
+                                    e.currentTarget.style.color = 'var(--accent-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.color = 'var(--accent)';
+                                }}
+                            >
+                                <CustomUserIcon size={20} />
                             </Link>
                         )}
                     </div>
 
                     {/* Cart Shopping Bag */}
-                    <Link href="/cart" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--text-main)', padding: '6px' }}>
-                        <div style={{ position: 'relative' }}>
-                            <ShoppingBag size={20} />
+                    <Link 
+                        href="/cart" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                            e.currentTarget.style.color = 'var(--accent-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = 'var(--accent)';
+                        }}
+                    >
+                        <div style={{ position: 'relative', display: 'inline-flex' }}>
+                            <CustomBagIcon size={20} />
                             {count > 0 && (
                                 <span style={{ 
                                     position: 'absolute',
                                     top: '-6px',
                                     right: '-6px',
-                                    background: '#1a1a1a', 
+                                    background: '#2B1B35', 
                                     color: '#ffffff', 
                                     minWidth: '16px',
                                     height: '16px',
@@ -327,7 +411,7 @@ export default function Navbar() {
                             }}
                             style={{ display: "flex", alignItems: "center", position: "relative" }}
                         >
-                            <input
+                             <input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for perfection..."
@@ -337,12 +421,12 @@ export default function Navbar() {
                                     width: "100%", 
                                     padding: "12px 16px 12px 44px", 
                                     borderRadius: "0px", 
-                                    border: "1px solid #1a1a1a", 
+                                    border: "1px solid var(--text-main)", 
                                     height: '46px',
                                     fontSize: '0.95rem'
                                 }}
                             />
-                            <Search size={20} style={{ position: 'absolute', left: '16px', color: '#1a1a1a' }} />
+                            <CustomSearchIcon size={20} style={{ position: 'absolute', left: '16px', color: 'var(--accent)' }} />
                             {isSearching && <span className="search-loader"></span>}
                         </form>
 

@@ -1,39 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Allura&family=Cinzel:wght@400;500;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Parisienne&display=swap');
+
 :root {
-    /* Minimalist boutique white background */
-    --bg: #ffffff;
+    /* Lavender & Soft Purple boutique palette */
+    --bg: #FAF8FD;
     --bg-card: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.98);
+    --bg-glass: rgba(250, 248, 253, 0.95);
 
-    /* Crisp black for elegant high-end text */
-    --text-main: #1a1a1a;
-    --text-muted: #7a7a7a;
+    /* Elegant brand text colors */
+    --text-main: #2B1B35;
+    --text-muted: #6F5B7A;
+    --text-light: #A292B0;
 
-    /* Elegant pastel feather highlight colors preserved for accents if needed */
-    --accent-teal: #82b9c2;
-    --accent-mint: #b0d0a5;
-    --accent-yellow: #dca353;
-    --accent-peach: #e59374;
-    --accent-pink: #d38b9e;
-    --accent-purple: #868bc3;
+    /* Highlight accents */
+    --accent-lavender: #EADCF8;
+    --accent-purple-soft: #CFA7F5;
+    --accent-purple-deep: #7A38C2;
+    --accent-pink-blush: #FFD6EC;
 
-    /* Elegant, premium boutique dark slate/black gradients */
-    --gradient-logo: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
-    --gradient-logo-hover: linear-gradient(135deg, #3a3a3a 0%, #1a1a1a 100%);
-
-    --accent: #1a1a1a;
-    --accent-hover: #404040;
-    --accent-glow: rgba(0, 0, 0, 0.05);
-
-    --success: #1a1a1a; /* Clean solid checkmark */
-    --danger: #b3566f;
-
-    /* Subtle thin light borders to match the boutique aesthetic */
-    --border: #e8e8e8;
-    --glass-border: rgba(0, 0, 0, 0.06);
+    /* Elegant, premium gradients */
+    --gradient-logo: linear-gradient(135deg, #7A38C2 0%, #B96EFF 100%);
+    --gradient-logo-hover: linear-gradient(135deg, #B96EFF 0%, #7A38C2 100%);
+    --gradient-bg: linear-gradient(135deg, #FAF8FD 0%, #F5ECFC 50%, #FAF8FD 100%);
     
-    /* Clean flat or near-flat layout shadows */
-    --shadow-sm: none;
-    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.03);
+    /* Beautiful satin wave navbar background */
+    --gradient-navbar: radial-gradient(circle at 15% 10%, rgba(255, 214, 236, 0.4) 0%, transparent 50%), 
+                       radial-gradient(circle at 85% 90%, rgba(207, 167, 255, 0.4) 0%, transparent 50%), 
+                       linear-gradient(135deg, rgba(250, 248, 253, 0.96) 0%, rgba(234, 220, 248, 0.96) 100%);
+
+    --accent: #7A38C2;
+    --accent-hover: #8B3DFF;
+    --accent-glow: rgba(122, 56, 194, 0.05);
+
+    --success: #10B981;
+    --danger: #B3566F;
+
+    /* Lavender-tinted borders and glass effects */
+    --border: #EADCF8;
+    --glass-border: rgba(234, 220, 248, 0.6);
+    
+    /* Elegant premium shadows */
+    --shadow-sm: 0 4px 12px rgba(122, 56, 194, 0.05);
+    --shadow-md: 0 10px 30px rgba(155, 105, 255, 0.12);
 
     /* Dynamic responsive header heights and logo sizes */
     --nav-height: 120px;
