@@ -7,8 +7,8 @@ import Link from "next/link";
 import dynamic from 'next/dynamic';
 import React from "react";
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 export default function EditProductPage({ params }) {
     // Next.js 15+ resolution trick if it's a promise, else fast fallback
