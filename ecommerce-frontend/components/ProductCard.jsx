@@ -60,24 +60,26 @@ export default function ProductCard({ product }) {
             </div>
 
             {/* Content info below image */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', padding: '0 14px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, paddingRight: '8px' }}>
                     <span 
                         style={{ 
-                            fontSize: '0.9rem', 
-                            fontWeight: 400, 
-                            color: '#1a1a1a', 
+                            fontSize: '0.88rem', 
+                            fontWeight: 500, 
+                            fontFamily: "'Poppins', sans-serif",
+                            color: '#2B1B35', 
                             display: '-webkit-box', 
                             WebkitLineClamp: 1, 
                             WebkitBoxOrient: 'vertical', 
                             overflow: 'hidden', 
                             marginBottom: '4px',
-                            textTransform: 'capitalize'
+                            textTransform: 'capitalize',
+                            letterSpacing: '0.1px'
                         }}
                     >
                         {product.name}
                     </span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#1a1a1a' }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
                         Rs. {product.price}
                     </span>
                 </div>
@@ -89,19 +91,20 @@ export default function ProductCard({ product }) {
                         className={`product-cart-btn ${added ? 'added' : ''}`}
                         aria-label="Add to Cart"
                         style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '34px',
+                            height: '34px',
                             borderRadius: '50%',
-                            background: added ? '#1a1a1a' : '#ffffff',
+                            background: added ? '#7A38C2' : '#8B3DFF',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: added ? '#ffffff' : '#1a1a1a',
-                            transition: 'all 0.2s ease',
-                            border: '1.5px solid #1a1a1a',
+                            color: '#ffffff',
+                            transition: 'all 0.25s ease',
+                            border: 'none',
                             cursor: loading || added ? 'default' : 'pointer',
                             flexShrink: 0,
-                            padding: 0
+                            padding: 0,
+                            boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)'
                         }}
                     >
                         {loading ? (
@@ -119,21 +122,21 @@ export default function ProductCard({ product }) {
                 .cart-btn-spinner {
                     width: 12px;
                     height: 12px;
-                    border: 2px solid rgba(26,26,26,0.2);
+                    border: 2px solid rgba(255,255,255,0.4);
                     border-radius: 50%;
-                    border-top-color: #1a1a1a;
+                    border-top-color: #ffffff;
                     animation: spin 0.8s linear infinite;
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
                 }
                 .product-cart-btn:hover {
-                    background: #1a1a1a !important;
-                    color: #ffffff !important;
-                    transform: scale(1.06);
+                    background: #A05CFF !important;
+                    transform: scale(1.08);
+                    box-shadow: 0 6px 18px rgba(139, 61, 255, 0.45) !important;
                 }
                 .product-cart-btn.added:hover {
-                    background: #1a1a1a !important;
+                    background: #7A38C2 !important;
                     transform: none;
                 }
             `}</style>

@@ -61,7 +61,7 @@
 body {
     background-color: var(--bg);
     color: var(--text-main);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
     overflow-x: hidden;
@@ -94,6 +94,7 @@ h2,
 h3,
 h4 {
     color: var(--text-main);
+    font-family: 'Playfair Display', Georgia, serif;
     font-weight: 700;
     line-height: 1.2;
 }
@@ -229,20 +230,47 @@ a:hover {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: radial-gradient(circle at top right, rgba(130, 185, 194, 0.15), transparent 40%),
-        radial-gradient(circle at bottom left, rgba(234, 209, 129, 0.15), transparent 40%),
-        radial-gradient(circle at center, rgba(199, 131, 167, 0.05), transparent 50%);
+    background: var(--gradient-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(185, 110, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.auth-container::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255, 214, 236, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
 }
 
 .auth-form {
     width: 100%;
-    max-width: 440px;
-    padding: 40px;
-    background: var(--bg-glass);
-    backdrop-filter: blur(20px);
-    border: 1px solid #fff;
-    border-radius: 24px;
-    box-shadow: 0 24px 48px rgba(134, 139, 195, 0.15);
+    max-width: 460px;
+    padding: 48px 44px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(234, 220, 248, 0.7);
+    border-radius: 28px;
+    box-shadow: 0 24px 60px rgba(122, 56, 194, 0.1), 0 4px 16px rgba(185, 110, 255, 0.06);
+    position: relative;
+    z-index: 1;
 }
 
 /* Animations */
@@ -308,10 +336,11 @@ a:hover {
 /* Product Card specific */
 .product-image-container {
     width: 100%;
-    height: 240px;
+    height: 260px;
     overflow: hidden;
     position: relative;
-    background: #f7f9fa;
+    background: linear-gradient(135deg, #F5ECFC 0%, #FAF8FD 100%);
+    border-radius: 20px;
 }
 
 .product-image {
@@ -322,7 +351,7 @@ a:hover {
 }
 
 .card:hover .product-image {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
 /* Boutique Custom Styling */
@@ -346,9 +375,19 @@ a:hover {
     flex-direction: column;
     height: 100%;
     text-decoration: none;
-    background: transparent;
-    border: none;
-    transition: all 0.3s ease;
+    background: #ffffff;
+    border: 1px solid rgba(234, 220, 248, 0.6);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(155, 105, 255, 0.08);
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    padding-bottom: 16px;
+}
+
+.card-borderless:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(155, 105, 255, 0.16);
+    border-color: rgba(207, 167, 245, 0.5);
 }
 
 .card-borderless .product-image-container {
@@ -357,8 +396,8 @@ a:hover {
     height: auto;
     overflow: hidden;
     position: relative;
-    background: #fdfdfd;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #F5ECFC 0%, #FAF8FD 100%);
+    border-radius: 0;
 }
 
 .card-borderless .product-image {
@@ -369,7 +408,7 @@ a:hover {
 }
 
 .card-borderless:hover .product-image {
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
 
 .badge-soldout {
@@ -464,7 +503,11 @@ a:hover {
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.category-item:hover {
+    transform: translateY(-4px);
 }
 
 .category-image-container {
@@ -472,33 +515,41 @@ a:hover {
     aspect-ratio: 1/1;
     overflow: hidden;
     position: relative;
-    background-color: #fafafa;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #F5ECFC 0%, #EADCF8 100%);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(155, 105, 255, 0.1);
+    transition: box-shadow 0.35s ease;
+}
+
+.category-item:hover .category-image-container {
+    box-shadow: 0 16px 40px rgba(155, 105, 255, 0.2);
 }
 
 .category-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .category-item:hover .category-image {
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
 
 .category-title {
     margin-top: 14px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
+    font-family: 'Poppins', sans-serif;
     color: var(--text-main);
     display: flex;
     align-items: center;
     gap: 6px;
+    letter-spacing: 0.2px;
 }
 
-.category-title:hover {
-    color: var(--accent-peach);
+.category-item:hover .category-title {
+    color: var(--accent-purple-deep);
 }
 
 /* Global Boutique Responsive Product Grid */
@@ -627,36 +678,156 @@ a:hover {
     transform: scaleX(1);
 }
 
-/* Premium Viewport-Adaptive Bounded Full-Bleed Hero Banner */
+/* Full-Bleed Edge-to-Edge Hero Banner */
 .hero-adaptive-container {
     position: relative;
-    width: 100%;
-    max-width: 1600px; /* Safety cap for ultra-wide screens */
-    margin: 0 auto;
-    background-color: transparent;
-    display: block;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    height: 80vh;
+    min-height: 480px;
+    max-height: 900px;
     overflow: hidden;
+    background: linear-gradient(135deg, #c9a8e8 0%, #e8d5f5 40%, #f5eafd 60%, #dfc3f0 80%, #c0a0e0 100%);
+    display: block;
     z-index: 1;
-    padding: 0;
-    height: auto; /* Natural height matching the 1024x420 widescreen ratio */
 }
 
 .hero-adaptive-img {
     width: 100%;
-    height: auto; /* Scale fluidly based on width */
+    height: 100%;
     display: block;
-    object-fit: contain; /* Maintain 100% full visibility of slogans, jewelry, and buttons */
-    image-rendering: -webkit-optimize-contrast;
+    object-fit: cover;
+    object-position: center center;
     transform: translate3d(0, 0, 0);
+}
+
+/* Banner link must be block and fill container */
+.hero-banner-link {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+@media (max-width: 1024px) {
+    .hero-adaptive-container {
+        height: 65vh;
+        min-height: 380px;
+    }
 }
 
 @media (max-width: 768px) {
     .hero-adaptive-container {
-        height: auto;
+        height: 50vh;
+        min-height: 260px;
     }
-    
     .hero-adaptive-img {
-        height: auto;
-        object-fit: contain;
+        object-position: center center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-adaptive-container {
+        height: 40vh;
+        min-height: 200px;
+    }
+}
+
+/* ── Brand Section Headings ──────────────────────────────────────────────── */
+.section-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--text-main);
+    text-align: center;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.section-heading::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, #CFA7F5, #B96EFF);
+    border-radius: 2px;
+    margin: 14px auto 0;
+}
+
+/* ── Brand Pill Primary Button ────────────────────────────────────────────── */
+.btn-brand-pill {
+    background: #8B3DFF;
+    color: #ffffff;
+    border: none;
+    border-radius: 40px;
+    padding: 14px 32px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(139, 61, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-brand-pill:hover {
+    background: #A05CFF;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(139, 61, 255, 0.4);
+}
+
+/* ── Input Fields — Brand Focus ──────────────────────────────────────────── */
+.input-field {
+    font-family: 'Poppins', sans-serif;
+    border-radius: 14px;
+    border: 1.5px solid rgba(234, 220, 248, 0.8);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+}
+
+.input-field:focus {
+    border-color: #CFA7F5;
+    box-shadow: 0 0 0 3px rgba(207, 167, 245, 0.18);
+    background: #ffffff;
+}
+
+.input-field::placeholder {
+    color: var(--text-light);
+    font-weight: 300;
+}
+
+/* ── Lavender Soft Divider ────────────────────────────────────────────────── */
+.lavender-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(207, 167, 245, 0.4), transparent);
+    margin: 0;
+    border: none;
+}
+
+/* ── Silk shimmer keyframe for premium card hover glow ─────────────────── */
+@keyframes silkShimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+/* ── Product grid gap refinement ─────────────────────────────────────────── */
+.product-grid-boutique {
+    gap: 28px 20px;
+}
+
+@media (max-width: 480px) {
+    .product-grid-boutique {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px 12px;
     }
 }

@@ -5,19 +5,13 @@ export default function Hero() {
         <section className="hero-adaptive-container">
             <Link 
                 href="/products" 
-                style={{ 
-                    display: 'block', 
-                    width: '100%', 
-                    height: 'auto',
-                    cursor: 'pointer',
-                    outline: 'none'
-                }}
                 className="hero-banner-link"
             >
                 <img 
                     src="/hero_banner.png" 
                     alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
                     className="hero-adaptive-img"
+                    draggable={false}
                 />
             </Link>
         </section>

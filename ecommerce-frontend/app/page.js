@@ -71,19 +71,7 @@ export default async function Home() {
 
             {/* SHOP BY CATEGORY SECTION */}
             <section className="container" style={{ padding: '80px 24px 60px' }}>
-                <h2 
-                    style={{ 
-                        fontSize: '1.8rem', 
-                        fontWeight: 300, 
-                        textAlign: 'center', 
-                        marginBottom: '40px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '3px',
-                        color: 'var(--text-main)'
-                    }}
-                >
-                    Shop By Category
-                </h2>
+                <h2 className="section-heading">Shop By Category</h2>
 
                 <div className="category-container">
                     {categories && categories.length > 0 ? (
@@ -117,19 +105,7 @@ export default async function Home() {
 
             {/* NEWLY ADDED SECTION */}
             <section className="container" style={{ padding: '20px 24px 100px' }}>
-                <h2 
-                    style={{ 
-                        fontSize: '1.8rem', 
-                        fontWeight: 300, 
-                        textAlign: 'center', 
-                        marginBottom: '48px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '3px',
-                        color: 'var(--text-main)'
-                    }}
-                >
-                    Newly Added
-                </h2>
+                <h2 className="section-heading">Newly Added</h2>
 
                 {/* Borderless Boutique Product Card Grid (Fully Responsive) */}
                 <div className="product-grid-boutique">
