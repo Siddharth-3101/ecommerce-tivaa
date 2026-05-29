@@ -83,9 +83,11 @@ export default function ProductDetailsInfo({ product }) {
             {/* Description */}
             {product.description && (
                 <div>
-                    <p style={{ color: "var(--text-muted)", fontSize: '1.05rem', lineHeight: 1.8, fontWeight: 400 }}>
-                        {product.description}
-                    </p>
+                    <div 
+                        className="quill-content"
+                        style={{ color: "var(--text-muted)", fontSize: '1.05rem', lineHeight: 1.8, fontWeight: 400 }}
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                 </div>
             )}
 

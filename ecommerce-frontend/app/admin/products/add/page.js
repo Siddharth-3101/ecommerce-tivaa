@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 export default function AddProductPage() {
     const router = useRouter();
@@ -328,13 +332,12 @@ export default function AddProductPage() {
 
                     <div>
                         <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Description</label>
-                        <textarea
-                            className="input-field"
-                            placeholder="Describe your product in detail..."
+                        <ReactQuill
+                            theme="snow"
                             value={product.description}
-                            onChange={(e) => setProduct({ ...product, description: e.target.value })}
-                            style={{ minHeight: "120px", resize: "vertical" }}
-                        ></textarea>
+                            onChange={(val) => setProduct({ ...product, description: val })}
+                            style={{ background: "transparent", color: "var(--text-main)", borderRadius: "8px" }}
+                        />
                     </div>
 
                     <div>

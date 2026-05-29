@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
 import React from "react";
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 export default function EditProductPage({ params }) {
     // Next.js 15+ resolution trick if it's a promise, else fast fallback
@@ -357,13 +361,12 @@ export default function EditProductPage({ params }) {
 
                     <div>
                         <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Description</label>
-                        <textarea
-                            className="input-field"
-                            placeholder="Describe your product in detail..."
-                            value={product.description || ""}
-                            onChange={(e) => setProduct({ ...product, description: e.target.value })}
-                            style={{ minHeight: "120px", resize: "vertical" }}
-                        ></textarea>
+                        <ReactQuill
+                            theme="snow"
+                            value={product.description}
+                            onChange={(val) => setProduct({ ...product, description: val })}
+                            style={{ background: "transparent", color: "var(--text-main)", borderRadius: "8px" }}
+                        />
                     </div>
 
                     <div>
