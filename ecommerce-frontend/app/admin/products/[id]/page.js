@@ -12,14 +12,43 @@ export default function EditProductPage({ params }) {
     const { id } = resolvedParams;
     const router = useRouter();
     const [product, setProduct] = useState(null);
+    const [variationGroups, setVariationGroups] = useState([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [categories, setCategories] = useState([]);
+
+    const handleOptionImageUpload = async (groupIndex, optionIndex, file) => {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const cat = categories.find(c => c.id === parseInt(product.category_id));
+        const categoryName = cat ? cat.name : "Uncategorized";
+        formData.append("folder", `tivaa-products/${categoryName}`);
+
+        try {
+            const res = await api.post("/upload/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+            setVariationGroups(prev => {
+                const newGroups = [...prev];
+                newGroups[groupIndex].options[optionIndex].image_url = res.data.url;
+                return newGroups;
+            });
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Failed to upload variation image.");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleFileUpload = async (file) => {
         setUploading(true);
         const formData = new FormData();
         formData.append("image", file);
+
+        const cat = categories.find(c => c.id === parseInt(product.category_id));
+        const categoryName = cat ? cat.name : "Uncategorized";
+        formData.append("folder", `tivaa-products/${categoryName}`);
 
         try {
             const res = await api.post("/upload/upload", formData, {
@@ -53,21 +82,27 @@ export default function EditProductPage({ params }) {
             try {
                 const res = await api.get(`/products/${id}`);
                 const fetchedProduct = res.data;
-                // Hydrate variations JSON back to readable text format for editing
-                let variationsText = "";
+                
+                let loadedVariations = [];
                 if (fetchedProduct.variations) {
                     try {
                         const parsedObj = typeof fetchedProduct.variations === 'string' ? JSON.parse(fetchedProduct.variations) : fetchedProduct.variations;
-                        variationsText = Object.entries(parsedObj)
-                            .map(([name, options]) => `${name}: ${options.join(", ")}`)
-                            .join("\n");
+                        
+                        if (Array.isArray(parsedObj)) {
+                            loadedVariations = parsedObj;
+                        } else {
+                            loadedVariations = Object.entries(parsedObj).map(([name, options]) => ({
+                                name,
+                                options: options.map(opt => ({ value: opt, image_url: "" }))
+                            }));
+                        }
                     } catch (e) {
-                        variationsText = fetchedProduct.variations;
+                        console.error("Failed to parse variations");
                     }
                 }
+                setVariationGroups(loadedVariations);
                 setProduct({
                     ...fetchedProduct,
-                    variations: variationsText
                 });
                 
                 const catRes = await api.get("/categories");
@@ -83,24 +118,14 @@ export default function EditProductPage({ params }) {
         e.preventDefault();
         setLoading(true);
         try {
-            // Parse variations text to JSON
             let parsedVariations = null;
-            if (product.variations && product.variations.trim()) {
-                const result = {};
-                const lines = product.variations.split("\n");
-                for (const line of lines) {
-                    const parts = line.split(":");
-                    if (parts.length >= 2) {
-                        const name = parts[0].trim();
-                        const options = parts[1].split(",").map(o => o.trim()).filter(Boolean);
-                        if (name && options.length > 0) {
-                            result[name] = options;
-                        }
-                    }
-                }
-                if (Object.keys(result).length > 0) {
-                    parsedVariations = JSON.stringify(result);
-                }
+            const validGroups = variationGroups.filter(g => g.name.trim() !== "" && g.options.some(o => o.value.trim() !== ""));
+            if (validGroups.length > 0) {
+                const cleanGroups = validGroups.map(g => ({
+                    ...g,
+                    options: g.options.filter(o => o.value.trim() !== "")
+                }));
+                parsedVariations = JSON.stringify(cleanGroups);
             }
 
             const payload = {
@@ -342,19 +367,146 @@ export default function EditProductPage({ params }) {
                     </div>
 
                     <div>
-                        <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                            Product Variations (Optional)
-                        </label>
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Product Features (Optional)</label>
                         <textarea
                             className="input-field"
-                            placeholder="Format: [Name]: [Option1], [Option2]&#10;E.g.:&#10;Size: Small, Medium, Large&#10;Finish: Matte, Glossy"
-                            value={product.variations || ""}
-                            onChange={(e) => setProduct({ ...product, variations: e.target.value })}
-                            style={{ minHeight: "100px", resize: "vertical", fontFamily: "monospace", fontSize: "0.85rem" }}
+                            placeholder="Format: Feature Name: Description&#10;E.g.:&#10;Premium Quality: Built with high quality materials.&#10;Express Delivery: Delivered directly to your door."
+                            value={product.features || ""}
+                            onChange={(e) => setProduct({ ...product, features: e.target.value })}
+                            style={{ minHeight: "100px", resize: "vertical" }}
                         ></textarea>
                         <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
-                            Place each variation group on its own line. Options must be separated by commas.
+                            Place each feature on its own line. Use a colon (:) to bold the feature name.
                         </span>
+                    </div>
+
+                    <div style={{ border: "1px solid var(--border)", padding: "24px", borderRadius: "12px", background: "rgba(0,0,0,0.01)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                            <label style={{ margin: 0, fontSize: "1rem", fontWeight: 600, color: "var(--text-main)" }}>Visual Variations (Optional)</label>
+                            <button 
+                                type="button" 
+                                onClick={() => setVariationGroups([...variationGroups, { name: "", options: [{ value: "", image_url: "" }] }])}
+                                className="btn btn-secondary"
+                                style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                            >
+                                + Add Variation Group
+                            </button>
+                        </div>
+                        
+                        {variationGroups.length === 0 && (
+                            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: 0 }}>No variations added. Product will be standard without size or color options.</p>
+                        )}
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                            {variationGroups.map((group, gIndex) => (
+                                <div key={gIndex} style={{ padding: "16px", background: "#ffffff", border: "1px solid var(--border)", borderRadius: "8px", position: "relative" }}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setVariationGroups(variationGroups.filter((_, i) => i !== gIndex))}
+                                        style={{ position: "absolute", top: "12px", right: "12px", background: "transparent", color: "var(--danger)", border: "none", cursor: "pointer", fontSize: "0.8rem" }}
+                                    >
+                                        Remove Group
+                                    </button>
+                                    
+                                    <div style={{ marginBottom: "16px", maxWidth: "300px" }}>
+                                        <label style={{ display: "block", marginBottom: "6px", fontSize: "0.8rem", color: "var(--text-muted)" }}>Group Name (e.g., Color, Size)</label>
+                                        <input
+                                            className="input-field"
+                                            value={group.name}
+                                            onChange={(e) => {
+                                                const newGroups = [...variationGroups];
+                                                newGroups[gIndex].name = e.target.value;
+                                                setVariationGroups(newGroups);
+                                            }}
+                                            placeholder="Group Name"
+                                        />
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                        <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600 }}>Options</label>
+                                        {group.options.map((option, oIndex) => (
+                                            <div key={oIndex} style={{ display: "flex", gap: "12px", alignItems: "center", background: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "6px" }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <input
+                                                        className="input-field"
+                                                        value={option.value}
+                                                        onChange={(e) => {
+                                                            const newGroups = [...variationGroups];
+                                                            newGroups[gIndex].options[oIndex].value = e.target.value;
+                                                            setVariationGroups(newGroups);
+                                                        }}
+                                                        placeholder="Option Value (e.g., Red, Small)"
+                                                    />
+                                                </div>
+                                                
+                                                {/* Option Image Upload */}
+                                                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
+                                                    {option.image_url ? (
+                                                        <div style={{ position: "relative", width: "40px", height: "40px", borderRadius: "4px", overflow: "hidden", border: "1px solid var(--border)" }}>
+                                                            <img src={option.image_url} alt="Variant" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                            <button 
+                                                                type="button" 
+                                                                onClick={() => {
+                                                                    const newGroups = [...variationGroups];
+                                                                    newGroups[gIndex].options[oIndex].image_url = "";
+                                                                    setVariationGroups(newGroups);
+                                                                }}
+                                                                style={{ position: "absolute", top: 0, right: 0, background: "rgba(0,0,0,0.5)", color: "white", border: "none", cursor: "pointer", padding: "2px 4px", fontSize: "10px" }}
+                                                            >×</button>
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ position: "relative" }}>
+                                                            <button 
+                                                                type="button" 
+                                                                className="btn btn-secondary" 
+                                                                style={{ padding: "6px 10px", fontSize: "0.75rem" }}
+                                                                onClick={() => document.getElementById(`var-img-${gIndex}-${oIndex}`).click()}
+                                                            >
+                                                                Upload Image
+                                                            </button>
+                                                            <input 
+                                                                id={`var-img-${gIndex}-${oIndex}`}
+                                                                type="file" 
+                                                                accept="image/*" 
+                                                                style={{ display: "none" }} 
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files[0];
+                                                                    if (file) handleOptionImageUpload(gIndex, oIndex, file);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        const newGroups = [...variationGroups];
+                                                        newGroups[gIndex].options = newGroups[gIndex].options.filter((_, i) => i !== oIndex);
+                                                        setVariationGroups(newGroups);
+                                                    }}
+                                                    style={{ background: "transparent", color: "var(--text-muted)", border: "none", cursor: "pointer", fontSize: "1.2rem", padding: "0 8px" }}
+                                                    title="Remove Option"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                const newGroups = [...variationGroups];
+                                                newGroups[gIndex].options.push({ value: "", image_url: "" });
+                                                setVariationGroups(newGroups);
+                                            }}
+                                            style={{ alignSelf: "flex-start", background: "transparent", color: "var(--accent)", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, padding: 0 }}
+                                        >
+                                            + Add Option
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div style={{ borderTop: "1px solid var(--border)", paddingTop: "24px", display: "flex", justifyContent: "flex-end" }}>

@@ -87,20 +87,20 @@ export const getProductById = (req, res) => {
 // ADD NEW PRODUCT
 // ===========================================================
 export const addProduct = (req, res) => {
-  const { name, description, price, stock, category_id, image_url, variations } = req.body;
+  const { name, description, price, stock, category_id, image_url, variations, features } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
   }
 
   const sql = `
-        INSERT INTO products (name, description, price, stock, category_id, image_url, variations)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (name, description, price, stock, category_id, image_url, variations, features)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url, variations || null],
+    [name, description, price, stock, category_id, image_url, variations || null, features || null],
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
@@ -120,17 +120,17 @@ export const addProduct = (req, res) => {
 // ===========================================================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { name, description, price, stock, category_id, image_url, variations } = req.body;
+  const { name, description, price, stock, category_id, image_url, variations, features } = req.body;
 
   const sql = `
         UPDATE products 
-        SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?, variations=?
+        SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?, variations=?, features=?
         WHERE id=?
     `;
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url, variations || null, id],
+    [name, description, price, stock, category_id, image_url, variations || null, features || null, id],
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);

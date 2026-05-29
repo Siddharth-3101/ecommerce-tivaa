@@ -491,7 +491,7 @@ export default function Navbar() {
                     />
                     
                     {/* Drawer Content */}
-                    <div className="card animate-slide-right" style={{ position: 'relative', width: '300px', height: '100%', background: '#ffffff', borderRadius: 0, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="animate-slide-right" style={{ position: 'relative', width: '300px', height: '100dvh', minHeight: '100vh', background: '#ffffff', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', zIndex: 2001, boxShadow: '4px 0 24px rgba(0,0,0,0.1)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <img src="/logo.png" style={{ height: '48px', objectFit: 'contain' }} alt="Tivaa Logo" />
                             <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>

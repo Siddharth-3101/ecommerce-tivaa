@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ProductImageGallery({ images = [], productName = "Product" }) {
     const [activeIndex, setActiveIndex] = useState(0);
+    const [overrideImage, setOverrideImage] = useState(null);
+
+    useEffect(() => {
+        const handleEvent = (e) => setOverrideImage(e.detail);
+        window.addEventListener('variationImageSelected', handleEvent);
+        return () => window.removeEventListener('variationImageSelected', handleEvent);
+    }, []);
+
     const validImages = images.filter(img => img && img.trim() !== "");
 
     if (validImages.length === 0) {
@@ -18,7 +26,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
         );
     }
 
-    const primaryImage = validImages[activeIndex];
+    const primaryImage = overrideImage || validImages[activeIndex];
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -40,7 +48,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
             >
                 <img
                     src={primaryImage}
-                    alt={`${productName} View ${activeIndex + 1}`}
+                    alt={`${productName} View`}
                     style={{ 
                         width: '100%', 
                         height: '100%', 
@@ -66,7 +74,10 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     {validImages.map((img, idx) => (
                         <button
                             key={idx}
-                            onClick={() => setActiveIndex(idx)}
+                            onClick={() => {
+                                setActiveIndex(idx);
+                                setOverrideImage(null);
+                            }}
                             style={{
                                 width: '70px',
                                 height: '70px',

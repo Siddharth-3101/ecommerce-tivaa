@@ -720,8 +720,9 @@ a:hover {
 
 @media (max-width: 768px) {
     .hero-adaptive-container {
-        height: 50vh;
-        min-height: 260px;
+        height: auto;
+        min-height: auto;
+        aspect-ratio: 1 / 1;
     }
     .hero-adaptive-img {
         object-position: center center;
@@ -730,8 +731,9 @@ a:hover {
 
 @media (max-width: 480px) {
     .hero-adaptive-container {
-        height: 40vh;
-        min-height: 200px;
+        height: auto;
+        min-height: auto;
+        aspect-ratio: 1 / 1;
     }
 }
 

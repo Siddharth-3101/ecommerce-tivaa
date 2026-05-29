@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS products (
     price DECIMAL(10, 2) NOT NULL,
     stock INT DEFAULT 0,
     category VARCHAR(100),
-    image_url VARCHAR(255),
+    image_url TEXT,
+    variations TEXT,
+    features TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

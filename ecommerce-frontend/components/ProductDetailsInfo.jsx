@@ -6,20 +6,25 @@ import WishlistButton from "./WishlistButton";
 
 export default function ProductDetailsInfo({ product }) {
     // Parse variations JSON safely
-    let parsedVariations = {};
+    let parsedVariations = [];
     if (product.variations) {
-        if (typeof product.variations === 'object') {
-            parsedVariations = product.variations;
-        } else if (typeof product.variations === 'string') {
-            try {
-                parsedVariations = JSON.parse(product.variations);
-            } catch (e) {
-                console.error("Failed to parse variations JSON", e);
+        try {
+            const parsedObj = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
+            if (Array.isArray(parsedObj)) {
+                parsedVariations = parsedObj;
+            } else {
+                // Convert old format to new format
+                parsedVariations = Object.entries(parsedObj).map(([name, options]) => ({
+                    name,
+                    options: options.map(opt => ({ value: opt, image_url: "" }))
+                }));
             }
+        } catch (e) {
+            console.error("Failed to parse variations JSON", e);
         }
     }
 
-    const hasVariations = Object.keys(parsedVariations).length > 0;
+    const hasVariations = parsedVariations.length > 0;
 
     // Track selected variations
     const [selectedOptions, setSelectedOptions] = useState({});
@@ -27,13 +32,24 @@ export default function ProductDetailsInfo({ product }) {
     // Initialize with first option of each variation group
     useEffect(() => {
         const initial = {};
-        Object.keys(parsedVariations).forEach((key) => {
-            if (parsedVariations[key] && parsedVariations[key].length > 0) {
-                initial[key] = parsedVariations[key][0];
+        parsedVariations.forEach((group) => {
+            if (group.options && group.options.length > 0) {
+                initial[group.name] = group.options[0].value;
             }
         });
         setSelectedOptions(initial);
     }, [product.variations]);
+
+    const handleOptionSelect = (groupName, option) => {
+        setSelectedOptions((prev) => ({
+            ...prev,
+            [groupName]: option.value,
+        }));
+        
+        if (option.image_url) {
+            window.dispatchEvent(new CustomEvent('variationImageSelected', { detail: option.image_url }));
+        }
+    };
 
     const handleOptionSelect = (groupName, value) => {
         setSelectedOptions((prev) => ({
@@ -72,27 +88,60 @@ export default function ProductDetailsInfo({ product }) {
             <div style={{ height: '1px', background: 'var(--border)' }}></div>
 
             {/* Description */}
-            <div>
-                <p style={{ color: "var(--text-muted)", fontSize: '1.05rem', lineHeight: 1.8, fontWeight: 400 }}>
-                    {product.description || "An absolute masterpiece. Elegantly designed and crafted for perfection. Add this to your collection."}
-                </p>
-            </div>
+            {product.description && (
+                <div>
+                    <p style={{ color: "var(--text-muted)", fontSize: '1.05rem', lineHeight: 1.8, fontWeight: 400 }}>
+                        {product.description}
+                    </p>
+                </div>
+            )}
 
             {/* Dynamic Capsule Variation Selectors */}
             {hasVariations && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "8px" }}>
-                    {Object.entries(parsedVariations).map(([groupName, options]) => (
-                        <div key={groupName} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {parsedVariations.map((group) => (
+                        <div key={group.name} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                             <span style={{ fontSize: "0.85rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-muted)" }}>
-                                Select {groupName}
+                                Select {group.name}
                             </span>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                                {options.map((option) => {
-                                    const isActive = selectedOptions[groupName] === option;
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                                {group.options.map((option) => {
+                                    const isActive = selectedOptions[group.name] === option.value;
+                                    
+                                    if (option.image_url) {
+                                        // Visual Swatch
+                                        return (
+                                            <button
+                                                key={option.value}
+                                                onClick={() => handleOptionSelect(group.name, option)}
+                                                style={{
+                                                    padding: 0,
+                                                    width: "48px",
+                                                    height: "48px",
+                                                    borderRadius: "50%",
+                                                    cursor: "pointer",
+                                                    border: isActive ? "2px solid var(--text-main)" : "2px solid transparent",
+                                                    boxShadow: isActive ? "0 0 0 2px #ffffff inset" : "0 0 0 1px #e0e0e0 inset",
+                                                    background: "transparent",
+                                                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                    overflow: "hidden",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                                title={option.value}
+                                                className="hover-variant-img"
+                                            >
+                                                <img src={option.image_url} alt={option.value} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            </button>
+                                        );
+                                    }
+
+                                    // Text Button
                                     return (
                                         <button
-                                            key={option}
-                                            onClick={() => handleOptionSelect(groupName, option)}
+                                            key={option.value}
+                                            onClick={() => handleOptionSelect(group.name, option)}
                                             style={{
                                                 padding: "8px 20px",
                                                 borderRadius: "50px",
@@ -110,7 +159,7 @@ export default function ProductDetailsInfo({ product }) {
                                             }}
                                             className={isActive ? "" : "hover-variant-chip"}
                                         >
-                                            {option}
+                                            {option.value}
                                         </button>
                                     );
                                 })}
@@ -154,19 +203,30 @@ export default function ProductDetailsInfo({ product }) {
             )}
 
             {/* Product Features */}
-            <div className="card" style={{ marginTop: '12px', padding: '24px', borderRadius: '8px' }}>
-                <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.5px' }}>Product Features</h3>
-                <ul style={{ color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '20px', fontSize: '0.95rem' }}>
-                    <li><strong>Premium Quality:</strong> Built with high quality materials.</li>
-                    <li><strong>Express Delivery:</strong> Delivered directly to your door.</li>
-                    <li><strong>Secure Warranty:</strong> 30-day return window.</li>
-                </ul>
-            </div>
+            {product.features && (
+                <div className="card" style={{ marginTop: '12px', padding: '24px', borderRadius: '8px' }}>
+                    <h3 style={{ marginBottom: '16px', fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.5px' }}>Product Features</h3>
+                    <ul style={{ color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '20px', fontSize: '0.95rem' }}>
+                        {product.features.split('\n').filter(f => f.trim()).map((feature, i) => {
+                            const splitIdx = feature.indexOf(':');
+                            if (splitIdx > -1) {
+                                return (
+                                    <li key={i}><strong>{feature.substring(0, splitIdx + 1)}</strong>{feature.substring(splitIdx + 1)}</li>
+                                );
+                            }
+                            return <li key={i}>{feature}</li>;
+                        })}
+                    </ul>
+                </div>
+            )}
 
             <style jsx global>{`
                 .hover-variant-chip:hover {
                     background-color: #f5f5f5 !important;
                     border-color: var(--text-main) !important;
+                }
+                .hover-variant-img:hover {
+                    box-shadow: 0 0 0 2px var(--border) inset !important;
                 }
             `}</style>
         </div>
