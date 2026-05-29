@@ -51,13 +51,6 @@ export default function ProductDetailsInfo({ product }) {
         }
     };
 
-    const handleOptionSelect = (groupName, value) => {
-        setSelectedOptions((prev) => ({
-            ...prev,
-            [groupName]: value,
-        }));
-    };
-
     // Format selection choice distinctively: e.g. "Size: S, Color: Pink"
     const getSelectedVariationString = () => {
         if (Object.keys(selectedOptions).length === 0) return null;
