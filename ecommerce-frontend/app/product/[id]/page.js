@@ -61,8 +61,8 @@ export default async function ProductPage({ params }) {
                     <ProductDetailsInfo product={product} />
                 </div>
 
-                {/* PRODUCT CUSTOMER REVIEWS */}
-                <ProductReviews productId={product.id} />
+                {/* PRODUCT CUSTOMER REVIEWS (Hidden for now as requested) */}
+                {/* <ProductReviews productId={product.id} /> */}
             </div>
         </div>
     );
