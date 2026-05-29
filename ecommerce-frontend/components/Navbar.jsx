@@ -192,56 +192,8 @@ export default function Navbar() {
             {/* Header Main Bar */}
             <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 120px)", padding: "0 24px" }}>
 
-                {/* LEFT: Nav Links (Desktop Only) */}
-                <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '28px' }}>
-                    <Link 
-                        href="/" 
-                        className={`nav-link-premium ${pathname === '/' ? 'active' : ''}`}
-                    >
-                        Home
-                    </Link>
-
-                    {/* Categories Dropdown */}
-                    <div
-                        onMouseEnter={handleCategoriesMouseEnter}
-                        onMouseLeave={handleCategoriesMouseLeave}
-                        style={{ position: 'relative', display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)' }}
-                    >
-                        <Link 
-                            href="/products" 
-                            className={`nav-link-premium ${pathname.startsWith('/products') ? 'active' : ''}`}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                        >
-                            Categories
-                            <ChevronDown size={14} style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                        </Link>
-
-                        {dropdownOpen && (
-                            <div style={{ position: 'absolute', top: 'var(--nav-height, 120px)', left: 0, width: '220px', zIndex: 1100 }}>
-                                <div className="card" style={{ padding: '8px', display: 'flex', flexDirection: 'column', background: '#ffffff', borderRadius: '4px', border: '1px solid var(--border)', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
-                                    <Link href="/products" className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '2px', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
-                                        All Products
-                                    </Link>
-                                    {categories.map(c => (
-                                        <Link key={c.id} href={`/products?category=${encodeURIComponent(c.name)}`} className="dropdown-item" style={{ padding: '10px 16px', borderRadius: '2px', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>
-                                            {c.name}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <Link 
-                        href="/faq" 
-                        className={`nav-link-premium ${pathname === '/faq' ? 'active' : ''}`}
-                    >
-                        Contact
-                    </Link>
-                </div>
-
-                {/* LEFT: Hamburger Menu Toggle (Mobile Only) */}
-                <div className="mobile-only" style={{ flex: 1 }}>
+                {/* LEFT: Hamburger Menu Toggle */}
+                <div style={{ flex: 1 }}>
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}
