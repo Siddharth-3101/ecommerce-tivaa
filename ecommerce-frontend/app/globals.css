@@ -33,8 +33,8 @@
     --danger: #B3566F;
 
     /* Lavender-tinted borders and glass effects */
-    --border: #EADCF8;
-    --glass-border: rgba(234, 220, 248, 0.6);
+    --border: #C0A9D8;
+    --glass-border: rgba(192, 169, 216, 0.7);
     
     /* Elegant premium shadows */
     --shadow-sm: 0 4px 12px rgba(122, 56, 194, 0.05);
@@ -266,7 +266,7 @@ a:hover {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(234, 220, 248, 0.7);
+    border: 1px solid rgba(192, 169, 216, 0.85);
     border-radius: 28px;
     box-shadow: 0 24px 60px rgba(122, 56, 194, 0.1), 0 4px 16px rgba(185, 110, 255, 0.06);
     position: relative;
