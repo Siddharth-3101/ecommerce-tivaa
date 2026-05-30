@@ -52,7 +52,10 @@ export const createPaymentOrder = (req, res) => {
       }
     );
 
-    return res.json(order);
+    return res.json({
+      ...order,
+      key_id: process.env.RAZORPAY_KEY_ID
+    });
   });
 };
 
