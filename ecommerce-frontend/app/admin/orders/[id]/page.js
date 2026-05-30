@@ -58,7 +58,7 @@ export default function AdminOrderDetails({ params }) {
             setOrder(res.data.order);
             setStatus(res.data.order.order_status);
         } catch (err) {
-            alert("Failed to update status.");
+            alert(err.response?.data?.message || "Failed to update status.");
         }
     };
 
