@@ -126,6 +126,28 @@ export default function AdminOrderDetails({ params }) {
                     </div>
 
                     <div className="card" style={{ padding: "24px" }}>
+                        <h3 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Payment Info</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Method</span>
+                                <strong style={{ color: 'var(--text-main)', textTransform: "capitalize" }}>{order.payment_method}</strong>
+                            </div>
+                            {order.razorpay_order_id && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>Razorpay Order ID</span>
+                                    <strong style={{ color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>{order.razorpay_order_id}</strong>
+                                </div>
+                            )}
+                            {order.payment_id && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>Payment ID</span>
+                                    <strong style={{ color: 'var(--accent)', fontFamily: 'monospace', fontSize: '0.85rem' }}>{order.payment_id}</strong>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="card" style={{ padding: "24px" }}>
                         <h3 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Shipping Address</h3>
                         {order.address ? (
                             <div style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>

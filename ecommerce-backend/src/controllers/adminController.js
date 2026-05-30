@@ -90,9 +90,12 @@ export const adminGetOrders = (req, res) => {
             o.total,
             o.order_status,
             o.payment_method,
-            o.created_at
+            o.created_at,
+            o.razorpay_order_id,
+            pay.payment_reference AS payment_id
         FROM orders o
         JOIN users u ON u.id = o.user_id
+        LEFT JOIN payments pay ON pay.order_id = o.id
         ORDER BY o.created_at DESC
     `;
 
@@ -118,10 +121,12 @@ export const adminOrderDetails = (req, res) => {
             u.name AS customer_name, 
             u.email AS customer_email,
             s.address, s.city, s.state, s.pincode, s.phone,
-            s.shipped_date, s.delivery_date
+            s.shipped_date, s.delivery_date,
+            pay.payment_reference AS payment_id
         FROM orders o
         JOIN users u ON u.id = o.user_id
         LEFT JOIN shipping_details s ON s.order_id = o.id
+        LEFT JOIN payments pay ON pay.order_id = o.id
         WHERE o.id = ?
     `;
 
