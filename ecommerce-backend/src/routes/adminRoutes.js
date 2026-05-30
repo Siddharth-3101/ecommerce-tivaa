@@ -13,6 +13,7 @@ import {
   addProduct,
   updateProduct,
   deleteProduct,
+  toggleProductVisibility,
 } from "../controllers/productController.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -26,6 +27,7 @@ const router = express.Router();
 router.post("/product", verifyToken, verifyAdmin, addProduct);
 router.put("/product/:id", verifyToken, verifyAdmin, updateProduct);
 router.delete("/product/:id", verifyToken, verifyAdmin, deleteProduct);
+router.put("/product/:id/toggle-visibility", verifyToken, verifyAdmin, toggleProductVisibility);
 
 // ======================================================
 // CATEGORY MANAGEMENT (ADMIN ONLY)

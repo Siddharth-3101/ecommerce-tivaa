@@ -67,7 +67,7 @@ export default function CategoriesPage() {
             await api.delete(`/admin/category/${id}`);
             await fetchCategories();
         } catch (err) {
-            alert("Failed to delete category");
+            alert(err.response?.data?.message || "Failed to delete category");
         }
     };
 

@@ -46,6 +46,7 @@ export const runSetup = async () => {
                 variations LONGTEXT NULL,
                 features LONGTEXT NULL,
                 is_active BOOLEAN DEFAULT true,
+                is_visible BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
             )
@@ -200,6 +201,7 @@ export const runSetup = async () => {
         await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN shipped_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN delivery_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_visible BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {

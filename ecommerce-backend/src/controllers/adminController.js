@@ -26,18 +26,32 @@ export const addCategory = (req, res) => {
 export const deleteCategory = (req, res) => {
     const { id } = req.params;
 
-    const sql = "DELETE FROM categories WHERE id = ?";
-
-    db.query(sql, [id], (err, result) => {
-        if (err) {
-            console.error("DB error:", err);
+    // Check if any active products belong to this category
+    const checkSql = "SELECT COUNT(*) as count FROM products WHERE category_id = ? AND is_active = true";
+    db.query(checkSql, [id], (checkErr, checkResult) => {
+        if (checkErr) {
+            console.error("DB error checking products:", checkErr);
             return res.status(500).json({ message: "DB error" });
         }
 
-        if (result.affectedRows === 0)
-            return res.status(404).json({ message: "Category not found" });
+        if (checkResult[0] && checkResult[0].count > 0) {
+            return res.status(400).json({ 
+                message: "Cannot delete category because it contains active products. Please reassign or delete the products first." 
+            });
+        }
 
-        res.json({ message: "Category deleted" });
+        const sql = "DELETE FROM categories WHERE id = ?";
+        db.query(sql, [id], (err, result) => {
+            if (err) {
+                console.error("DB error:", err);
+                return res.status(500).json({ message: "DB error" });
+            }
+
+            if (result.affectedRows === 0)
+                return res.status(404).json({ message: "Category not found" });
+
+            res.json({ message: "Category deleted" });
+        });
     });
 };
 

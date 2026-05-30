@@ -5,21 +5,59 @@ import { getCache, setCache, clearCache } from "../utils/cache.js";
 // GET PRODUCTS WITH PAGINATION
 // ===========================================================
 export const getProducts = async (req, res) => {
-  let { page = 1, limit = 12 } = req.query;
+  let { page = 1, limit = 12, admin, category, stock, visibility } = req.query;
 
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 12;
 
   const offset = (page - 1) * limit;
-  const cacheKey = `products_${page}_${limit}`;
+  
+  // Cache key: bypass cache for admin/filtered requests to see real-time updates instantly.
+  const isPlainPublic = admin !== "true" && !category && !stock && !visibility;
+  const cacheKey = isPlainPublic ? `products_${page}_${limit}` : null;
 
-  const cachedData = await getCache(cacheKey);
-  if (cachedData) {
-    return res.json(cachedData);
+  if (cacheKey) {
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
   }
 
-  const countSql = "SELECT COUNT(*) as total FROM products WHERE is_active = true";
-  db.query(countSql, (countErr, countRows) => {
+  // Base count sql
+  let countSql = admin === "true"
+    ? "SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.is_active = true"
+    : "SELECT COUNT(*) as total FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.is_active = true AND p.is_visible = true";
+  
+  const countParams = [];
+
+  // 1. Category Filter
+  if (category && category !== "All") {
+    if (!isNaN(category)) {
+      countSql += " AND p.category_id = ?";
+      countParams.push(parseInt(category));
+    } else {
+      countSql += " AND c.name = ?";
+      countParams.push(category);
+    }
+  }
+
+  // 2. Stock Filter
+  if (stock === "in_stock") {
+    countSql += " AND p.stock > 0";
+  } else if (stock === "out_of_stock") {
+    countSql += " AND p.stock = 0";
+  }
+
+  // 3. Visibility Filter
+  if (admin === "true" && visibility) {
+    if (visibility === "visible") {
+      countSql += " AND p.is_visible = true";
+    } else if (visibility === "hidden") {
+      countSql += " AND p.is_visible = false";
+    }
+  }
+
+  db.query(countSql, countParams, (countErr, countRows) => {
     if (countErr) {
       console.error("DB Error:", countErr);
       return res.status(500).json({ message: "Database error: " + countErr.message });
@@ -27,15 +65,44 @@ export const getProducts = async (req, res) => {
 
     const total = countRows[0]?.total || 0;
 
-    const sql = `
+    let sql = `
           SELECT p.*, c.name AS category_name
           FROM products p
           LEFT JOIN categories c ON p.category_id = c.id
-          WHERE p.is_active = true
-          LIMIT ? OFFSET ?
+          WHERE p.is_active = true ${admin === "true" ? "" : "AND p.is_visible = true"}
       `;
 
-    db.query(sql, [limit, offset], async (err, rows) => {
+    const selectParams = [];
+
+    // Reapply filters
+    if (category && category !== "All") {
+      if (!isNaN(category)) {
+        sql += " AND p.category_id = ?";
+        selectParams.push(parseInt(category));
+      } else {
+        sql += " AND c.name = ?";
+        selectParams.push(category);
+      }
+    }
+
+    if (stock === "in_stock") {
+      sql += " AND p.stock > 0";
+    } else if (stock === "out_of_stock") {
+      sql += " AND p.stock = 0";
+    }
+
+    if (admin === "true" && visibility) {
+      if (visibility === "visible") {
+        sql += " AND p.is_visible = true";
+      } else if (visibility === "hidden") {
+        sql += " AND p.is_visible = false";
+      }
+    }
+
+    sql += " LIMIT ? OFFSET ?";
+    selectParams.push(limit, offset);
+
+    db.query(sql, selectParams, async (err, rows) => {
       if (err) {
         console.error("DB Error:", err);
         return res.status(500).json({ message: "Database error: " + err.message });
@@ -49,7 +116,9 @@ export const getProducts = async (req, res) => {
         products: rows,
       };
 
-      await setCache(cacheKey, response, 300); // cache for 5 minutes
+      if (cacheKey) {
+        await setCache(cacheKey, response, 300); // cache for 5 minutes
+      }
 
       return res.json(response);
     });
@@ -194,7 +263,7 @@ export const searchProducts = (req, res) => {
         SELECT p.*, c.name AS category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
-        WHERE p.is_active = true AND (p.name LIKE ? 
+        WHERE p.is_active = true AND p.is_visible = true AND (p.name LIKE ? 
         OR p.description LIKE ?
         OR c.name LIKE ?)
     `;
@@ -219,7 +288,7 @@ export const filterProducts = (req, res) => {
         SELECT p.*, c.name AS category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
-        WHERE p.is_active = true
+        WHERE p.is_active = true AND p.is_visible = true
     `;
 
   const params = [];
@@ -251,5 +320,40 @@ export const filterProducts = (req, res) => {
     }
 
     return res.json(rows);
+  });
+};
+
+// ===========================================================
+// TOGGLE PRODUCT VISIBILITY (Admin Only)
+// ===========================================================
+export const toggleProductVisibility = (req, res) => {
+  const { id } = req.params;
+
+  db.query("SELECT is_visible FROM products WHERE id = ?", [id], (err, rows) => {
+    if (err) {
+      console.error("DB Error:", err);
+      return res.status(500).json({ message: "Database error: " + err.message });
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const nextVisibility = !rows[0].is_visible;
+
+    db.query("UPDATE products SET is_visible = ? WHERE id = ?", [nextVisibility, id], async (updateErr, result) => {
+      if (updateErr) {
+        console.error("DB Error:", updateErr);
+        return res.status(500).json({ message: "Database error: " + updateErr.message });
+      }
+
+      // Clear cache to ensure instant visibility
+      await clearCache("products");
+
+      return res.json({ 
+        message: `Product is now ${nextVisibility ? "visible" : "hidden"}`,
+        is_visible: nextVisibility 
+      });
+    });
   });
 };
