@@ -27,7 +27,7 @@ export const verifyToken = (req, res, next) => {
 export const currentUser = (req, res) => {
   const userId = req.user.id;
 
-  const sql = "SELECT id, name, email, role FROM users WHERE id = ?";
+  const sql = "SELECT id, name, email, role, phone, address, city, state, pincode FROM users WHERE id = ?";
 
   db.query(sql, [userId], (err, rows) => {
     if (err) return res.status(500).json({ message: "DB error" });

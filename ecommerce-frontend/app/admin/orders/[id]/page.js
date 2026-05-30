@@ -126,6 +126,18 @@ export default function AdminOrderDetails({ params }) {
                     </div>
 
                     <div className="card" style={{ padding: "24px" }}>
+                        <h3 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Shipping Address</h3>
+                        {order.address ? (
+                            <div style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                                <p style={{ margin: 0, fontWeight: 500 }}>{order.address}</p>
+                                <p style={{ margin: 0, color: 'var(--text-muted)' }}>{order.city}, {order.state} - {order.pincode}</p>
+                            </div>
+                        ) : (
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>No shipping address provided</p>
+                        )}
+                    </div>
+
+                    <div className="card" style={{ padding: "24px" }}>
                         <h3 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Order Status</h3>
                         
                         <div style={{ marginBottom: '24px' }}>

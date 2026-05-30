@@ -29,7 +29,7 @@ export default function CheckoutPage() {
         }
         setUser(loggedInUser);
 
-        async function loadCart() {
+        async function loadCartAndProfile() {
             try {
                 const res = await api.get("/cart");
                 const data = res.data;
@@ -37,6 +37,20 @@ export default function CheckoutPage() {
                 setCartItems(items);
                 if (items.length === 0) {
                     router.push("/cart");
+                    return;
+                }
+
+                // Fetch fresh profile containing saved address details
+                const profileRes = await api.get("/auth/me");
+                const profile = profileRes.data;
+                if (profile) {
+                    setFormData(prev => ({
+                        ...prev,
+                        shipping_address: profile.address || "",
+                        city: profile.city || "",
+                        state: profile.state || "",
+                        pincode: profile.pincode || ""
+                    }));
                 }
             } catch (err) {
                 router.push("/cart");
@@ -44,7 +58,7 @@ export default function CheckoutPage() {
                 setLoading(false);
             }
         }
-        loadCart();
+        loadCartAndProfile();
     }, [router]);
 
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

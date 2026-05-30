@@ -114,6 +114,15 @@ export const createOrder = (req, res) => {
           }
         );
 
+        // Step 7.5 — Auto-save shipping address to user's account profile
+        db.query(
+          "UPDATE users SET address = ?, city = ?, state = ?, pincode = ? WHERE id = ?",
+          [shipping_address, city, state, pincode, userId],
+          (errUserUpdate) => {
+            if (errUserUpdate) console.warn("Auto-save address error:", errUserUpdate);
+          }
+        );
+
         // Step 8 — Clear user's cart
         db.query("DELETE FROM cart WHERE user_id = ?", [userId], (err5) => {
           if (err5) console.warn("Cart clear error:", err5);

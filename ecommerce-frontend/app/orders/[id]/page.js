@@ -5,11 +5,13 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 
 export default function OrderDetailsPage({ params }) {
     const { id } = use(params);
     const [orderData, setOrderData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const searchParams = useSearchParams();
     const isSuccess = searchParams.get("success") === "true";
     const router = useRouter();
@@ -49,6 +51,75 @@ export default function OrderDetailsPage({ params }) {
     );
 
     const { order, items } = orderData;
+
+    const handleRetryPayment = async () => {
+        setSubmitting(true);
+        try {
+            // 1. Generate Razorpay order on the backend for this existing order
+            const payOrderRes = await api.post("/payment/order", {
+                amount: order.total,
+                currency: "INR",
+                order_id: order.id
+            });
+            const razorpayOrder = payOrderRes.data;
+
+            // 2. Open Razorpay checkout modal
+            const options = {
+                key: razorpayOrder.key_id || "rzp_test_51NgC2HSJ34m7p8",
+                amount: razorpayOrder.amount, // in paise
+                currency: razorpayOrder.currency,
+                name: "PremiumShop",
+                description: `Order #${order.id}`,
+                order_id: razorpayOrder.id,
+                handler: async function (response) {
+                    try {
+                        setSubmitting(true);
+                        // 3. Verify payment signature on the backend
+                        await api.post("/payment/verify", {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            order_id: order.id,
+                        });
+                        window.dispatchEvent(new Event('cart-updated'));
+                        // Refresh the page or update order status in state
+                        const updatedRes = await api.get(`/orders/my/${order.id}`);
+                        setOrderData(updatedRes.data);
+                        alert("Payment successful!");
+                    } catch (verifyErr) {
+                        alert("Payment verification failed. Please contact support.");
+                    } finally {
+                        setSubmitting(false);
+                    }
+                },
+                prefill: {
+                    name: order.customer_name || "",
+                    email: order.customer_email || "",
+                },
+                theme: {
+                    color: "#0a0b10",
+                },
+                modal: {
+                    ondismiss: function () {
+                        alert("Payment closed. You can retry payment anytime from this page.");
+                        setSubmitting(false);
+                    }
+                }
+            };
+
+            if (window.Razorpay) {
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } else {
+                alert("Razorpay SDK failed to load. Please refresh the page and try again.");
+                setSubmitting(false);
+            }
+        } catch (err) {
+            console.error("❌ Retry Payment Error:", err);
+            alert(err.response?.data?.message || "Failed to initiate payment. Please try again.");
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="container animate-fade-in" style={{ paddingTop: '120px', paddingBottom: '80px' }}>
@@ -123,9 +194,21 @@ export default function OrderDetailsPage({ params }) {
                         <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)' }}>₹{order.total}</div>
                     </div>
 
+                    {order.order_status === "pending" && (
+                        <button 
+                            disabled={submitting} 
+                            onClick={handleRetryPayment} 
+                            className="btn btn-primary" 
+                            style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, boxShadow: '0 4px 12px var(--accent-glow)' }}
+                        >
+                            {submitting ? "Processing Payment..." : "Pay Now"}
+                        </button>
+                    )}
+
                     <Link href="/" className="btn btn-secondary" style={{ padding: '12px' }}>Back to Store</Link>
                 </aside>
             </div>
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         </div>
     );
 }
