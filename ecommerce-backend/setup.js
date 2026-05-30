@@ -1,5 +1,17 @@
 import db from "./src/config/db.js";
 
+const getExistingColumns = async (tableName) => {
+    return new Promise((resolve) => {
+        db.query(`SHOW COLUMNS FROM \`${tableName}\``, (err, rows) => {
+            if (err) {
+                resolve([]);
+            } else {
+                resolve(rows.map(r => r.Field.toLowerCase()));
+            }
+        });
+    });
+};
+
 export const runSetup = async () => {
     try {
         // 1. Create users table
@@ -175,9 +187,24 @@ export const runSetup = async () => {
         console.log("Contact messages table verified/created");
 
         // 11. Safe Column ALTER Migrations
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN category_id INT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN features LONGTEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        const productCols = await getExistingColumns("products");
+        const userCols = await getExistingColumns("users");
+        const orderCols = await getExistingColumns("orders");
+        const categoryCols = await getExistingColumns("categories");
+        const cartCols = await getExistingColumns("cart");
+        const orderItemCols = await getExistingColumns("order_items");
+        const shippingCols = await getExistingColumns("shipping_details");
+
+        if (!productCols.includes("is_active")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
+        }
+        if (!productCols.includes("category_id")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN category_id INT NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!productCols.includes("features")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN features LONGTEXT NULL", (err) => err ? rej(err) : res()));
+        }
+        
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
             if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
                 rej(err);
@@ -185,23 +212,64 @@ export const runSetup = async () => {
                 res();
             }
         }));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN city VARCHAR(100) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN state VARCHAR(100) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN pincode VARCHAR(20) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+
+        if (!userCols.includes("phone")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("address")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("city")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN city VARCHAR(100) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("state")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN state VARCHAR(100) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("pincode")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN pincode VARCHAR(20) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("reset_token")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("reset_token_expires")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!orderCols.includes("razorpay_order_id")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+        
         await new Promise((res, rej) => db.query("ALTER TABLE orders MODIFY COLUMN order_status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending'", (err) => err ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN variations TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE cart ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN shipped_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN delivery_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
-        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_visible BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+
+        if (!categoryCols.includes("image_url")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!productCols.includes("variations")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN variations TEXT NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!cartCols.includes("selected_variation")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE cart ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!orderItemCols.includes("selected_variation")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!shippingCols.includes("shipped_date")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN shipped_date TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!shippingCols.includes("delivery_date")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN delivery_date TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!shippingCols.includes("phone")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN phone VARCHAR(50) NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!productCols.includes("is_visible")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_visible BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
+        }
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {

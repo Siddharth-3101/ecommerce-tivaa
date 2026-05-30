@@ -6,32 +6,33 @@ export const dynamic = "force-dynamic";
 
 async function fetchLandingData() {
     const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-    let products = [];
-    let categories = [];
     
     try {
-        const prodRes = await fetch(`${backendUrl}/api/products`, { cache: 'no-store' });
+        const [prodRes, catRes] = await Promise.all([
+            fetch(`${backendUrl}/api/products`, { cache: 'no-store' }),
+            fetch(`${backendUrl}/api/categories`, { cache: 'no-store' })
+        ]);
+
+        let products = [];
+        let categories = [];
+
         if (prodRes.ok) {
             const data = await prodRes.json();
             products = Array.isArray(data) ? data : (data.products || []);
         }
-    } catch (err) {
-        console.error("Error fetching products:", err);
-    }
 
-    try {
-        const catRes = await fetch(`${backendUrl}/api/categories`, { cache: 'no-store' });
         if (catRes.ok) {
             categories = await catRes.json();
         }
-    } catch (err) {
-        console.error("Error fetching categories:", err);
-    }
 
-    return { 
-        products: products.slice(0, 8), // Show latest 8 products in Newly Added
-        categories 
-    };
+        return { 
+            products: products.slice(0, 8), // Show latest 8 products in Newly Added
+            categories 
+        };
+    } catch (err) {
+        console.error("Error fetching landing data concurrently:", err);
+        return { products: [], categories: [] };
+    }
 }
 
 export default async function Home() {

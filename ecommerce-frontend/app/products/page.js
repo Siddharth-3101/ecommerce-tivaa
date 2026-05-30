@@ -74,8 +74,10 @@ export default async function ProductsPage({ searchParams }) {
     const query = resolvedParams.q;
     const page = parseInt(resolvedParams.page) || 1;
 
-    const data = await fetchProducts(category, query, page);
-    const categories = await fetchCategories();
+    const [data, categories] = await Promise.all([
+        fetchProducts(category, query, page),
+        fetchCategories()
+    ]);
     const totalPages = data.totalPages || 1;
 
     return (
