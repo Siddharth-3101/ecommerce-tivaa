@@ -131,6 +131,9 @@ export default function AdminOrderDetails({ params }) {
                             <div style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                                 <p style={{ margin: 0, fontWeight: 500 }}>{order.address}</p>
                                 <p style={{ margin: 0, color: 'var(--text-muted)' }}>{order.city}, {order.state} - {order.pincode}</p>
+                                {order.phone && (
+                                    <p style={{ margin: '8px 0 0 0', fontWeight: 600, color: 'var(--text-main)' }}>Phone: {order.phone}</p>
+                                )}
                             </div>
                         ) : (
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>No shipping address provided</p>

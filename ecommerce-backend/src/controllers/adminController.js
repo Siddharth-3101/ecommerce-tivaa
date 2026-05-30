@@ -103,7 +103,7 @@ export const adminOrderDetails = (req, res) => {
             o.*, 
             u.name AS customer_name, 
             u.email AS customer_email,
-            s.address, s.city, s.state, s.pincode,
+            s.address, s.city, s.state, s.pincode, s.phone,
             s.shipped_date, s.delivery_date
         FROM orders o
         JOIN users u ON u.id = o.user_id

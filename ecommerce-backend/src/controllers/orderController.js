@@ -12,7 +12,7 @@ const razorpay = new Razorpay({
 // =============================================================
 export const createOrder = (req, res) => {
   const userId = req.user.id;
-  const { payment_method, shipping_address, city, state, pincode } = req.body;
+  const { payment_method, shipping_address, city, state, pincode, phone } = req.body;
 
   if (!payment_method) {
     return res.status(400).json({ message: "Payment method required" });
@@ -102,13 +102,13 @@ export const createOrder = (req, res) => {
         // Step 7 — Add shipping details
         const sqlShip = `
                     INSERT INTO shipping_details 
-                    (order_id, address, city, state, pincode)
-                    VALUES (?, ?, ?, ?, ?)
+                    (order_id, address, city, state, pincode, phone)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 `;
 
         db.query(
           sqlShip,
-          [orderId, shipping_address, city, state, pincode],
+          [orderId, shipping_address, city, state, pincode, phone || null],
           (err4) => {
             if (err4) console.warn("Shipping insert error:", err4);
           }
@@ -116,8 +116,8 @@ export const createOrder = (req, res) => {
 
         // Step 7.5 — Auto-save shipping address to user's account profile
         db.query(
-          "UPDATE users SET address = ?, city = ?, state = ?, pincode = ? WHERE id = ?",
-          [shipping_address, city, state, pincode, userId],
+          "UPDATE users SET address = ?, city = ?, state = ?, pincode = ?, phone = ? WHERE id = ?",
+          [shipping_address, city, state, pincode, phone || null, userId],
           (errUserUpdate) => {
             if (errUserUpdate) console.warn("Auto-save address error:", errUserUpdate);
           }

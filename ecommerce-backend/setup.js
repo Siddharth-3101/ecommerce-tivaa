@@ -106,6 +106,7 @@ export const runSetup = async () => {
                 city VARCHAR(100) NOT NULL,
                 state VARCHAR(100) NOT NULL,
                 pincode VARCHAR(20) NOT NULL,
+                phone VARCHAR(50) NULL,
                 shipped_date TIMESTAMP NULL,
                 delivery_date TIMESTAMP NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -198,6 +199,7 @@ export const runSetup = async () => {
         await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN shipped_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN delivery_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {

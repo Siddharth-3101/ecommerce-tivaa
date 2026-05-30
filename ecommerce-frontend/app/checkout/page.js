@@ -17,7 +17,8 @@ export default function CheckoutPage() {
         city: "",
         state: "",
         pincode: "",
-        payment_method: "Credit Card"
+        phone: "",
+        payment_method: "Razorpay"
     });
     const router = useRouter();
 
@@ -49,7 +50,8 @@ export default function CheckoutPage() {
                         shipping_address: profile.address || "",
                         city: profile.city || "",
                         state: profile.state || "",
-                        pincode: profile.pincode || ""
+                        pincode: profile.pincode || "",
+                        phone: profile.phone || ""
                     }));
                 }
             } catch (err) {
@@ -109,6 +111,7 @@ export default function CheckoutPage() {
                 prefill: {
                     name: user?.name || "",
                     email: user?.email || "",
+                    contact: formData.phone || ""
                 },
                 theme: {
                     color: "#0a0b10", // Sleek premium dark mode theme
@@ -157,69 +160,60 @@ export default function CheckoutPage() {
                             </h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Street Address</label>
-                                    <input 
-                                        type="text" 
-                                        className="input-field" 
-                                        required 
-                                        value={formData.shipping_address}
-                                        onChange={(e) => setFormData({...formData, shipping_address: e.target.value})}
-                                        placeholder="123 Luxury Lane"
-                                    />
+                                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Street Address</label>
+                                     <input 
+                                         type="text" 
+                                         className="input-field" 
+                                         required 
+                                         value={formData.shipping_address}
+                                         onChange={(e) => setFormData({...formData, shipping_address: e.target.value})}
+                                     />
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>City</label>
-                                        <input 
-                                            type="text" 
-                                            className="input-field" 
-                                            required 
-                                            value={formData.city}
-                                            onChange={(e) => setFormData({...formData, city: e.target.value})}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>State</label>
-                                        <input 
-                                            type="text" 
-                                            className="input-field" 
-                                            required 
-                                            value={formData.state}
-                                            onChange={(e) => setFormData({...formData, state: e.target.value})}
-                                        />
-                                    </div>
+                                     <div>
+                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>City</label>
+                                         <input 
+                                             type="text" 
+                                             className="input-field" 
+                                             required 
+                                             value={formData.city}
+                                             onChange={(e) => setFormData({...formData, city: e.target.value})}
+                                         />
+                                     </div>
+                                     <div>
+                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>State</label>
+                                         <input 
+                                             type="text" 
+                                             className="input-field" 
+                                             required 
+                                             value={formData.state}
+                                             onChange={(e) => setFormData({...formData, state: e.target.value})}
+                                         />
+                                     </div>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Pincode</label>
-                                    <input 
-                                        type="text" 
-                                        className="input-field" 
-                                        required 
-                                        value={formData.pincode}
-                                        onChange={(e) => setFormData({...formData, pincode: e.target.value})}
-                                    />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                     <div>
+                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Pincode</label>
+                                         <input 
+                                             type="text" 
+                                             className="input-field" 
+                                             required 
+                                             value={formData.pincode}
+                                             onChange={(e) => setFormData({...formData, pincode: e.target.value})}
+                                         />
+                                     </div>
+                                     <div>
+                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Mobile Number</label>
+                                         <input 
+                                             type="tel" 
+                                             className="input-field" 
+                                             required 
+                                             value={formData.phone}
+                                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                             placeholder="e.g. +91 98765 43210"
+                                         />
+                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="card" style={{ padding: '32px' }}>
-                            <h3 style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ width: '32px', height: '32px', background: 'var(--accent)', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>2</span>
-                                Payment Method
-                            </h3>
-                            <div style={{ display: 'flex', gap: '16px' }}>
-                                {["Credit Card", "UPI", "Net Banking"].map(method => (
-                                    <label key={method} style={{ flex: 1, padding: '16px', border: `1px solid ${formData.payment_method === method ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '12px', cursor: 'pointer', background: formData.payment_method === method ? 'var(--accent-glow)' : 'transparent', transition: 'all 0.2s', textAlign: 'center' }}>
-                                        <input 
-                                            type="radio" 
-                                            name="payment_method" 
-                                            style={{ display: 'none' }} 
-                                            checked={formData.payment_method === method}
-                                            onChange={() => setFormData({...formData, payment_method: method})}
-                                        />
-                                        <span style={{ fontWeight: 600, color: formData.payment_method === method ? 'var(--accent)' : 'var(--text-main)' }}>{method}</span>
-                                    </label>
-                                ))}
                             </div>
                         </div>
 
