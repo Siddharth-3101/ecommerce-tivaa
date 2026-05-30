@@ -22,7 +22,7 @@ export const getProducts = async (req, res) => {
   db.query(countSql, (countErr, countRows) => {
     if (countErr) {
       console.error("DB Error:", countErr);
-      return res.status(500).json({ message: "Database error" });
+      return res.status(500).json({ message: "Database error: " + countErr.message });
     }
 
     const total = countRows[0]?.total || 0;
@@ -38,7 +38,7 @@ export const getProducts = async (req, res) => {
     db.query(sql, [limit, offset], async (err, rows) => {
       if (err) {
         console.error("DB Error:", err);
-        return res.status(500).json({ message: "Database error" });
+        return res.status(500).json({ message: "Database error: " + err.message });
       }
 
       const response = {
@@ -72,7 +72,7 @@ export const getProductById = (req, res) => {
   db.query(sql, [id], (err, rows) => {
     if (err) {
       console.error("DB Error:", err);
-      return res.status(500).json({ message: "Database error" });
+      return res.status(500).json({ message: "Database error: " + err.message });
     }
 
     if (rows.length === 0) {
@@ -108,7 +108,7 @@ export const addProduct = (req, res) => {
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
-        return res.status(500).json({ message: "Database error" });
+        return res.status(500).json({ message: "Database error: " + err.message });
       }
 
       // Clear cache to ensure instant visibility
@@ -142,7 +142,7 @@ export const updateProduct = (req, res) => {
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);
-        return res.status(500).json({ message: "Database error" });
+        return res.status(500).json({ message: "Database error: " + err.message });
       }
 
       if (result.affectedRows === 0) {
@@ -166,7 +166,7 @@ export const deleteProduct = (req, res) => {
   db.query("UPDATE products SET is_active=false WHERE id = ?", [id], async (err, result) => {
     if (err) {
       console.error("DB Error:", err);
-      return res.status(500).json({ message: "Database error" });
+      return res.status(500).json({ message: "Database error: " + err.message });
     }
 
     if (result.affectedRows === 0) {
@@ -202,7 +202,7 @@ export const searchProducts = (req, res) => {
   db.query(sql, [searchTerm, searchTerm, searchTerm], (err, rows) => {
     if (err) {
       console.error("DB Error:", err);
-      return res.status(500).json({ message: "Database error" });
+      return res.status(500).json({ message: "Database error: " + err.message });
     }
 
     return res.json(rows);
@@ -247,7 +247,7 @@ export const filterProducts = (req, res) => {
   db.query(sql, params, (err, rows) => {
     if (err) {
       console.error("DB Error:", err);
-      return res.status(500).json({ message: "Database error" });
+      return res.status(500).json({ message: "Database error: " + err.message });
     }
 
     return res.json(rows);

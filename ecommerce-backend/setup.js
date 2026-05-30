@@ -35,11 +35,13 @@ export const runSetup = async () => {
             CREATE TABLE IF NOT EXISTS products (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
-                description TEXT NULL,
+                description LONGTEXT NULL,
                 price DECIMAL(10, 2) NOT NULL,
                 stock INT DEFAULT 0,
                 category_id INT NULL,
-                image_url TEXT NULL,
+                image_url LONGTEXT NULL,
+                variations LONGTEXT NULL,
+                features LONGTEXT NULL,
                 is_active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -54,7 +56,7 @@ export const runSetup = async () => {
                 user_id INT NOT NULL,
                 total DECIMAL(10, 2) NOT NULL,
                 payment_method VARCHAR(100) NOT NULL,
-                order_status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+                order_status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending',
                 razorpay_order_id VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -101,6 +103,8 @@ export const runSetup = async () => {
                 city VARCHAR(100) NOT NULL,
                 state VARCHAR(100) NOT NULL,
                 pincode VARCHAR(20) NOT NULL,
+                shipped_date TIMESTAMP NULL,
+                delivery_date TIMESTAMP NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
             )
@@ -167,15 +171,27 @@ export const runSetup = async () => {
 
         // 11. Safe Column ALTER Migrations
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN category_id INT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN features LONGTEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE products ADD CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
+            if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
+                rej(err);
+            } else {
+                res();
+            }
+        }));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN phone VARCHAR(50) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN address TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE orders MODIFY COLUMN order_status ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending'", (err) => err ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN variations TEXT NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE cart ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN shipped_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
+        await new Promise((res, rej) => db.query("ALTER TABLE shipping_details ADD COLUMN delivery_date TIMESTAMP NULL", (err) => err && !err.message.includes("Duplicate column name") ? rej(err) : res()));
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {

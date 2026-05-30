@@ -159,7 +159,8 @@ export const adminUpdateOrderStatus = (req, res) => {
         "paid",
         "shipped",
         "delivered",
-        "cancelled"
+        "cancelled",
+        "refunded"
     ];
 
     if (!allowedStatuses.includes(status))
