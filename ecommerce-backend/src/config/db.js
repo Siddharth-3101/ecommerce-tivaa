@@ -12,4 +12,19 @@ const db = mysql.createPool({
   port: process.env.DB_PORT || 3306,
 });
 
+// Auto-migrate schema on connection to ensure live DB supports large text and multiple images
+db.query(`
+  ALTER TABLE products 
+  MODIFY description LONGTEXT,
+  MODIFY image_url LONGTEXT,
+  MODIFY variations LONGTEXT,
+  MODIFY features LONGTEXT;
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration note (can be ignored if already updated):", err.message);
+  } else {
+    console.log("Database schema successfully verified/upgraded for large text fields.");
+  }
+});
+
 export default db;
