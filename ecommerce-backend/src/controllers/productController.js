@@ -93,6 +93,10 @@ export const addProduct = (req, res) => {
     return res.status(400).json({ message: "Name and price are required" });
   }
 
+  // Prevent MySQL strict mode errors by converting empty strings to null/0 for numeric columns
+  const safeStock = stock === "" || stock === undefined ? 0 : stock;
+  const safeCategoryId = category_id === "" || category_id === undefined ? null : category_id;
+
   const sql = `
         INSERT INTO products (name, description, price, stock, category_id, image_url, variations, features)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -100,7 +104,7 @@ export const addProduct = (req, res) => {
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url, variations || null, features || null],
+    [name, description, price, safeStock, safeCategoryId, image_url, variations || null, features || null],
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
@@ -122,6 +126,10 @@ export const updateProduct = (req, res) => {
   const { id } = req.params;
   const { name, description, price, stock, category_id, image_url, variations, features } = req.body;
 
+  // Prevent MySQL strict mode errors by converting empty strings to null/0 for numeric columns
+  const safeStock = stock === "" || stock === undefined ? 0 : stock;
+  const safeCategoryId = category_id === "" || category_id === undefined ? null : category_id;
+
   const sql = `
         UPDATE products 
         SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?, variations=?, features=?
@@ -130,7 +138,7 @@ export const updateProduct = (req, res) => {
 
   db.query(
     sql,
-    [name, description, price, stock, category_id, image_url, variations || null, features || null, id],
+    [name, description, price, safeStock, safeCategoryId, image_url, variations || null, features || null, id],
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);
