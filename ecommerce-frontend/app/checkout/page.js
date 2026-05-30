@@ -84,7 +84,7 @@ export default function CheckoutPage() {
                 key: razorpayOrder.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_51NgC2HSJ34m7p8", // Loaded dynamically from backend to avoid key mismatch
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
-                name: "PremiumShop",
+                name: "Tivaa Elegance",
                 description: `Order #${orderId}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {

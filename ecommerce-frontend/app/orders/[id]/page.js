@@ -68,7 +68,7 @@ export default function OrderDetailsPage({ params }) {
                 key: razorpayOrder.key_id || "rzp_test_51NgC2HSJ34m7p8",
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
-                name: "PremiumShop",
+                name: "Tivaa Elegance",
                 description: `Order #${order.id}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
