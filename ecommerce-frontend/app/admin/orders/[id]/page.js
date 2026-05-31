@@ -22,7 +22,7 @@ export default function AdminOrderDetails({ params }) {
     useEffect(() => {
         const loadOrder = async () => {
             try {
-                const res = await api.get(`/admin/orders/${id}`);
+                const res = await api.get(`/admin/orders/${id}?t=${Date.now()}`);
                 setOrder(res.data.order);
                 setItems(res.data.items);
                 setStatus(res.data.order.order_status?.toLowerCase());
@@ -54,7 +54,7 @@ export default function AdminOrderDetails({ params }) {
         try {
             await api.put(`/admin/orders/${id}/status`, { status });
             // refresh data gracefully
-            const res = await api.get(`/admin/orders/${id}`);
+            const res = await api.get(`/admin/orders/${id}?t=${Date.now()}`);
             setOrder(res.data.order);
             setStatus(res.data.order.order_status?.toLowerCase());
         } catch (err) {
