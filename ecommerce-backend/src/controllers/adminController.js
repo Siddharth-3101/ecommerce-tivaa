@@ -176,6 +176,7 @@ export const adminUpdateOrderStatus = (req, res) => {
     const allowedStatuses = [
         "pending",
         "paid",
+        "processing",
         "shipped",
         "delivered",
         "cancelled",

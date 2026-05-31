@@ -168,8 +168,8 @@ export default function AdminOrderDetails({ params }) {
                         <div style={{ marginBottom: '24px' }}>
                             <span style={{ 
                                 padding: "6px 12px", 
-                                background: order.order_status === "delivered" ? "rgba(16, 185, 129, 0.1)" : order.order_status === "processing" ? "rgba(99, 102, 241, 0.1)" : "rgba(245, 158, 11, 0.1)", 
-                                color: order.order_status === "delivered" ? "var(--success)" : order.order_status === "processing" ? "#818cf8" : "#fbbf24", 
+                                background: order.order_status?.toLowerCase() === "delivered" ? "rgba(16, 185, 129, 0.1)" : order.order_status?.toLowerCase() === "processing" ? "rgba(99, 102, 241, 0.1)" : "rgba(245, 158, 11, 0.1)", 
+                                color: order.order_status?.toLowerCase() === "delivered" ? "var(--success)" : order.order_status?.toLowerCase() === "processing" ? "#818cf8" : "#fbbf24",  
                                 borderRadius: "12px", 
                                 fontSize: "1rem", 
                                 fontWeight: 600,
@@ -191,6 +191,7 @@ export default function AdminOrderDetails({ params }) {
                                 >
                                     <option value="pending">Pending</option>
                                     <option value="paid">Paid</option>
+                                    <option value="processing">Processing</option>
                                     <option value="shipped">Shipped</option>
                                     <option value="delivered">Delivered</option>
                                     <option value="cancelled">Cancelled</option>

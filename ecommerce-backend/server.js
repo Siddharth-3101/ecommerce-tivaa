@@ -109,21 +109,38 @@ app.get("/", (req, res) => {
     }
 
     // Connection is healthy, query tables to see if they exist
-    db.query("SHOW TABLES", (err2, tables) => {
-      if (err2) {
+    db.query("DESCRIBE orders", (describeErr, describeRows) => {
+      if (describeErr) {
         return res.json({
-          message: "E-commerce API is running, database connected, but failed to retrieve tables.",
-          database_connected: true,
-          error_message: err2.message
+          message: "E-commerce API is running, database connected, but failed to describe orders.",
+          error: describeErr.message
         });
       }
 
-      const tableNames = tables.map(row => Object.values(row)[0]);
-      return res.json({
-        message: "E-commerce API is running and successfully connected to the database!",
-        database_connected: true,
-        database_name: process.env.DB_NAME || "unknown",
-        tables: tableNames
+      db.query("SELECT * FROM orders ORDER BY id DESC LIMIT 5", (selectErr, selectRows) => {
+        const sampleOrders = selectErr ? [] : selectRows;
+        
+        db.query("SHOW TABLES", (err2, tables) => {
+          if (err2) {
+            return res.json({
+              message: "E-commerce API is running, database connected, but failed to retrieve tables.",
+              database_connected: true,
+              error_message: err2.message,
+              orders_schema: describeRows,
+              sample_orders: sampleOrders
+            });
+          }
+
+          const tableNames = tables.map(row => Object.values(row)[0]);
+          return res.json({
+            message: "E-commerce API is running and successfully connected to the database!",
+            database_connected: true,
+            database_name: process.env.DB_NAME || "unknown",
+            tables: tableNames,
+            orders_schema: describeRows,
+            sample_orders: sampleOrders
+          });
+        });
       });
     });
   });

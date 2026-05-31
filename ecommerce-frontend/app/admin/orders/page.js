@@ -73,8 +73,8 @@ export default function AdminOrders() {
                                         <td style={{ padding: "16px 24px" }}>
                                             <span style={{ 
                                                 padding: "4px 8px", 
-                                                background: o.order_status === "Delivered" ? "rgba(16, 185, 129, 0.1)" : o.order_status === "Processing" ? "rgba(99, 102, 241, 0.1)" : "rgba(245, 158, 11, 0.1)", 
-                                                color: o.order_status === "Delivered" ? "var(--success)" : o.order_status === "Processing" ? "#818cf8" : "#fbbf24", 
+                                                background: o.order_status?.toLowerCase() === "delivered" ? "rgba(16, 185, 129, 0.1)" : o.order_status?.toLowerCase() === "processing" ? "rgba(99, 102, 241, 0.1)" : "rgba(245, 158, 11, 0.1)", 
+                                                color: o.order_status?.toLowerCase() === "delivered" ? "var(--success)" : o.order_status?.toLowerCase() === "processing" ? "#818cf8" : "#fbbf24", 
                                                 borderRadius: "12px", 
                                                 fontSize: "0.85rem", 
                                                 fontWeight: 600,

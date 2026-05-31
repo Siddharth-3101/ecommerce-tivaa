@@ -194,7 +194,7 @@ export default function OrderDetailsPage({ params }) {
                         <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-main)' }}>₹{order.total}</div>
                     </div>
 
-                    {order.order_status === "pending" && (
+                    {order.order_status?.toLowerCase() === "pending" && (
                         <button 
                             disabled={submitting} 
                             onClick={handleRetryPayment} 

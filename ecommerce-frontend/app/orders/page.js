@@ -40,15 +40,18 @@ export default function MyOrdersPage() {
     }, [user, router]);
 
     const getStatusStyle = (status) => {
-        switch (status) {
+        switch (status?.toLowerCase()) {
             case "delivered":
             case "paid":
                 return { background: "rgba(16, 185, 129, 0.08)", color: "var(--success)", border: "1px solid rgba(16, 185, 129, 0.2)" };
+            case "processing":
+                return { background: "rgba(99, 102, 241, 0.08)", color: "#818cf8", border: "1px solid rgba(99, 102, 241, 0.2)" };
             case "pending":
                 return { background: "rgba(220, 163, 83, 0.08)", color: "var(--accent-yellow)", border: "1px solid rgba(220, 163, 83, 0.2)" };
             case "shipped":
                 return { background: "rgba(130, 185, 194, 0.08)", color: "var(--accent-teal)", border: "1px solid rgba(130, 185, 194, 0.2)" };
             case "cancelled":
+            case "refunded":
                 return { background: "rgba(179, 86, 111, 0.08)", color: "var(--danger)", border: "1px solid rgba(179, 86, 111, 0.2)" };
             default:
                 return { background: "rgba(0,0,0,0.05)", color: "var(--text-muted)" };
