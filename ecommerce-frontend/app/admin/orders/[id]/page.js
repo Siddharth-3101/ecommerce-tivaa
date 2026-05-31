@@ -25,7 +25,7 @@ export default function AdminOrderDetails({ params }) {
                 const res = await api.get(`/admin/orders/${id}`);
                 setOrder(res.data.order);
                 setItems(res.data.items);
-                setStatus(res.data.order.order_status);
+                setStatus(res.data.order.order_status?.toLowerCase());
             } catch (err) {
                 // Silenced console.error to prevent next.js dev overlay interruptions
             } finally {
@@ -56,7 +56,7 @@ export default function AdminOrderDetails({ params }) {
             // refresh data gracefully
             const res = await api.get(`/admin/orders/${id}`);
             setOrder(res.data.order);
-            setStatus(res.data.order.order_status);
+            setStatus(res.data.order.order_status?.toLowerCase());
         } catch (err) {
             alert(err.response?.data?.message || "Failed to update status.");
         }
