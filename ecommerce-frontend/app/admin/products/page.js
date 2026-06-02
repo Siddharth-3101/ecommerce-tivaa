@@ -122,7 +122,7 @@ export default function AdminProductsPage() {
                         value={selectedCategory} 
                         onChange={(e) => handleCategoryChange(e.target.value)}
                         style={{
-                            background: "#121420",
+                            background: "#ffffff",
                             color: "var(--text-main)",
                             border: "1px solid var(--border)",
                             borderRadius: "8px",
@@ -149,7 +149,7 @@ export default function AdminProductsPage() {
                         value={selectedStock} 
                         onChange={(e) => handleStockChange(e.target.value)}
                         style={{
-                            background: "#121420",
+                            background: "#ffffff",
                             color: "var(--text-main)",
                             border: "1px solid var(--border)",
                             borderRadius: "8px",
@@ -175,7 +175,7 @@ export default function AdminProductsPage() {
                         value={selectedVisibility} 
                         onChange={(e) => handleVisibilityChange(e.target.value)}
                         style={{
-                            background: "#121420",
+                            background: "#ffffff",
                             color: "var(--text-main)",
                             border: "1px solid var(--border)",
                             borderRadius: "8px",

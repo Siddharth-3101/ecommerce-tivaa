@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import AddToCartButton from "./AddToCartButton";
 import WishlistButton from "./WishlistButton";
+import api from "@/lib/api";
+import { getUser } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 export default function ProductDetailsInfo({ product }) {
     // Parse variations JSON safely
@@ -39,6 +42,37 @@ export default function ProductDetailsInfo({ product }) {
         });
         setSelectedOptions(initial);
     }, [product.variations]);
+
+    const [buyLoading, setBuyLoading] = useState(false);
+    const user = getUser();
+    const router = useRouter();
+
+    const handleBuyNow = async () => {
+        if (!user) {
+            router.push("/login");
+            return;
+        }
+
+        try {
+            setBuyLoading(true);
+            await api.post("/cart", {
+                product_id: product.id,
+                quantity: 1,
+                selected_variation: selectedVariationString || null
+            });
+
+            // Trigger cart-updated event for live Navbar sync
+            window.dispatchEvent(new Event('cart-updated'));
+            
+            // Redirect straight to checkout
+            router.push("/checkout");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to proceed with Buy Now. Please try again.");
+        } finally {
+            setBuyLoading(false);
+        }
+    };
 
     const handleOptionSelect = (groupName, option) => {
         setSelectedOptions((prev) => ({
@@ -171,13 +205,46 @@ export default function ProductDetailsInfo({ product }) {
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginTop: '16px' }}>
-                <div style={{ flex: '1' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1', minWidth: '180px' }}>
                     <AddToCartButton 
                         productId={product.id} 
                         disabled={product.stock <= 0} 
                         selectedVariation={selectedVariationString}
                     />
+                </div>
+                <div style={{ flex: '1', minWidth: '180px' }}>
+                    <button
+                        onClick={handleBuyNow}
+                        disabled={product.stock <= 0 || buyLoading}
+                        className="btn btn-black-solid"
+                        style={{
+                            width: "100%",
+                            padding: "16px",
+                            fontSize: "1.1rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                            backgroundColor: "var(--text-main)",
+                            color: "#ffffff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                            transition: "all 0.2s"
+                        }}
+                    >
+                        {buyLoading ? (
+                            <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 1s ease-in-out infinite' }}></span>
+                        ) : (
+                            <>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                Buy Now
+                            </>
+                        )}
+                    </button>
                 </div>
                 <div>
                     <WishlistButton productId={product.id} />

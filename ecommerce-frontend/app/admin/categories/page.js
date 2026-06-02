@@ -8,6 +8,7 @@ export default function CategoriesPage() {
   const [form, setForm] = useState({ name: "", description: "", image_url: "" });
   const [loading, setLoading] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -51,14 +52,34 @@ export default function CategoriesPage() {
         if (!form.name) return;
         setLoading(true);
         try {
-            await api.post("/admin/category", form);
+            if (editingCategory) {
+                await api.put(`/admin/category/${editingCategory.id}`, form);
+                setEditingCategory(null);
+            } else {
+                await api.post("/admin/category", form);
+            }
             setForm({ name: "", description: "", image_url: "" });
             await fetchCategories();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to add category");
+            alert(err.response?.data?.message || `Failed to ${editingCategory ? 'update' : 'add'} category`);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleEdit = (category) => {
+        setEditingCategory(category);
+        setForm({
+            name: category.name || "",
+            description: category.description || "",
+            image_url: category.image_url || ""
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingCategory(null);
+        setForm({ name: "", description: "", image_url: "" });
     };
 
     const handleDelete = async (id) => {
@@ -80,8 +101,13 @@ export default function CategoriesPage() {
                 </div>
             </div>
 
-            <div className="card" style={{ padding: "24px", marginBottom: "32px" }}>
-                <h3 style={{ fontSize: "1.2rem", marginBottom: "16px", marginTop: 0 }}>Add Category</h3>
+            <div className="card" style={{ padding: "24px", marginBottom: "32px", border: editingCategory ? "1.5px solid var(--accent)" : undefined }}>
+                <h3 style={{ fontSize: "1.2rem", marginBottom: "16px", marginTop: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>{editingCategory ? `Edit Category (ID: #${editingCategory.id})` : "Add Category"}</span>
+                    {editingCategory && (
+                        <span style={{ fontSize: "0.85rem", color: "var(--accent)", background: "rgba(16, 185, 129, 0.08)", padding: "4px 10px", borderRadius: "20px", fontWeight: 500 }}>Editing Mode</span>
+                    )}
+                </h3>
                 <form onSubmit={handleAdd} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
@@ -185,9 +211,14 @@ export default function CategoriesPage() {
                         </div>
                     </div>
                     
-                    <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
+                        {editingCategory && (
+                            <button className="btn btn-secondary" type="button" onClick={handleCancelEdit} style={{ padding: "12px 24px" }}>
+                                Cancel Edit
+                            </button>
+                        )}
                         <button className="btn btn-primary" type="submit" disabled={loading || uploading} style={{ padding: "12px 24px" }}>
-                            {loading ? "Adding..." : "Add Category"}
+                            {editingCategory ? (loading ? "Updating..." : "Update Category") : (loading ? "Adding..." : "Add Category")}
                         </button>
                     </div>
                 </form>
@@ -226,6 +257,13 @@ export default function CategoriesPage() {
                     <td style={{ padding: "16px 24px", color: "var(--text-muted)", fontSize: "0.95rem" }}>{c.description || "-"}</td>
                     <td style={{ padding: "16px 24px", textAlign: "right" }}>
                         <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => handleEdit(c)}
+                                style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+                            >
+                                Edit
+                            </button>
                             <button
                                 className="btn btn-danger"
                                 onClick={() => handleDelete(c.id)}
