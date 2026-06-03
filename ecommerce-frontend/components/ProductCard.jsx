@@ -37,7 +37,7 @@ export default function ProductCard({ product }) {
             }, 2000);
         } catch (err) {
             console.error("Cart addition failed:", err);
-            alert("Failed to add item to cart. Please try again.");
+            alert(err.response?.data?.message || "Failed to add item to cart. Please try again.");
         } finally {
             setLoading(false);
         }

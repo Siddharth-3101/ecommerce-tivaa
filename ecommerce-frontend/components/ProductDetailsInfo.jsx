@@ -68,7 +68,7 @@ export default function ProductDetailsInfo({ product }) {
             router.push("/checkout");
         } catch (err) {
             console.error(err);
-            alert("Failed to proceed with Buy Now. Please try again.");
+            alert(err.response?.data?.message || "Failed to proceed with Buy Now. Please try again.");
         } finally {
             setBuyLoading(false);
         }

@@ -28,4 +28,20 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Clear expired/invalid token credentials to prevent getting stuck
+            import("./auth").then(({ logout }) => {
+                logout();
+                if (typeof window !== "undefined") {
+                    window.location.href = "/login?expired=true";
+                }
+            });
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

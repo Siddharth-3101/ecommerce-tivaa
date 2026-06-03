@@ -33,7 +33,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
             }, 2000);
         } catch (err) {
             console.log(err);
-            alert("Failed to add item to cart. Please try again.");
+            alert(err.response?.data?.message || "Failed to add item to cart. Please try again.");
         } finally {
             setLoading(false);
         }
