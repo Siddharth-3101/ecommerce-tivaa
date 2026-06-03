@@ -32,13 +32,18 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Clear expired/invalid token credentials to prevent getting stuck
-            import("./auth").then(({ logout }) => {
-                logout();
-                if (typeof window !== "undefined") {
-                    window.location.href = "/login?expired=true";
-                }
-            });
+            const hasToken = getToken();
+            const isLoginPage = typeof window !== "undefined" && window.location.pathname === "/login";
+            
+            if (hasToken && !isLoginPage) {
+                // Clear expired/invalid token credentials to prevent getting stuck
+                import("./auth").then(({ logout }) => {
+                    logout();
+                    if (typeof window !== "undefined") {
+                        window.location.href = "/login?expired=true";
+                    }
+                });
+            }
         }
         return Promise.reject(error);
     }

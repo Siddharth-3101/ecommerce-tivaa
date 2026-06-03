@@ -95,13 +95,17 @@ export default function Navbar() {
         Promise.resolve().then(() => setUser(getUser()));
 
         async function loadCart() {
-            try {
-                const res = await api.get("/cart");
-                if (res.data) {
-                    const numItems = res.data.items ? res.data.items.length : res.data.length;
-                    setCount(numItems || 0);
-                }
-            } catch (err) { }
+            // Only query cart if authenticated token exists to prevent 401 response loop
+            import("@/lib/auth").then(({ getToken }) => {
+                if (!getToken()) return;
+                
+                api.get("/cart").then((res) => {
+                    if (res.data) {
+                        const numItems = res.data.items ? res.data.items.length : res.data.length;
+                        setCount(numItems || 0);
+                    }
+                }).catch(() => {});
+            });
         }
         loadCart();
 
