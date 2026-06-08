@@ -1,53 +1,59 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import SortSelect from "@/components/SortSelect";
 
 export const dynamic = "force-dynamic";
 
-async function fetchProducts(categoryName, query, page = 1) {
+async function fetchProducts(categoryName, query, sort, page = 1) {
     try {
         const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
         const limit = 12;
 
+        let products = [];
         if (query) {
             const url = `${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`;
             const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
-            const data = await res.json();
-            const total = data.length;
-            const totalPages = Math.ceil(total / limit) || 1;
-            const offset = (page - 1) * limit;
-            return {
-                products: data.slice(offset, offset + limit),
-                page,
-                totalPages,
-                total
-            };
-        } else if (categoryName) {
-            const url = `${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`;
+            if (res.ok) {
+                products = await res.json();
+            }
+            if (sort && products.length > 0) {
+                if (sort === "price_low") products.sort((a, b) => a.price - b.price);
+                else if (sort === "price_high") products.sort((a, b) => b.price - a.price);
+                else if (sort === "name_asc") products.sort((a, b) => a.name.localeCompare(b.name));
+                else if (sort === "name_desc") products.sort((a, b) => b.name.localeCompare(a.name));
+            }
+        } else if (categoryName || sort) {
+            let url = `${backendUrl}/api/products/filter?`;
+            if (categoryName) url += `category=${encodeURIComponent(categoryName)}&`;
+            if (sort) url += `sort=${encodeURIComponent(sort)}&`;
             const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
-            const data = await res.json();
-            const total = data.length;
-            const totalPages = Math.ceil(total / limit) || 1;
-            const offset = (page - 1) * limit;
-            return {
-                products: data.slice(offset, offset + limit),
-                page,
-                totalPages,
-                total
-            };
+            if (res.ok) {
+                products = await res.json();
+            }
         } else {
             const url = `${backendUrl}/api/products?page=${page}&limit=${limit}`;
             const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) return { products: [], page: 1, totalPages: 1, total: 0 };
-            const data = await res.json();
-            return {
-                products: data.products || [],
-                page: data.page || page,
-                totalPages: data.totalPages || 1,
-                total: data.total || 0
-            };
+            if (res.ok) {
+                const data = await res.json();
+                return {
+                    products: data.products || [],
+                    page: data.page || page,
+                    totalPages: data.totalPages || 1,
+                    total: data.total || 0
+                };
+            }
+            return { products: [], page: 1, totalPages: 1, total: 0 };
         }
+
+        const total = products.length;
+        const totalPages = Math.ceil(total / limit) || 1;
+        const offset = (page - 1) * limit;
+        return {
+            products: products.slice(offset, offset + limit),
+            page,
+            totalPages,
+            total
+        };
     } catch (err) {
         return { products: [], page: 1, totalPages: 1, total: 0 };
     }
@@ -72,10 +78,11 @@ export default async function ProductsPage({ searchParams }) {
     const resolvedParams = await searchParams || {};
     const category = resolvedParams.category;
     const query = resolvedParams.q;
+    const sort = resolvedParams.sort;
     const page = parseInt(resolvedParams.page) || 1;
 
     const [data, categories] = await Promise.all([
-        fetchProducts(category, query, page),
+        fetchProducts(category, query, sort, page),
         fetchCategories()
     ]);
     const totalPages = data.totalPages || 1;
@@ -90,16 +97,30 @@ export default async function ProductsPage({ searchParams }) {
                     {query ? `${data.total || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
                 </p>
 
-                {/* Categories Filter Links */}
-                {categories && categories.length > 0 && (
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
-                        <Link href="/products" className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}>
+                {/* Categories and Sort Filter Bar */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '16px',
+                    marginTop: '24px',
+                    paddingBottom: '16px',
+                    borderBottom: '1px solid var(--border)'
+                }}>
+                    {/* Categories Filter Links */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <Link 
+                            href={`/products${sort ? `?sort=${sort}` : ''}`} 
+                            className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} 
+                            style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
+                        >
                             All Collections
                         </Link>
-                        {categories.map(c => (
+                        {categories && categories.length > 0 && categories.map(c => (
                             <Link
                                 key={c.id}
-                                href={`/products?category=${encodeURIComponent(c.name)}`}
+                                href={`/products?category=${encodeURIComponent(c.name)}${sort ? `&sort=${sort}` : ''}`}
                                 className={`btn ${category === c.name ? 'btn-primary' : 'btn-secondary'}`}
                                 style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
                             >
@@ -107,7 +128,13 @@ export default async function ProductsPage({ searchParams }) {
                             </Link>
                         ))}
                     </div>
-                )}
+
+                    {/* Sorting Selector */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>Sort by:</span>
+                        <SortSelect currentSort={sort} />
+                    </div>
+                </div>
             </div>
 
             <section className="container">
@@ -133,7 +160,7 @@ export default async function ProductsPage({ searchParams }) {
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '60px' }}>
                         {page > 1 && (
                             <Link
-                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${page - 1}`}
+                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page - 1}`}
                                 className="btn btn-secondary"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                             >
@@ -146,7 +173,7 @@ export default async function ProductsPage({ searchParams }) {
                             return (
                                 <Link
                                     key={p}
-                                    href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${p}`}
+                                    href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${p}`}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -170,7 +197,7 @@ export default async function ProductsPage({ searchParams }) {
                         
                         {page < totalPages && (
                             <Link
-                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}page=${page + 1}`}
+                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page + 1}`}
                                 className="btn btn-secondary"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                             >

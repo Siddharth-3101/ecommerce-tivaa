@@ -53,7 +53,7 @@ export default async function ProductPage({ params }) {
                     }}
                 >
                     {/* LEFT SECTION (IMAGE GALLERY) */}
-                    <div style={{ position: 'sticky', top: '140px' }}>
+                    <div className="sticky-gallery">
                         <ProductImageGallery images={images} productName={product.name} />
                     </div>
 

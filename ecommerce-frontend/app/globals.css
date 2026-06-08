@@ -833,3 +833,16 @@ a:hover {
         gap: 16px 12px;
     }
 }
+
+/* ── Responsive Sticky Gallery ───────────────────────────────────────────── */
+.sticky-gallery {
+    position: relative;
+    top: auto;
+}
+
+@media (min-width: 768px) {
+    .sticky-gallery {
+        position: sticky;
+        top: 140px;
+    }
+}

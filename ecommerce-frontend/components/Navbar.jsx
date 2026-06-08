@@ -145,6 +145,7 @@ export default function Navbar() {
             setDropdownOpen(false);
             setSearchOpen(false);
             setSearchResults([]);
+            setSearchQuery("");
         });
     }, [pathname]);
 
@@ -390,6 +391,7 @@ export default function Navbar() {
                                 if (searchQuery.trim()) {
                                     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
                                     setSearchOpen(false);
+                                    setSearchQuery("");
                                 }
                             }}
                             style={{ display: "flex", alignItems: "center", position: "relative" }}
@@ -420,7 +422,7 @@ export default function Navbar() {
                                     <Link 
                                         key={item.id} 
                                         href={`/product/${item.id}`} 
-                                        onClick={() => { setSearchResults([]); setSearchOpen(false); }} 
+                                        onClick={() => { setSearchResults([]); setSearchOpen(false); setSearchQuery(""); }} 
                                         className="dropdown-item" 
                                         style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '2px' }}
                                     >
@@ -457,7 +459,7 @@ export default function Navbar() {
                         </div>
 
                         {/* Search in Drawer */}
-                        <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); }}>
+                        <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); setSearchQuery(""); }}>
                             <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: '0px', borderColor: 'var(--border)' }} />
                         </form>
 
