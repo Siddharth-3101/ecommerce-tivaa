@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import db from "../config/db.js";
 import dotenv from "dotenv";
+import { sendOrderEmailToAdmins } from "../utils/orderEmail.js";
 dotenv.config();
 
 // ==========================================================
@@ -113,7 +114,11 @@ export const verifyPayment = (req, res) => {
         "UPDATE orders SET order_status = 'paid' WHERE id = ?",
         [order_id],
         (err3) => {
-          if (err3) console.error("❌ Order Update Error:", err3);
+          if (err3) {
+            console.error("❌ Order Update Error:", err3);
+          } else {
+            sendOrderEmailToAdmins(order_id);
+          }
         }
       );
 
@@ -161,13 +166,33 @@ export const razorpayWebhook = (req, res) => {
       }
     );
 
-    // Mark order as paid
+    // Mark order as paid and trigger emails
     db.query(
-      "UPDATE orders SET order_status='paid' WHERE razorpay_order_id = ?",
+      "SELECT id FROM orders WHERE razorpay_order_id = ?",
       [razorpayOrderId],
-      (err) => {
-        if (err) {
-          console.error("❌ Webhook Order Update Error:", err);
+      (errSelect, rows) => {
+        if (!errSelect && rows.length > 0) {
+          const orderId = rows[0].id;
+          db.query(
+            "UPDATE orders SET order_status='paid' WHERE id = ?",
+            [orderId],
+            (err) => {
+              if (err) {
+                console.error("❌ Webhook Order Update Error:", err);
+              } else {
+                sendOrderEmailToAdmins(orderId);
+              }
+            }
+          );
+        } else {
+          // Fallback to update using razorpay_order_id directly if select failed
+          db.query(
+            "UPDATE orders SET order_status='paid' WHERE razorpay_order_id = ?",
+            [razorpayOrderId],
+            (err) => {
+              if (err) console.error("❌ Webhook Order Update Fallback Error:", err);
+            }
+          );
         }
       }
     );

@@ -195,6 +195,7 @@ export default function AdminOrderDetails({ params }) {
                                     <option value="shipped">Shipped</option>
                                     <option value="delivered">Delivered</option>
                                     <option value="cancelled">Cancelled</option>
+                                    <option value="refunded">Refunded</option>
                                 </select>
                                 <button className="btn btn-primary" onClick={updateStatus} style={{ padding: '0 16px' }}>
                                     Update

@@ -44,7 +44,19 @@ export default function ProductCard({ product }) {
     };
 
     return (
-        <Link href={`/product/${product.id}`} className="card-borderless">
+        <div className="card-borderless" style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none' }}>
+            <Link 
+                href={`/product/${product.id}`} 
+                style={{ 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    bottom: 0, 
+                    zIndex: 1 
+                }} 
+                aria-label={product.name}
+            />
             <div className="product-image-container">
                 <img
                     src={product.image_url ? product.image_url.split(",")[0].trim() : "/placeholder.png"}
@@ -104,7 +116,9 @@ export default function ProductCard({ product }) {
                             cursor: loading || added ? 'default' : 'pointer',
                             flexShrink: 0,
                             padding: 0,
-                            boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)'
+                            boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)',
+                            position: 'relative',
+                            zIndex: 2
                         }}
                     >
                         {loading ? (
@@ -130,6 +144,10 @@ export default function ProductCard({ product }) {
                 @keyframes spin {
                     to { transform: rotate(360deg); }
                 }
+                .product-cart-btn {
+                    position: relative;
+                    z-index: 2;
+                }
                 .product-cart-btn:hover {
                     background: #A05CFF !important;
                     transform: scale(1.08);
@@ -140,6 +158,7 @@ export default function ProductCard({ product }) {
                     transform: none;
                 }
             `}</style>
-        </Link>
+        </div>
+
     );
 }

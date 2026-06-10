@@ -27,4 +27,16 @@ db.query(`
   }
 });
 
+// Auto-migrate orders table schema to include processing and refunded statuses
+db.query(`
+  ALTER TABLE orders 
+  MODIFY COLUMN order_status ENUM('pending','paid','processing','shipped','delivered','cancelled','refunded') DEFAULT 'pending';
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration orders note:", err.message);
+  } else {
+    console.log("Orders schema successfully updated for extra statuses.");
+  }
+});
+
 export default db;
