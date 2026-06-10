@@ -33,7 +33,13 @@ export const addToCart = (req, res) => {
         return res.status(500).json({ message: "Database error" });
       }
 
+      const product = productRows[0];
+
       if (cartRows.length > 0) {
+        const newQty = Number(cartRows[0].quantity) + quantity;
+        if (newQty > product.stock) {
+          return res.status(400).json({ message: `Cannot add more items than available in stock (${product.stock} max)` });
+        }
         // Increment quantity of existing row
         const updateQty = "UPDATE cart SET quantity = quantity + ? WHERE id = ?";
         db.query(updateQty, [quantity, cartRows[0].id], (errUpdate) => {
@@ -44,6 +50,9 @@ export const addToCart = (req, res) => {
           return res.json({ message: "Item quantity updated in cart" });
         });
       } else {
+        if (quantity > product.stock) {
+          return res.status(400).json({ message: `Cannot add more items than available in stock (${product.stock} max)` });
+        }
         // Insert new variation row
         const insertRow = "INSERT INTO cart (user_id, product_id, quantity, selected_variation) VALUES (?, ?, ?, ?)";
         db.query(insertRow, [userId, product_id, quantity, selected_variation || null], (errInsert) => {
@@ -73,6 +82,7 @@ export const getCart = (req, res) => {
       p.image_url,
       c.quantity,
       c.selected_variation,
+      p.stock,
       (p.price * c.quantity) AS total
     FROM cart c
     JOIN products p ON p.id = c.product_id
@@ -103,23 +113,40 @@ export const updateCartItem = (req, res) => {
     return res.status(400).json({ message: "Invalid quantity" });
   }
 
-  const sql = `
-    UPDATE cart
-    SET quantity = ?
-    WHERE id = ? AND user_id = ?
+  const checkStockSql = `
+    SELECT c.quantity AS cart_qty, p.stock 
+    FROM cart c 
+    JOIN products p ON c.product_id = p.id 
+    WHERE c.id = ? AND c.user_id = ?
   `;
-
-  db.query(sql, [quantity, id, userId], (err, result) => {
-    if (err) {
-      console.error("DB error:", err);
+  db.query(checkStockSql, [id, userId], (errStock, stockRows) => {
+    if (errStock) {
+      console.error("DB error:", errStock);
       return res.status(500).json({ message: "Database error" });
     }
-
-    if (result.affectedRows === 0) {
+    if (stockRows.length === 0) {
       return res.status(404).json({ message: "Cart item not found" });
     }
 
-    return res.json({ message: "Quantity updated" });
+    const { stock } = stockRows[0];
+    if (quantity > stock) {
+      return res.status(400).json({ message: `Cannot add more items than available in stock (${stock} max)` });
+    }
+
+    const sql = `
+      UPDATE cart
+      SET quantity = ?
+      WHERE id = ? AND user_id = ?
+    `;
+
+    db.query(sql, [quantity, id, userId], (err, result) => {
+      if (err) {
+        console.error("DB error:", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      return res.json({ message: "Quantity updated" });
+    });
   });
 };
 

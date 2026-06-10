@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,77 @@ import { useRouter } from "next/navigation";
 export default function ProductCard({ product }) {
     const [loading, setLoading] = useState(false);
     const [added, setAdded] = useState(false);
+    const [cartQty, setCartQty] = useState(0);
+    const [cartItemId, setCartItemId] = useState(null);
     const router = useRouter();
+
+    const syncCartQty = () => {
+        const cached = localStorage.getItem('tivaa-cart-items');
+        if (cached) {
+            try {
+                const items = JSON.parse(cached);
+                const matches = items.filter(item => item.product_id === product.id);
+                const qty = matches.reduce((sum, item) => sum + item.quantity, 0);
+                setCartQty(qty);
+                if (matches.length > 0) {
+                    setCartItemId(matches[0].id);
+                } else {
+                    setCartItemId(null);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        } else {
+            setCartQty(0);
+            setCartItemId(null);
+        }
+    };
+
+    useEffect(() => {
+        syncCartQty();
+        window.addEventListener("cart-updated", syncCartQty);
+        window.addEventListener("cart-items-loaded", syncCartQty);
+        return () => {
+            window.removeEventListener("cart-updated", syncCartQty);
+            window.removeEventListener("cart-items-loaded", syncCartQty);
+        };
+    }, [product.id]);
+
+    const handleIncrement = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (cartQty >= product.stock) return;
+        try {
+            setLoading(true);
+            await api.put(`/cart/${cartItemId}`, { quantity: cartQty + 1 });
+            window.dispatchEvent(new Event("cart-updated"));
+        } catch (err) {
+            console.error("Cart update failed:", err);
+            alert(err.response?.data?.message || "Failed to update quantity.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDecrement = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            setLoading(true);
+            if (cartQty === 1) {
+                await api.delete(`/cart/${cartItemId}`);
+            } else {
+                await api.put(`/cart/${cartItemId}`, { quantity: cartQty - 1 });
+            }
+            window.dispatchEvent(new Event("cart-updated"));
+        } catch (err) {
+            console.error("Cart update failed:", err);
+            alert(err.response?.data?.message || "Failed to update quantity.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleAddToCart = async (e) => {
         // Prevent navigating to the product details page
@@ -97,38 +167,93 @@ export default function ProductCard({ product }) {
                 </div>
                 
                 {product.stock > 0 && (
-                    <button
-                        onClick={handleAddToCart}
-                        disabled={loading || added}
-                        className={`product-cart-btn ${added ? 'added' : ''}`}
-                        aria-label="Add to Cart"
-                        style={{
-                            width: '34px',
-                            height: '34px',
-                            borderRadius: '50%',
-                            background: added ? '#7A38C2' : '#8B3DFF',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#ffffff',
-                            transition: 'all 0.25s ease',
-                            border: 'none',
-                            cursor: loading || added ? 'default' : 'pointer',
-                            flexShrink: 0,
-                            padding: 0,
-                            boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)',
-                            position: 'relative',
-                            zIndex: 2
-                        }}
-                    >
-                        {loading ? (
-                            <span className="cart-btn-spinner"></span>
-                        ) : added ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        )}
-                    </button>
+                    cartQty > 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 2 }}>
+                            <button
+                                onClick={handleDecrement}
+                                disabled={loading}
+                                style={{
+                                    width: '28px',
+                                    height: '28px',
+                                    borderRadius: '50%',
+                                    border: '1.5px solid var(--border)',
+                                    background: 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-main)',
+                                    padding: 0,
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    transition: 'all 0.2s'
+                                }}
+                                aria-label="Decrease quantity"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 700, minWidth: '16px', textAlign: 'center', color: 'var(--text-main)' }}>
+                                {cartQty}
+                            </span>
+                            <button
+                                onClick={handleIncrement}
+                                disabled={loading || cartQty >= product.stock}
+                                style={{
+                                    width: '28px',
+                                    height: '28px',
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: cartQty >= product.stock ? '#e0e0e0' : 'var(--accent)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: cartQty >= product.stock ? 'not-allowed' : 'pointer',
+                                    color: cartQty >= product.stock ? 'var(--text-muted)' : '#ffffff',
+                                    padding: 0,
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    transition: 'all 0.2s',
+                                    boxShadow: cartQty >= product.stock ? 'none' : '0 4px 12px rgba(139, 61, 255, 0.2)'
+                                }}
+                                aria-label="Increase quantity"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={handleAddToCart}
+                            disabled={loading || added}
+                            className={`product-cart-btn ${added ? 'added' : ''}`}
+                            aria-label="Add to Cart"
+                            style={{
+                                width: '34px',
+                                height: '34px',
+                                borderRadius: '50%',
+                                background: added ? '#7A38C2' : '#8B3DFF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#ffffff',
+                                transition: 'all 0.25s ease',
+                                border: 'none',
+                                cursor: loading || added ? 'default' : 'pointer',
+                                flexShrink: 0,
+                                padding: 0,
+                                boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)',
+                                position: 'relative',
+                                zIndex: 2
+                            }}
+                        >
+                            {loading ? (
+                                <span className="cart-btn-spinner"></span>
+                            ) : added ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            )}
+                        </button>
+                    )
                 )}
             </div>
 

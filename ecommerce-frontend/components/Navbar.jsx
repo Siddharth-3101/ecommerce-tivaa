@@ -101,8 +101,10 @@ export default function Navbar() {
                 
                 api.get("/cart").then((res) => {
                     if (res.data) {
-                        const numItems = res.data.items ? res.data.items.length : res.data.length;
-                        setCount(numItems || 0);
+                        const cartItems = Array.isArray(res.data) ? res.data : res.data.items || [];
+                        setCount(cartItems.length || 0);
+                        localStorage.setItem('tivaa-cart-items', JSON.stringify(cartItems));
+                        window.dispatchEvent(new Event('cart-items-loaded'));
                     }
                 }).catch(() => {});
             });
@@ -172,6 +174,7 @@ export default function Navbar() {
     const handleLogout = () => {
         logout();
         setUser(null);
+        localStorage.removeItem('tivaa-cart-items');
         window.location.href = "/login";
     };
 
