@@ -28,8 +28,6 @@ export default function AdminQueriesPage() {
         setPage(1);
     }, [activeTab]);
 
-    const currentUser = getUser();
-
     const fetchQueries = async () => {
         setLoading(true);
         setError("");
@@ -45,12 +43,13 @@ export default function AdminQueriesPage() {
     };
 
     useEffect(() => {
+        const currentUser = getUser();
         if (!currentUser || currentUser.role !== "admin") {
             router.push("/login");
             return;
         }
         fetchQueries();
-    }, [currentUser, router]);
+    }, [router]);
 
     const handleOpenReplyModal = (query) => {
         setSelectedQuery(query);

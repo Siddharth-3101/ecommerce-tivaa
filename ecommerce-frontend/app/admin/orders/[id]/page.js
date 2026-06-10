@@ -12,7 +12,7 @@ export default function AdminOrderDetails({ params }) {
     const resolvedParams = React.use ? React.use(params) : params;
     const { id } = resolvedParams;
     const router = useRouter();
-    const user = getUser();
+    const [user, setUser] = useState(null);
 
     const [order, setOrder] = useState(null);
     const [items, setItems] = useState([]);
@@ -20,6 +20,9 @@ export default function AdminOrderDetails({ params }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const currentUser = getUser();
+        setUser(currentUser);
+
         const loadOrder = async () => {
             try {
                 const res = await api.get(`/admin/orders/${id}?t=${Date.now()}`);
@@ -33,12 +36,21 @@ export default function AdminOrderDetails({ params }) {
             }
         };
 
-        if (user && user.role === "admin") {
+        if (currentUser && currentUser.role === "admin") {
             loadOrder();
         } else {
             setLoading(false);
         }
-    }, [id, user]);
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="container" style={{ paddingTop: '120px', display: 'flex', justifyContent: 'center' }}>
+                <span style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
+                <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
 
     if (!user || user.role !== "admin") {
         return (
