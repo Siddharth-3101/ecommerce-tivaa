@@ -83,7 +83,7 @@ export default function CheckoutPage() {
 
             // 3. Open Razorpay checkout modal
             const options = {
-                key: razorpayOrder.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_51NgC2HSJ34m7p8", // Loaded dynamically from backend to avoid key mismatch
+                key: razorpayOrder.key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_51NgC2HSJ34m7p8",
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
                     contact: formData.phone || ""
                 },
                 theme: {
-                    color: "#0a0b10", // Sleek premium dark mode theme
+                    color: "#0a0b10",
                 },
                 modal: {
                     ondismiss: function () {
@@ -146,14 +146,14 @@ export default function CheckoutPage() {
     );
 
     return (
-        <div className="container animate-fade-in" style={{ paddingTop: '120px', paddingBottom: '80px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '48px' }}>
+        <div className="container animate-fade-in" style={{ paddingTop: '100px', paddingBottom: '80px' }}>
+            <div className="checkout-grid">
                 <div>
                     <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>Checkout</h1>
                     <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Please provide your shipping and payment details.</p>
 
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                        <div className="card" style={{ padding: '32px' }}>
+                        <div className="card checkout-card">
                             <h3 style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <span style={{ width: '32px', height: '32px', background: 'var(--accent)', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>1</span>
                                 Shipping Address
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
                                          onChange={(e) => setFormData({...formData, shipping_address: e.target.value})}
                                      />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="checkout-form-grid">
                                      <div>
                                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>City</label>
                                          <input 
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
                                          />
                                      </div>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="checkout-form-grid">
                                      <div>
                                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Pincode</label>
                                          <input 
@@ -217,20 +217,20 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        <button type="submit" disabled={submitting} className="btn btn-primary" style={{ padding: '20px', fontSize: '1.2rem', boxShadow: '0 10px 20px var(--accent-glow)' }}>
+                        <button type="submit" disabled={submitting} className="btn btn-primary checkout-submit-btn">
                             {submitting ? "Processing Order..." : `Complete Purchase — ₹${total.toFixed(2)}`}
                         </button>
                     </form>
                 </div>
 
                 <aside>
-                    <div className="card" style={{ padding: '32px', position: 'sticky', top: '120px' }}>
+                    <div className="card checkout-card" style={{ position: 'sticky', top: '120px' }}>
                         <h3 style={{ marginBottom: '24px' }}>In Your Cart</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {cartItems.map(item => (
                                 <div key={item.id} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                                     <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', background: '#1e2130', flexShrink: 0 }}>
-                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.name} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <h4 style={{ fontSize: '0.95rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</h4>
@@ -252,7 +252,50 @@ export default function CheckoutPage() {
                     </div>
                 </aside>
             </div>
+            
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
+            <style jsx>{`
+                .checkout-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 400px;
+                    gap: 48px;
+                }
+                .checkout-card {
+                    padding: 32px;
+                }
+                .checkout-form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+                .checkout-submit-btn {
+                    padding: 20px;
+                    font-size: 1.2rem;
+                    box-shadow: 0 10px 20px var(--accent-glow);
+                }
+
+                @media (max-width: 900px) {
+                    .checkout-grid {
+                        grid-template-columns: 1fr;
+                        gap: 32px;
+                    }
+                }
+
+                @media (max-width: 600px) {
+                    .checkout-card {
+                        padding: 20px 16px;
+                    }
+                    .checkout-form-grid {
+                        grid-template-columns: 1fr;
+                        gap: 16px;
+                    }
+                    .checkout-submit-btn {
+                        padding: 16px;
+                        font-size: 1.1rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
