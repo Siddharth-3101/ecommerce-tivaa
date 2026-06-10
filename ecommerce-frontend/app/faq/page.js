@@ -21,24 +21,36 @@ export default function FAQPage() {
 
     const faqs = [
         {
-            question: "Are your jewelry pieces made from genuine precious metals?",
-            answer: "Absolutely. All our jewelry pieces are meticulously crafted from genuine precious metals, including 18K and 22K solid gold, premium 925 sterling silver, and platinum. Each order is accompanied by a certificate of authenticity detailing the exact materials and hallmark status."
+            question: "How long does shipping take?",
+            answer: "Orders are typically processed within 1–2 business days and delivered within 3–7 business days depending on location."
         },
         {
-            question: "How do I care for and maintain my luxury jewelry?",
-            answer: "To preserve the pristine radiance of your jewelry, we recommend removing it before swimming, bathing, or applying cosmetics and perfumes. Clean your pieces gently using a soft, lint-free polishing cloth. Keep them stored individually in their original protective pouches to prevent scratching."
+            question: "Do you offer Cash on Delivery (COD)?",
+            answer: "No, COD is unavailable at this moment. We accept secure prepaid online payments via major credit/debit cards, net banking, UPI, and popular digital wallets."
         },
         {
-            question: "What is your return and exchange policy?",
-            answer: "We offer a 30-day return or exchange policy for all unworn jewelry in its original luxury packaging. Simply initiate a request via your Orders History page or contact our support team. Returns are processed within 5-7 business days of receipt."
+            question: "How can I track my order?",
+            answer: "Once your order is shipped, tracking details (including the courier service name and tracking ID) will be sent to you via email or SMS."
         },
         {
-            question: "How long does shipping take, and is it insured?",
-            answer: "We provide fully insured, premium shipping on all orders. Standard domestic shipping takes 3-5 business days, while express shipping takes 1-2 business days. International orders typically arrive in 7-10 business days. All packages require a signature upon delivery for security."
+            question: "Can I cancel my order?",
+            answer: "Yes, orders can be cancelled before they are dispatched. Once shipped, cancellation requests cannot be guaranteed."
         },
         {
-            question: "Do you offer bespoke or custom design services?",
-            answer: "Yes, we specialize in bespoke jewelry creation. Whether you are customizing an engagement ring or designing a unique family heirloom, our lead artisans will guide you from initial sketch to finished masterpiece. Submit a query via our form to start the consultation."
+            question: "What if I receive a damaged product?",
+            answer: "If you receive a damaged or defective item, please contact us within 48 hours of delivery with photos of the issue and your order number at tivaa2026@gmail.com."
+        },
+        {
+            question: "Do you offer exchanges?",
+            answer: "Yes, exchanges may be offered for defective or incorrectly delivered products, subject to stock availability. Please reach out to customer support to initiate an exchange."
+        },
+        {
+            question: "Are your accessories suitable for gifting?",
+            answer: "Absolutely. Tivaa products are thoughtfully designed and make wonderful gifts for birthdays, festivals, anniversaries, and special occasions."
+        },
+        {
+            question: "How can I contact customer support?",
+            answer: "You can email our customer support team at tivaa2026@gmail.com. Alternatively, you can submit a query using the contact form on this page."
         }
     ];
 

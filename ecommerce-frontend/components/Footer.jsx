@@ -20,9 +20,9 @@ export default function Footer() {
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '14px', margin: 0 }}>
                         <li><Link href="/products" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Search</Link></li>
                         <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Contact Information</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Privacy Policy</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Refund Policy</Link></li>
-                        <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Terms of Service</Link></li>
+                        <li><Link href="/privacy" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Privacy Policy</Link></li>
+                        <li><Link href="/refund-policy" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Refund Policy</Link></li>
+                        <li><Link href="/terms" className="footer-link" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>Terms of Service</Link></li>
                     </ul>
                 </div>
  

@@ -10,7 +10,7 @@ export default function Hero() {
                 <picture>
                     {/* Mobile: square banner for phones ≤768px */}
                     <source
-                        srcSet="/hero_banner_mobile.png"
+                        srcSet="/hero_banner_mobile.jpg"
                         media="(max-width: 768px)"
                     />
                     {/* Desktop: wide banner for everything above 768px */}
