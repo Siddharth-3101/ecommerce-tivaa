@@ -8,9 +8,9 @@ Get-ChildItem -Path "C:\Ecommerce\ecommerce-backend" -Force | Where-Object { $_.
     Copy-Item -Path $_.FullName -Destination $tempDir -Recurse -Force
 }
 
-# Create new zip
+# Create new zip using tar.exe to ensure forward slash separators for Linux/Elastic Beanstalk compatibility
 if (Test-Path "C:\Ecommerce\backend-deploy.zip") { Remove-Item -Force "C:\Ecommerce\backend-deploy.zip" }
-Compress-Archive -Path "$tempDir\*" -DestinationPath "C:\Ecommerce\backend-deploy.zip" -Force
+tar -a -c -f "C:\Ecommerce\backend-deploy.zip" -C $tempDir .
 
 # Clean up
 Remove-Item -Recurse -Force $tempDir

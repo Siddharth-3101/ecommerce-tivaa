@@ -20,7 +20,10 @@ export const uploadImage = (req, res) => {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  const folder = req.body.folder || "tivaa-products";
+  let folder = req.body.folder || "tivaa-products";
+  if (typeof folder === "string") {
+    folder = folder.split("/").map(p => p.trim()).filter(Boolean).join("/");
+  }
 
   // Upload the in-memory buffer to Cloudinary via upload_stream
   const uploadStream = cloudinary.uploader.upload_stream(
