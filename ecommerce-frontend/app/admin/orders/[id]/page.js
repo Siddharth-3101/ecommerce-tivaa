@@ -95,7 +95,7 @@ export default function AdminOrderDetails({ params }) {
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "32px" }}>
+            <div className="order-details-grid" style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "32px" }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                     <div className="card" style={{ padding: "24px" }}>
                         <h2 style={{ fontSize: '1.4rem', marginBottom: '24px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>Order Items</h2>
@@ -217,6 +217,14 @@ export default function AdminOrderDetails({ params }) {
                     </div>
                 </div>
             </div>
+            <style jsx>{`
+                @media (max-width: 900px) {
+                    .order-details-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 24px !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

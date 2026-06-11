@@ -233,7 +233,15 @@ export default function CheckoutPage() {
                                         <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.name} />
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <h4 style={{ fontSize: '0.95rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</h4>
+                                        <h4 style={{ 
+                                             fontSize: '0.95rem', 
+                                             margin: 0, 
+                                             display: '-webkit-box',
+                                             WebkitLineClamp: 2,
+                                             WebkitBoxOrient: 'vertical',
+                                             overflow: 'hidden',
+                                             lineHeight: 1.35
+                                         }}>{item.name}</h4>
                                         {item.selected_variation && (
                                             <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-main)', fontWeight: 500 }}>
                                                 {item.selected_variation}

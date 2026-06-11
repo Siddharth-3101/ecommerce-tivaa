@@ -110,7 +110,7 @@ export default function CategoriesPage() {
                 </h3>
                 <form onSubmit={handleAdd} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                     
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                    <div className="category-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Category Name *</label>
                             <input
@@ -233,7 +233,8 @@ export default function CategoriesPage() {
           </div>
         ) : (
           <div className="card" style={{ overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
+              <table style={{ width: "100%", minWidth: "800px", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.9rem" }}>
                   <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>ID</th>
@@ -277,9 +278,18 @@ export default function CategoriesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>
+      <style jsx>{`
+        @media (max-width: 600px) {
+          .category-form-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

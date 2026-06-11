@@ -8,6 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 export default function AdminLayout({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -21,6 +22,11 @@ export default function AdminLayout({ children }) {
         setLoading(false);
     }, [router]);
 
+    // Automatically close sidebar when navigation path changes
+    useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [pathname]);
+
     if (loading) {
         return (
             <div className="container" style={{ paddingTop: '120px', display: 'flex', justifyContent: 'center' }}>
@@ -33,9 +39,67 @@ export default function AdminLayout({ children }) {
     const isActive = (path) => pathname === path;
 
     return (
-        <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", minHeight: "100vh", position: 'relative', background: 'var(--bg)' }}>
+        <div className="admin-layout-container" style={{ display: "grid", gridTemplateColumns: "250px 1fr", minHeight: "100vh", position: 'relative', background: 'var(--bg)' }}>
+            
+            {/* Mobile Header Bar */}
+            <header className="mobile-admin-header" style={{
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'var(--bg)',
+                borderBottom: '1px solid var(--border)',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '60px',
+                zIndex: 999
+            }}>
+                <button 
+                    onClick={() => setIsSidebarOpen(true)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 8,
+                        color: 'var(--text-main)',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src="/logo.png" alt="Tivaa Logo" style={{ height: '40px', width: 'auto', mixBlendMode: 'multiply' }} />
+                </Link>
+                <div style={{ width: '40px' }}></div>
+            </header>
+
+            {/* Sidebar backdrop for mobile overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="sidebar-backdrop"
+                    onClick={() => setIsSidebarOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.4)',
+                        zIndex: 1000,
+                    }}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
+                className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}
                 style={{
                     background: "var(--bg)",
                     borderRight: "1px solid var(--border)",
@@ -96,9 +160,32 @@ export default function AdminLayout({ children }) {
             </aside>
 
             {/* Main Content */}
-            <main style={{ padding: "40px" }}>
+            <main className="admin-main-content" style={{ padding: "40px" }}>
                 {children}
             </main>
+
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .admin-layout-container {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .admin-sidebar {
+                        position: fixed !important;
+                        transform: translateX(-100%);
+                        transition: transform 0.3s ease;
+                        z-index: 1001 !important;
+                    }
+                    .admin-sidebar.open {
+                        transform: translateX(0) !important;
+                    }
+                    .admin-main-content {
+                        padding: 80px 16px 40px !important;
+                    }
+                    .mobile-admin-header {
+                        display: flex !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

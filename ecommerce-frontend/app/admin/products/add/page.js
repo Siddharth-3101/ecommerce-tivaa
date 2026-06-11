@@ -142,7 +142,7 @@ export default function AddProductPage() {
 
             <div className="card" style={{ padding: "32px", maxWidth: "800px" }}>
                 <form onSubmit={addProduct} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                    <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Product Name *</label>
                             <input
@@ -171,7 +171,7 @@ export default function AddProductPage() {
                         </div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                    <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Price (₹) *</label>
                             <input
@@ -490,6 +490,14 @@ export default function AddProductPage() {
                     </div>
                 </form>
             </div>
+            <style jsx>{`
+                @media (max-width: 600px) {
+                    .product-form-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 16px !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

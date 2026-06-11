@@ -58,13 +58,19 @@
     padding: 0;
 }
 
+html,
+body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
 body {
     background-color: var(--bg);
     color: var(--text-main);
     font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
-    overflow-x: hidden;
 }
 
 /* Utilities */
