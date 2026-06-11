@@ -171,6 +171,7 @@ export default function AdminLayout({ children }) {
                     }
                     .admin-sidebar {
                         position: fixed !important;
+                        width: 250px !important;
                         transform: translateX(-100%);
                         transition: transform 0.3s ease;
                         z-index: 1001 !important;
