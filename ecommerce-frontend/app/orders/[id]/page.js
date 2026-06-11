@@ -128,16 +128,17 @@ export default function OrderDetailsPage({ params }) {
                     <div style={{ width: '80px', height: '80px', background: 'var(--accent-glow)', color: 'var(--accent)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
-                    <h1 style={{ fontSize: '3rem', marginBottom: '12px' }}>Order Placed!</h1>
+                    <h1 className="placed-title" style={{ marginBottom: '12px' }}>Order Placed!</h1>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Thank you for your purchase. Your order ID is #{order.id}</p>
                 </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '48px' }}>
+            <div className="order-grid">
                 <div>
                     <h2 style={{ marginBottom: '24px' }}>Order Items</h2>
                     <div className="card" style={{ overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
+                            <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
                                     <th style={{ textAlign: 'left', padding: '16px 24px' }}>Product</th>
@@ -166,7 +167,8 @@ export default function OrderDetailsPage({ params }) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -209,6 +211,27 @@ export default function OrderDetailsPage({ params }) {
                 </aside>
             </div>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+            <style jsx>{`
+                .order-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 350px;
+                    gap: 48px;
+                }
+                .placed-title {
+                    font-size: 3rem;
+                }
+                @media (max-width: 900px) {
+                    .order-grid {
+                        grid-template-columns: 1fr;
+                        gap: 32px;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .placed-title {
+                        font-size: 2.2rem;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

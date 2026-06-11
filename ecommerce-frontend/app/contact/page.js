@@ -48,10 +48,12 @@ export default function ContactPage() {
             
             {/* Header section */}
             <div className="container" style={{ marginBottom: '48px' }}>
-                <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '24px' }}>
-                    <ArrowLeft size={16} /> Continue Shopping
-                </Link>
-                <h1 className="contact-title" style={{ marginBottom: '12px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>
+                <div style={{ marginBottom: '24px' }}>
+                    <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s' }}>
+                        <ArrowLeft size={16} /> Continue Shopping
+                    </Link>
+                </div>
+                <h1 className="contact-title" style={{ marginBottom: '12px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'block' }}>
                     Contact Us
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '700px' }}>
