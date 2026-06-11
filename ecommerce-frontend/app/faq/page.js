@@ -53,7 +53,7 @@ export default function FAQPage() {
                 <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '24px' }}>
                     <ArrowLeft size={16} /> Continue Shopping
                 </Link>
-                <h1 style={{ fontSize: '3rem', marginBottom: '12px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>
+                <h1 className="faq-title" style={{ marginBottom: '12px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>
                     Frequently Asked Questions
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '700px' }}>
@@ -62,7 +62,7 @@ export default function FAQPage() {
             </div>
 
             {/* Content grid */}
-            <div className="container" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 420px)', gap: '48px', alignItems: 'start' }}>
+            <div className="container faq-grid">
                 
                 {/* FAQ ACCORDIONS COLUMN */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -162,9 +162,24 @@ export default function FAQPage() {
             </div>
 
             <style jsx>{`
+                .faq-grid {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+                    gap: 48px;
+                    align-items: start;
+                }
+                .faq-title {
+                    font-size: 3rem;
+                }
                 @media (max-width: 900px) {
-                    div.container {
-                        grid-template-columns: 1fr !important;
+                    .faq-grid {
+                        grid-template-columns: 1fr;
+                        gap: 24px;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .faq-title {
+                        font-size: 2rem;
                     }
                 }
             `}</style>

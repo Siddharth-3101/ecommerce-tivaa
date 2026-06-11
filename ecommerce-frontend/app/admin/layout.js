@@ -39,14 +39,14 @@ export default function AdminLayout({ children }) {
     const isActive = (path) => pathname === path;
 
     return (
-        <div className="admin-layout-container" style={{ display: "grid", gridTemplateColumns: "250px 1fr", minHeight: "100vh", position: 'relative', background: 'var(--bg)' }}>
+        <div className="admin-layout-container" style={{ minHeight: "100vh", position: 'relative', background: 'var(--bg)', paddingTop: '60px' }}>
             
-            {/* Mobile Header Bar */}
-            <header className="mobile-admin-header" style={{
-                display: 'none',
+            {/* Header Bar (Sticky/Fixed on all screens) */}
+            <header className="admin-header" style={{
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px 16px',
+                padding: '12px 24px',
                 background: 'var(--bg)',
                 borderBottom: '1px solid var(--border)',
                 position: 'fixed',
@@ -56,24 +56,30 @@ export default function AdminLayout({ children }) {
                 height: '60px',
                 zIndex: 999
             }}>
-                <button 
-                    onClick={() => setIsSidebarOpen(true)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 8,
-                        color: 'var(--text-main)',
-                        display: 'flex',
-                        alignItems: 'center'
-                    }}
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button 
+                        onClick={() => setIsSidebarOpen(true)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 8,
+                            color: 'var(--text-main)',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                        aria-label="Open Navigation Sidebar"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <span className="admin-title-text" style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Admin Console
+                    </span>
+                </div>
                 <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
                     <img src="/logo.png" alt="Tivaa Logo" style={{ height: '40px', width: 'auto', mixBlendMode: 'multiply' }} />
                 </Link>
@@ -99,7 +105,7 @@ export default function AdminLayout({ children }) {
 
             {/* Sidebar */}
             <aside
-                className={`admin-sidebar ${isSidebarOpen ? 'open' : ''}`}
+                className="admin-sidebar"
                 style={{
                     background: "var(--bg)",
                     borderRight: "1px solid var(--border)",
@@ -107,17 +113,41 @@ export default function AdminLayout({ children }) {
                     display: "flex",
                     flexDirection: "column",
                     gap: "8px",
-                    position: "sticky",
+                    position: "fixed",
                     top: 0,
+                    left: 0,
                     height: "100vh",
-                    zIndex: 101
+                    width: "260px",
+                    transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
+                    transition: "transform 0.3s ease",
+                    zIndex: 1001,
+                    boxShadow: isSidebarOpen ? '4px 0 24px rgba(0,0,0,0.15)' : 'none'
                 }}
             >
-                {/* Logo Section */}
-                <div style={{ padding: '8px 0 16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+                {/* Logo & Close Section */}
+                <div style={{ padding: '8px 0 16px', marginBottom: '16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
-                        <img src="/logo.png" alt="Tivaa Logo" style={{ height: '60px', width: 'auto', mixBlendMode: 'multiply' }} />
+                        <img src="/logo.png" alt="Tivaa Logo" style={{ height: '50px', width: 'auto', mixBlendMode: 'multiply' }} />
                     </Link>
+                    <button 
+                        onClick={() => setIsSidebarOpen(false)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '8px',
+                            color: 'var(--text-muted)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        aria-label="Close Navigation Sidebar"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
 
                 <div style={{ marginBottom: '16px' }}>
@@ -166,24 +196,16 @@ export default function AdminLayout({ children }) {
 
             <style jsx>{`
                 @media (max-width: 768px) {
-                    .admin-layout-container {
-                        grid-template-columns: 1fr !important;
-                    }
-                    .admin-sidebar {
-                        position: fixed !important;
-                        width: 250px !important;
-                        transform: translateX(-100%);
-                        transition: transform 0.3s ease;
-                        z-index: 1001 !important;
-                    }
-                    .admin-sidebar.open {
-                        transform: translateX(0) !important;
+                    .admin-header {
+                        padding: 12px 16px !important;
                     }
                     .admin-main-content {
-                        padding: 80px 16px 40px !important;
+                        padding: 32px 16px !important;
                     }
-                    .mobile-admin-header {
-                        display: flex !important;
+                }
+                @media (max-width: 500px) {
+                    .admin-title-text {
+                        display: none !important;
                     }
                 }
             `}</style>
