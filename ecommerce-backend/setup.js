@@ -239,6 +239,9 @@ export const runSetup = async () => {
         if (!orderCols.includes("razorpay_order_id")) {
             await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN razorpay_order_id VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
         }
+        if (!orderCols.includes("shipping_cost")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN shipping_cost DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
         
         await new Promise((res, rej) => db.query("ALTER TABLE orders MODIFY COLUMN order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending'", (err) => err ? rej(err) : res()));
 
