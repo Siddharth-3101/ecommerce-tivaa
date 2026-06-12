@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import WishlistButton from "./WishlistButton";
 
 export default function ProductCard({ product }) {
     const [loading, setLoading] = useState(false);
@@ -48,7 +49,8 @@ export default function ProductCard({ product }) {
     const handleIncrement = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (cartQty >= product.stock) return;
+        const stockLimit = product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0;
+        if (cartQty >= stockLimit) return;
         try {
             setLoading(true);
             await api.put(`/cart/${cartItemId}`, { quantity: cartQty + 1 });
@@ -128,6 +130,9 @@ export default function ProductCard({ product }) {
                 aria-label={product.name}
             />
             <div className="product-image-container">
+                <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+                    <WishlistButton productId={product.id} variant="small" />
+                </div>
                 <img
                     src={product.image_url ? product.image_url.split(",")[0].trim() : "/placeholder.png"}
                     className="product-image"
@@ -197,23 +202,23 @@ export default function ProductCard({ product }) {
                             </span>
                             <button
                                 onClick={handleIncrement}
-                                disabled={loading || cartQty >= product.stock}
+                                disabled={loading || cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0)}
                                 style={{
                                     width: '28px',
                                     height: '28px',
                                     borderRadius: '50%',
                                     border: 'none',
-                                    background: cartQty >= product.stock ? '#e0e0e0' : 'var(--accent)',
+                                    background: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? '#e0e0e0' : 'var(--accent)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    cursor: cartQty >= product.stock ? 'not-allowed' : 'pointer',
-                                    color: cartQty >= product.stock ? 'var(--text-muted)' : '#ffffff',
+                                    cursor: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'not-allowed' : 'pointer',
+                                    color: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'var(--text-muted)' : '#ffffff',
                                     padding: 0,
                                     fontSize: '1rem',
                                     fontWeight: 'bold',
                                     transition: 'all 0.2s',
-                                    boxShadow: cartQty >= product.stock ? 'none' : '0 4px 12px rgba(139, 61, 255, 0.2)'
+                                    boxShadow: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'none' : '0 4px 12px rgba(139, 61, 255, 0.2)'
                                 }}
                                 aria-label="Increase quantity"
                             >

@@ -13,9 +13,25 @@ export default function MyOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [page, setPage] = useState(1);
+    const [downloadingId, setDownloadingId] = useState(null);
     const limit = 10;
 
     const user = getUser();
+
+    const handleDownloadBill = async (orderId) => {
+        try {
+            setDownloadingId(orderId);
+            const res = await api.get(`/orders/my/${orderId}`);
+            const { order, items } = res.data;
+            const { downloadInvoice } = await import("@/lib/invoice");
+            downloadInvoice(order, items);
+        } catch (err) {
+            console.error("Failed to load invoice details:", err);
+            alert("Could not load invoice details. Please try again.");
+        } finally {
+            setDownloadingId(null);
+        }
+    };
 
     useEffect(() => {
         if (!user) {
@@ -64,10 +80,19 @@ export default function MyOrdersPage() {
                 <span style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(229,147,116,0.2)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
                 <p style={{ color: 'var(--text-muted)' }}>Retrieving your order history...</p>
                 <style jsx>{`
-                    @keyframes spin {
-                        to { transform: rotate(360deg); }
-                    }
-                `}</style>
+                .download-spinner {
+                    display: inline-block;
+                    width: 14px;
+                    height: 14px;
+                    border: 2px solid rgba(0,0,0,0.1);
+                    border-radius: 50%;
+                    border-top-color: var(--accent);
+                    animation: spin 1s ease-in-out infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
             </div>
         );
     }
@@ -153,6 +178,30 @@ export default function MyOrdersPage() {
                                                 {order.order_status}
                                             </div>
 
+                                            {/* Download Bill button */}
+                                            <button 
+                                                onClick={() => handleDownloadBill(order.id)}
+                                                disabled={downloadingId === order.id}
+                                                className="btn btn-secondary" 
+                                                style={{ 
+                                                    padding: '8px 16px', 
+                                                    fontSize: '0.85rem', 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    gap: '6px',
+                                                    background: '#ffffff',
+                                                    border: '1px solid var(--border)',
+                                                    cursor: downloadingId === order.id ? 'not-allowed' : 'pointer'
+                                                }}
+                                            >
+                                                {downloadingId === order.id ? (
+                                                    <span className="download-spinner"></span>
+                                                ) : (
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                                )}
+                                                Bill
+                                            </button>
+
                                             {/* Details button */}
                                             <Link 
                                                 href={`/orders/${order.id}`} 
@@ -229,6 +278,21 @@ export default function MyOrdersPage() {
                     </div>
                 )}
             </section>
+            
+            <style jsx>{`
+                .download-spinner {
+                    display: inline-block;
+                    width: 14px;
+                    height: 14px;
+                    border: 2px solid rgba(0,0,0,0.1);
+                    border-radius: 50%;
+                    border-top-color: var(--accent);
+                    animation: spin 1s ease-in-out infinite;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 }

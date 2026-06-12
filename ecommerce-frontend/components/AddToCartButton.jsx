@@ -5,16 +5,19 @@ import { useState, useEffect } from "react";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-export default function AddToCartButton({ productId, disabled, selectedVariation }) {
+export default function AddToCartButton({ productId, disabled, selectedVariation, stock }) {
     const [loading, setLoading] = useState(false);
     const [added, setAdded] = useState(false);
     const [cartQty, setCartQty] = useState(0);
     const [cartItemId, setCartItemId] = useState(null);
-    const [maxStock, setMaxStock] = useState(999);
+    const [maxStock, setMaxStock] = useState(stock !== undefined && stock !== null ? Number(stock) : 999);
     const user = getUser();
     const router = useRouter();
 
     const syncCartQty = () => {
+        if (stock !== undefined && stock !== null) {
+            setMaxStock(Number(stock));
+        }
         const cached = localStorage.getItem('tivaa-cart-items');
         if (cached) {
             try {
@@ -29,7 +32,9 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
                 if (match) {
                     setCartQty(match.quantity);
                     setCartItemId(match.id);
-                    setMaxStock(match.stock || 999);
+                    if (stock === undefined || stock === null) {
+                        setMaxStock(match.stock !== undefined && match.stock !== null ? Number(match.stock) : 0);
+                    }
                 } else {
                     setCartQty(0);
                     setCartItemId(null);
@@ -51,7 +56,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
             window.removeEventListener("cart-updated", syncCartQty);
             window.removeEventListener("cart-items-loaded", syncCartQty);
         };
-    }, [productId, selectedVariation]);
+    }, [productId, selectedVariation, stock]);
 
     const handleAdd = async () => {
         if (!user) {

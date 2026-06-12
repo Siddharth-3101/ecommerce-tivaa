@@ -99,7 +99,7 @@ export const getProducts = async (req, res) => {
       }
     }
 
-    sql += " LIMIT ? OFFSET ?";
+    sql += " ORDER BY (p.stock > 0) DESC, p.id DESC LIMIT ? OFFSET ?";
     selectParams.push(limit, offset);
 
     db.query(sql, selectParams, async (err, rows) => {
@@ -266,6 +266,7 @@ export const searchProducts = (req, res) => {
         WHERE p.is_active = true AND p.is_visible = true AND (p.name LIKE ? 
         OR p.description LIKE ?
         OR c.name LIKE ?)
+        ORDER BY (p.stock > 0) DESC, p.id DESC
     `;
 
   db.query(sql, [searchTerm, searchTerm, searchTerm], (err, rows) => {
@@ -308,10 +309,11 @@ export const filterProducts = (req, res) => {
     params.push(max_price);
   }
 
-  if (sort === "price_low") sql += " ORDER BY p.price ASC";
-  if (sort === "price_high") sql += " ORDER BY p.price DESC";
-  if (sort === "name_asc") sql += " ORDER BY p.name ASC";
-  if (sort === "name_desc") sql += " ORDER BY p.name DESC";
+  if (sort === "price_low") sql += " ORDER BY (p.stock > 0) DESC, p.price ASC";
+  else if (sort === "price_high") sql += " ORDER BY (p.stock > 0) DESC, p.price DESC";
+  else if (sort === "name_asc") sql += " ORDER BY (p.stock > 0) DESC, p.name ASC";
+  else if (sort === "name_desc") sql += " ORDER BY (p.stock > 0) DESC, p.name DESC";
+  else sql += " ORDER BY (p.stock > 0) DESC, p.id DESC";
 
   db.query(sql, params, (err, rows) => {
     if (err) {

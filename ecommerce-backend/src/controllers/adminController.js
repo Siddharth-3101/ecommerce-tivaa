@@ -220,3 +220,80 @@ export const adminUpdateOrderStatus = (req, res) => {
         res.json({ message: "Order status updated" });
     });
 };
+
+// ===========================================================
+// ADMIN: BULK CSV PRODUCTS IMPORT
+// ===========================================================
+export const bulkImportProducts = (req, res) => {
+    const products = req.body;
+    if (!Array.isArray(products) || products.length === 0) {
+        return res.status(400).json({ message: "Invalid payload: expected an array of products" });
+    }
+
+    const sql = `
+        INSERT INTO products (id, name, description, price, stock, category_id, is_visible)
+        VALUES ?
+        ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            description = VALUES(description),
+            price = VALUES(price),
+            stock = VALUES(stock),
+            category_id = VALUES(category_id),
+            is_visible = VALUES(is_visible)
+    `;
+
+    const values = products.map(p => [
+        p.id ? Number(p.id) : null,
+        p.name,
+        p.description || null,
+        p.price ? Number(p.price) : 0,
+        p.stock ? Number(p.stock) : 0,
+        p.category_id ? Number(p.category_id) : null,
+        p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true
+    ]);
+
+    db.query(sql, [values], (err, result) => {
+        if (err) {
+            console.error("Bulk product import error:", err);
+            return res.status(500).json({ message: "Database error during bulk product import: " + err.message });
+        }
+        res.json({ message: `${result.affectedRows} products imported/updated successfully` });
+    });
+};
+
+// ===========================================================
+// ADMIN: BULK CSV ORDERS IMPORT
+// ===========================================================
+export const bulkImportOrders = (req, res) => {
+    const orders = req.body;
+    if (!Array.isArray(orders) || orders.length === 0) {
+        return res.status(400).json({ message: "Invalid payload: expected an array of orders" });
+    }
+
+    const sql = `
+        INSERT INTO orders (id, user_id, total, payment_method, order_status)
+        VALUES ?
+        ON DUPLICATE KEY UPDATE
+            user_id = VALUES(user_id),
+            total = VALUES(total),
+            payment_method = VALUES(payment_method),
+            order_status = VALUES(order_status)
+    `;
+
+    const values = orders.map(o => [
+        o.id ? Number(o.id) : null,
+        o.user_id ? Number(o.user_id) : null,
+        o.total ? Number(o.total) : 0,
+        o.payment_method || "Razorpay",
+        o.order_status || "pending"
+    ]);
+
+    db.query(sql, [values], (err, result) => {
+        if (err) {
+            console.error("Bulk order import error:", err);
+            return res.status(500).json({ message: "Database error during bulk order import: " + err.message });
+        }
+        res.json({ message: `${result.affectedRows} orders imported/updated successfully` });
+    });
+};
+

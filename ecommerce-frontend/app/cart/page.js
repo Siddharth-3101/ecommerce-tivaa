@@ -157,8 +157,21 @@ export default function CartPage() {
                                             </span>
                                             <button 
                                                 onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                disabled={item.quantity >= (item.stock || 999)}
-                                                style={{ width: '26px', height: '100%', border: 'none', background: 'transparent', cursor: item.quantity >= (item.stock || 999) ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.quantity >= (item.stock || 999) ? 'var(--text-light)' : 'var(--text-main)', padding: 0 }}
+                                                disabled={item.quantity >= (item.stock === null || item.stock === undefined ? 0 : Number(item.stock))}
+                                                style={{ 
+                                                    width: '26px', 
+                                                    height: '100%', 
+                                                    border: 'none', 
+                                                    background: 'transparent', 
+                                                    cursor: item.quantity >= (item.stock === null || item.stock === undefined ? 0 : Number(item.stock)) ? 'not-allowed' : 'pointer', 
+                                                    fontSize: '0.9rem', 
+                                                    fontWeight: 'bold', 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center', 
+                                                    color: item.quantity >= (item.stock === null || item.stock === undefined ? 0 : Number(item.stock)) ? 'var(--text-light)' : 'var(--text-main)', 
+                                                    padding: 0 
+                                                }}
                                                 aria-label="Increase quantity"
                                             >
                                                 +

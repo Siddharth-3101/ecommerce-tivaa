@@ -34,11 +34,12 @@ export const addToCart = (req, res) => {
       }
 
       const product = productRows[0];
+      const stockVal = product.stock === null || product.stock === undefined ? 0 : Number(product.stock);
 
       if (cartRows.length > 0) {
         const newQty = Number(cartRows[0].quantity) + quantity;
-        if (newQty > product.stock) {
-          return res.status(400).json({ message: `Cannot add more items than available in stock (${product.stock} max)` });
+        if (newQty > stockVal) {
+          return res.status(400).json({ message: `Cannot add more items than available in stock (${stockVal} max)` });
         }
         // Increment quantity of existing row
         const updateQty = "UPDATE cart SET quantity = quantity + ? WHERE id = ?";
@@ -50,8 +51,8 @@ export const addToCart = (req, res) => {
           return res.json({ message: "Item quantity updated in cart" });
         });
       } else {
-        if (quantity > product.stock) {
-          return res.status(400).json({ message: `Cannot add more items than available in stock (${product.stock} max)` });
+        if (quantity > stockVal) {
+          return res.status(400).json({ message: `Cannot add more items than available in stock (${stockVal} max)` });
         }
         // Insert new variation row
         const insertRow = "INSERT INTO cart (user_id, product_id, quantity, selected_variation) VALUES (?, ?, ?, ?)";
@@ -129,8 +130,9 @@ export const updateCartItem = (req, res) => {
     }
 
     const { stock } = stockRows[0];
-    if (quantity > stock) {
-      return res.status(400).json({ message: `Cannot add more items than available in stock (${stock} max)` });
+    const stockVal = stock === null || stock === undefined ? 0 : Number(stock);
+    if (quantity > stockVal) {
+      return res.status(400).json({ message: `Cannot add more items than available in stock (${stockVal} max)` });
     }
 
     const sql = `

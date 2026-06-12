@@ -29,7 +29,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
     const primaryImage = overrideImage || validImages[activeIndex];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px', width: '100%', margin: '0 auto' }}>
             
             {/* Primary Large Image View */}
             <div 

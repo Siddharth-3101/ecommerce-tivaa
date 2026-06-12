@@ -1,6 +1,7 @@
 import ProductDetailsInfo from "@/components/ProductDetailsInfo";
 import ProductReviews from "@/components/ProductReviews";
 import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
 async function fetchProduct(id) {
@@ -13,6 +14,22 @@ async function fetchProduct(id) {
         return await res.json();
     } catch (err) {
         return null;
+    }
+}
+
+async function fetchRelatedProducts(categoryName, currentProductId) {
+    try {
+        if (!categoryName) return [];
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const res = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`, {
+            cache: "no-store",
+        });
+        if (!res.ok) return [];
+        const products = await res.json();
+        // Exclude the current product and take at most 4 items
+        return products.filter((p) => p.id !== currentProductId).slice(0, 4);
+    } catch (err) {
+        return [];
     }
 }
 
@@ -31,6 +48,7 @@ export default async function ProductPage({ params }) {
     }
 
     const images = product.image_url ? product.image_url.split(',') : [];
+    const relatedProducts = await fetchRelatedProducts(product.category_name, product.id);
 
     return (
         <div className="animate-fade-in" style={{ padding: '120px 0 40px' }}>
@@ -44,14 +62,7 @@ export default async function ProductPage({ params }) {
                     Back to collection
                 </Link>
 
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                        gap: "40px",
-                        alignItems: "start"
-                    }}
-                >
+                <div className="product-details-grid">
                     {/* LEFT SECTION (IMAGE GALLERY) */}
                     <div className="sticky-gallery">
                         <ProductImageGallery images={images} productName={product.name} />
@@ -60,6 +71,20 @@ export default async function ProductPage({ params }) {
                     {/* RIGHT SECTION (DETAILS WITH DYNAMIC VARIATIONS) */}
                     <ProductDetailsInfo product={product} />
                 </div>
+
+                {/* Related Products Grid */}
+                {relatedProducts && relatedProducts.length > 0 && (
+                    <div style={{ marginTop: '80px', borderTop: '1px solid var(--border)', paddingTop: '40px' }}>
+                        <h2 style={{ fontSize: '1.8rem', fontWeight: 300, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '32px', textAlign: 'center', fontFamily: "'Playfair Display', Georgia, serif" }}>
+                            You May Also Like
+                        </h2>
+                        <div className="product-grid-boutique">
+                            {relatedProducts.map((p) => (
+                                <ProductCard key={p.id} product={p} />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* PRODUCT CUSTOMER REVIEWS (Hidden for now as requested) */}
                 {/* <ProductReviews productId={product.id} /> */}

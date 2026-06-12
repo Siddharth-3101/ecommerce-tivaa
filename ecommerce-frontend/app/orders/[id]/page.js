@@ -209,6 +209,17 @@ export default function OrderDetailsPage({ params }) {
                         </button>
                     )}
 
+                    <button 
+                        onClick={async () => {
+                            const { downloadInvoice } = await import("@/lib/invoice");
+                            downloadInvoice(order, items);
+                        }}
+                        className="btn btn-black-solid" 
+                        style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Download Bill
+                    </button>
                     <Link href="/" className="btn btn-secondary" style={{ padding: '12px' }}>Back to Store</Link>
                 </aside>
             </div>

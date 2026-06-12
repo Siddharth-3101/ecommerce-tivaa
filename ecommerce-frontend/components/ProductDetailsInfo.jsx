@@ -6,6 +6,7 @@ import WishlistButton from "./WishlistButton";
 import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ProductDetailsInfo({ product }) {
     // Parse variations JSON safely
@@ -55,14 +56,35 @@ export default function ProductDetailsInfo({ product }) {
 
         try {
             setBuyLoading(true);
-            await api.post("/cart", {
-                product_id: product.id,
-                quantity: 1,
-                selected_variation: selectedVariationString || null
-            });
+            
+            // Check if product with selected variation is already in the cart cache
+            const cached = localStorage.getItem('tivaa-cart-items');
+            let alreadyInCart = false;
+            
+            if (cached) {
+                try {
+                    const items = JSON.parse(cached);
+                    alreadyInCart = items.some(item => {
+                        const idMatch = item.product_id === product.id;
+                        const var1 = item.selected_variation ? item.selected_variation.trim() : null;
+                        const var2 = selectedVariationString ? selectedVariationString.trim() : null;
+                        return idMatch && var1 === var2;
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            }
 
-            // Trigger cart-updated event for live Navbar sync
-            window.dispatchEvent(new Event('cart-updated'));
+            if (!alreadyInCart) {
+                await api.post("/cart", {
+                    product_id: product.id,
+                    quantity: 1,
+                    selected_variation: selectedVariationString || null
+                });
+
+                // Trigger cart-updated event for live Navbar sync
+                window.dispatchEvent(new Event('cart-updated'));
+            }
             
             // Redirect straight to checkout
             router.push("/checkout");
@@ -96,17 +118,21 @@ export default function ProductDetailsInfo({ product }) {
     const selectedVariationString = getSelectedVariationString();
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* Category, Name, Price */}
             <div>
                 <span style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {product.category_name || "Premium Collection"}
+                    {product.category_name ? (
+                        <Link href={`/products?category=${encodeURIComponent(product.category_name)}`} style={{ textDecoration: 'underline' }}>
+                            {product.category_name}
+                        </Link>
+                    ) : "Premium Collection"}
                 </span>
-                <h1 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', margin: '12px 0', lineHeight: 1.1, fontWeight: 300, letterSpacing: '-0.5px' }}>
+                <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', margin: '8px 0', lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.5px' }}>
                     {product.name}
                 </h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '2.5rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                    <span style={{ fontSize: '1.75rem', fontWeight: 600, color: 'var(--accent)' }}>
                         Rs. {product.price}
                     </span>
                 </div>
@@ -213,6 +239,7 @@ export default function ProductDetailsInfo({ product }) {
                                 productId={product.id} 
                                 disabled={product.stock <= 0} 
                                 selectedVariation={selectedVariationString}
+                                stock={product.stock}
                             />
                         </div>
                         <div style={{ flex: '1', minWidth: '180px' }}>

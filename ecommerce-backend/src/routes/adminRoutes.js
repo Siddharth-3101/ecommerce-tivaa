@@ -7,6 +7,8 @@ import {
   adminGetOrders,
   adminOrderDetails,
   adminUpdateOrderStatus,
+  bulkImportProducts,
+  bulkImportOrders,
 } from "../controllers/adminController.js";
 
 import {
@@ -28,6 +30,7 @@ router.post("/product", verifyToken, verifyAdmin, addProduct);
 router.put("/product/:id", verifyToken, verifyAdmin, updateProduct);
 router.delete("/product/:id", verifyToken, verifyAdmin, deleteProduct);
 router.put("/product/:id/toggle-visibility", verifyToken, verifyAdmin, toggleProductVisibility);
+router.post("/products/bulk", verifyToken, verifyAdmin, bulkImportProducts);
 
 // ======================================================
 // CATEGORY MANAGEMENT (ADMIN ONLY)
@@ -42,5 +45,7 @@ router.delete("/category/:id", verifyToken, verifyAdmin, deleteCategory);
 router.get("/orders", verifyToken, verifyAdmin, adminGetOrders);
 router.get("/orders/:id", verifyToken, verifyAdmin, adminOrderDetails);
 router.put("/orders/:id/status", verifyToken, verifyAdmin, adminUpdateOrderStatus);
+router.post("/orders/bulk", verifyToken, verifyAdmin, bulkImportOrders);
+
 
 export default router;

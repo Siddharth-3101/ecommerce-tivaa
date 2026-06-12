@@ -44,7 +44,8 @@ export const createOrder = (req, res) => {
 
     // Step 2 — Check stock availability
     for (const item of cartItems) {
-      if (item.quantity > item.stock) {
+      const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
+      if (item.quantity > stockVal) {
         return res.status(400).json({
           message: `Not enough stock for ${item.name}`,
         });
@@ -169,9 +170,14 @@ export const getOrderDetails = (req, res) => {
   const userId = req.user.id;
 
   const sqlOrder = `
-        SELECT *
-        FROM orders
-        WHERE id = ? AND user_id = ?
+        SELECT o.*, u.name AS customer_name, u.email AS customer_email, 
+               s.address, s.city, s.state, s.pincode, s.phone,
+               p.payment_reference, p.status AS payment_status
+        FROM orders o
+        JOIN users u ON o.user_id = u.id
+        LEFT JOIN shipping_details s ON o.id = s.order_id
+        LEFT JOIN payments p ON o.id = p.order_id
+        WHERE o.id = ? AND o.user_id = ?
     `;
 
   db.query(sqlOrder, [orderId, userId], (err, orders) => {

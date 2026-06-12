@@ -6,7 +6,7 @@ import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
-export default function WishlistButton({ productId }) {
+export default function WishlistButton({ productId, variant = "large" }) {
     const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const user = getUser();
@@ -63,8 +63,8 @@ export default function WishlistButton({ productId }) {
             className={`btn-wishlist-toggle ${liked ? "active" : ""}`}
             title={liked ? "Remove from Wishlist" : "Add to Wishlist"}
             style={{
-                width: "56px",
-                height: "56px",
+                width: variant === "small" ? "36px" : "56px",
+                height: variant === "small" ? "36px" : "56px",
                 borderRadius: "50%",
                 background: liked ? "rgba(229, 147, 116, 0.08)" : "#ffffff",
                 border: liked ? "1px solid var(--accent)" : "1px solid var(--border)",
@@ -74,11 +74,11 @@ export default function WishlistButton({ productId }) {
                 cursor: "pointer",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 color: liked ? "var(--accent)" : "var(--text-muted)",
-                boxShadow: liked ? "0 4px 14px var(--accent-glow)" : "var(--shadow-sm)",
+                boxShadow: liked ? (variant === "small" ? "0 2px 8px var(--accent-glow)" : "0 4px 14px var(--accent-glow)") : "var(--shadow-sm)",
             }}
         >
             <Heart
-                size={22}
+                size={variant === "small" ? 16 : 22}
                 fill={liked ? "var(--accent)" : "none"}
                 style={{
                     transition: "transform 0.3s ease",

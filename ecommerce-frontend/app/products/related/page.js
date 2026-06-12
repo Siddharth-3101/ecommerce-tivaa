@@ -38,118 +38,113 @@ function partitionAndSortProducts(products, sort) {
     return [...inStock, ...outOfStock];
 }
 
-async function fetchProducts(categoryName, query, sort, page = 1) {
+async function fetchRelatedProducts(query, sort) {
     try {
         const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
-        const limit = 12;
-
-        let products = [];
-        let isPaginatedOnBackend = false;
-        let backendTotal = 0;
-        let backendTotalPages = 1;
-
-        if (query) {
-            const url = `${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`;
-            const res = await fetch(url, { cache: 'no-store' });
-            if (res.ok) {
-                products = await res.json();
+        
+        // 1. Fetch direct matching products
+        const searchRes = await fetch(`${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
+        if (!searchRes.ok) return { related: [], categories: [], searchProductIds: new Set() };
+        
+        const searchProducts = await searchRes.json();
+        const searchProductIds = new Set(searchProducts.map(p => p.id));
+        
+        // Extract unique categories
+        const categories = [...new Set(searchProducts.map(p => p.category_name).filter(Boolean))];
+        if (categories.length === 0) {
+            return { related: [], categories: [], searchProductIds };
+        }
+        
+        // 2. Fetch products in those categories
+        const allRelatedPromises = categories.map(async (cat) => {
+            try {
+                const res = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(cat)}`, { cache: 'no-store' });
+                if (res.ok) return await res.json();
+            } catch (e) {
+                console.error(e);
             }
-        } else if (categoryName || sort) {
-            let url = `${backendUrl}/api/products/filter?`;
-            if (categoryName) url += `category=${encodeURIComponent(categoryName)}&`;
-            if (sort) url += `sort=${encodeURIComponent(sort)}&`;
-            const res = await fetch(url, { cache: 'no-store' });
-            if (res.ok) {
-                products = await res.json();
-            }
-        } else {
-            const url = `${backendUrl}/api/products?page=${page}&limit=${limit}`;
-            const res = await fetch(url, { cache: 'no-store' });
-            if (res.ok) {
-                const data = await res.json();
-                products = data.products || [];
-                isPaginatedOnBackend = true;
-                backendTotal = data.total || 0;
-                backendTotalPages = data.totalPages || 1;
+            return [];
+        });
+        
+        const results = await Promise.all(allRelatedPromises);
+        
+        // Flatten and de-duplicate
+        const seenIds = new Set();
+        const related = [];
+        
+        for (const list of results) {
+            for (const p of list) {
+                // Exclude if it is in the direct search results or already seen
+                if (!searchProductIds.has(p.id) && !seenIds.has(p.id)) {
+                    seenIds.add(p.id);
+                    related.push(p);
+                }
             }
         }
-
-        // Apply partitioning and sorting on frontend
-        products = partitionAndSortProducts(products, sort);
-
-        if (isPaginatedOnBackend) {
-            return {
-                products,
-                page,
-                totalPages: backendTotalPages,
-                total: backendTotal
-            };
-        }
-
-        const total = products.length;
-        const totalPages = Math.ceil(total / limit) || 1;
-        const offset = (page - 1) * limit;
+        
+        // Sort and partition
+        const sortedRelated = partitionAndSortProducts(related, sort);
+        
         return {
-            products: products.slice(offset, offset + limit),
-            page,
-            totalPages,
-            total
+            related: sortedRelated,
+            categories,
+            searchProductIds
         };
     } catch (err) {
-        return { products: [], page: 1, totalPages: 1, total: 0 };
+        console.error(err);
+        return { related: [], categories: [], searchProductIds: new Set() };
     }
 }
 
-async function fetchCategories() {
-    try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
-        const res = await fetch(`${backendUrl}/api/categories`, {
-            cache: 'no-store'
-        });
-        if (!res.ok) {
-            return [];
-        }
-        return await res.json();
-    } catch (err) {
-        return [];
-    }
-}
-
-export default async function ProductsPage({ searchParams }) {
+export default async function RelatedProductsPage({ searchParams }) {
     const resolvedParams = await searchParams || {};
-    const category = resolvedParams.category;
-    const query = resolvedParams.q;
+    const query = resolvedParams.q || "";
     const sort = resolvedParams.sort;
     const page = parseInt(resolvedParams.page) || 1;
+    const limit = 12;
 
-    const [data, categories] = await Promise.all([
-        fetchProducts(category, query, sort, page),
-        fetchCategories()
-    ]);
-    const totalPages = data.totalPages || 1;
+    const { related, categories } = query 
+        ? await fetchRelatedProducts(query, sort)
+        : { related: [], categories: [] };
+
+    const total = related.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const offset = (page - 1) * limit;
+    const paginatedProducts = related.slice(offset, offset + limit);
 
     return (
         <div className="animate-fade-in" style={{ padding: '40px 0 80px' }}>
             <div className="container" style={{ marginBottom: '24px' }}>
+                {/* Back Link */}
+                <div style={{ marginBottom: '20px' }}>
+                    <Link href={`/products?q=${encodeURIComponent(query)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--accent)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Back to Search Results
+                    </Link>
+                </div>
+
                 <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', marginBottom: '12px', fontWeight: 300, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-main)' }}>
-                    {query ? `Search results` : category ? `${category}` : "Our Collections"}
+                    Related Products
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
-                    {query ? `${data.total || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
+                    Showing {total} related items based on categories matching your search query &ldquo;{query}&rdquo;.
                 </p>
-                {query && (
-                    <div style={{ marginTop: '16px', padding: '14px 20px', background: 'rgba(122, 56, 194, 0.05)', border: '1px dashed var(--accent)', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>Looking for something similar?</span>
-                        <Link href={`/products/related?q=${encodeURIComponent(query)}`} style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'underline' }}>
-                            View Related Products
-                        </Link>
+
+                {categories.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginTop: '16px' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>Matched Categories:</span>
+                        {categories.map((cat, idx) => (
+                            <span key={idx} style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'rgba(122, 56, 194, 0.06)', border: '1px solid rgba(122, 56, 194, 0.15)', borderRadius: '100px', color: 'var(--accent)', fontWeight: 500 }}>
+                                {cat}
+                            </span>
+                        ))}
                     </div>
                 )}
 
                 {/* Categories and Sort Filter Bar */}
                 <div style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-end',
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     gap: '16px',
@@ -157,27 +152,6 @@ export default async function ProductsPage({ searchParams }) {
                     paddingBottom: '16px',
                     borderBottom: '1px solid var(--border)'
                 }}>
-                    {/* Categories Filter Links */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Link 
-                            href={`/products${sort ? `?sort=${sort}` : ''}`} 
-                            className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} 
-                            style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
-                        >
-                            All Collections
-                        </Link>
-                        {categories && categories.length > 0 && categories.map(c => (
-                            <Link
-                                key={c.id}
-                                href={`/products?category=${encodeURIComponent(c.name)}${sort ? `&sort=${sort}` : ''}`}
-                                className={`btn ${category === c.name ? 'btn-primary' : 'btn-secondary'}`}
-                                style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
-                            >
-                                {c.name}
-                            </Link>
-                        ))}
-                    </div>
-
                     {/* Sorting Selector */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>Sort by:</span>
@@ -188,8 +162,8 @@ export default async function ProductsPage({ searchParams }) {
 
             <section className="container">
                 <div className="product-grid-boutique">
-                    {data.products && data.products.length > 0 ? (
-                        data.products.map((p) => (
+                    {paginatedProducts.length > 0 ? (
+                        paginatedProducts.map((p) => (
                             <ProductCard key={p.id} product={p} />
                         ))
                     ) : (
@@ -197,9 +171,8 @@ export default async function ProductsPage({ searchParams }) {
                             <div style={{ width: '80px', height: '80px', margin: '0 auto 20px', borderRadius: '50%', background: 'rgba(54, 46, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             </div>
-                            <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text-main)' }}>No products found</h3>
-                            <p>Try adjusting your search or filter criteria.</p>
-                            <Link href="/products" className="btn btn-secondary" style={{ marginTop: '24px' }}>Clear Filters</Link>
+                            <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text-main)' }}>No related products found</h3>
+                            <p>No other items are currently listed under the categories matching your query.</p>
                         </div>
                     )}
                 </div>
@@ -209,7 +182,7 @@ export default async function ProductsPage({ searchParams }) {
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '60px' }}>
                         {page > 1 && (
                             <Link
-                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page - 1}`}
+                                href={`/products/related?q=${encodeURIComponent(query)}&${sort ? `sort=${sort}&` : ''}page=${page - 1}`}
                                 className="btn btn-secondary"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                             >
@@ -222,7 +195,7 @@ export default async function ProductsPage({ searchParams }) {
                             return (
                                 <Link
                                     key={p}
-                                    href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${p}`}
+                                    href={`/products/related?q=${encodeURIComponent(query)}&${sort ? `sort=${sort}&` : ''}page=${p}`}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -246,7 +219,7 @@ export default async function ProductsPage({ searchParams }) {
                         
                         {page < totalPages && (
                             <Link
-                                href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page + 1}`}
+                                href={`/products/related?q=${encodeURIComponent(query)}&${sort ? `sort=${sort}&` : ''}page=${page + 1}`}
                                 className="btn btn-secondary"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                             >

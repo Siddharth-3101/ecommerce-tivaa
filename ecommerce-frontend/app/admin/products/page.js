@@ -91,18 +91,138 @@ export default function AdminProductsPage() {
         }
     };
 
+    const handleDownloadCSV = async () => {
+        try {
+            const res = await api.get("/products?admin=true&limit=10000");
+            const allProducts = res.data?.products || [];
+            
+            if (allProducts.length === 0) {
+                alert("No products to export.");
+                return;
+            }
+
+            const headers = ["id", "name", "description", "price", "stock", "category_id", "is_visible"];
+            const headerLine = headers.join(",");
+            const rowLines = allProducts.map(p => 
+                headers.map(h => {
+                    const val = p[h] === null || p[h] === undefined ? "" : String(p[h]);
+                    return `"${val.replace(/"/g, '""')}"`;
+                }).join(",")
+            );
+            const csvContent = [headerLine, ...rowLines].join("\n");
+            
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "products_export.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to export products.");
+        }
+    };
+
+    const handleImportCSV = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const text = event.target.result;
+                const lines = text.split(/\r?\n/);
+                if (lines.length === 0 || !lines[0]) {
+                    alert("Empty CSV file.");
+                    return;
+                }
+
+                const parseCSVLine = (line) => {
+                    const result = [];
+                    let curVal = "";
+                    let inQuotes = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            if (inQuotes && line[i + 1] === '"') {
+                                curVal += '"';
+                                i++;
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === ',' && !inQuotes) {
+                            result.push(curVal);
+                            curVal = "";
+                        } else {
+                            curVal += char;
+                        }
+                    }
+                    result.push(curVal);
+                    return result;
+                };
+
+                const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+                const parsedProducts = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const values = parseCSVLine(line);
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = values[index] !== undefined ? values[index].trim() : "";
+                    });
+                    if (obj.name) {
+                        parsedProducts.push(obj);
+                    }
+                }
+
+                if (parsedProducts.length === 0) {
+                    alert("No valid products found in CSV.");
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to import/update ${parsedProducts.length} products?`)) {
+                    return;
+                }
+
+                await api.post("/admin/products/bulk", parsedProducts);
+                alert("Products imported/updated successfully!");
+                setRefreshTrigger(prev => prev + 1);
+            } catch (err) {
+                console.error(err);
+                alert(err.response?.data?.message || "Failed to import products. Please check the CSV format.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+    };
+
     return (
         <div className="animate-fade-in">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
                 <div>
                     <h1 style={{ fontSize: "2.5rem", marginBottom: "8px" }}>Products</h1>
                     <p style={{ color: "var(--text-muted)" }}>Manage your inventory and catalog</p>
                 </div>
-                <Link href="/admin/products/add" className="btn btn-primary">
-                    <svg style={{ marginRight: "8px" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    New Product
-                </Link>
+                <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                    <button onClick={handleDownloadCSV} className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "10px 18px", fontSize: "0.9rem" }}>
+                        Download CSV
+                    </button>
+                    <label className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "10px 18px", cursor: "pointer", margin: 0, fontSize: "0.9rem" }}>
+                        Import CSV
+                        <input type="file" accept=".csv" onChange={handleImportCSV} style={{ display: "none" }} />
+                    </label>
+                    <Link href="/admin/products/add" className="btn btn-primary" style={{ padding: "10px 18px" }}>
+                        <svg style={{ marginRight: "8px" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        New Product
+                    </Link>
+                </div>
             </div>
+
 
             {/* Premium Dynamic Filter Controls */}
             <div style={{ 
