@@ -230,34 +230,50 @@ export const bulkImportProducts = (req, res) => {
         return res.status(400).json({ message: "Invalid payload: expected an array of products" });
     }
 
-    const sql = `
-        INSERT INTO products (id, name, description, price, stock, category_id, is_visible)
-        VALUES ?
-        ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            description = VALUES(description),
-            price = VALUES(price),
-            stock = VALUES(stock),
-            category_id = VALUES(category_id),
-            is_visible = VALUES(is_visible)
-    `;
-
-    const values = products.map(p => [
-        p.id ? Number(p.id) : null,
-        p.name,
-        p.description || null,
-        p.price ? Number(p.price) : 0,
-        p.stock ? Number(p.stock) : 0,
-        p.category_id ? Number(p.category_id) : null,
-        p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true
-    ]);
-
-    db.query(sql, [values], (err, result) => {
-        if (err) {
-            console.error("Bulk product import error:", err);
-            return res.status(500).json({ message: "Database error during bulk product import: " + err.message });
+    // Fetch existing category IDs to validate foreign key constraints
+    db.query("SELECT id FROM categories", (catErr, catRows) => {
+        if (catErr) {
+            console.error("Error fetching categories for bulk import:", catErr);
+            return res.status(500).json({ message: "Database error during category validation: " + catErr.message });
         }
-        res.json({ message: `${result.affectedRows} products imported/updated successfully` });
+
+        const validCategoryIds = new Set(catRows.map(row => row.id));
+
+        const sql = `
+            INSERT INTO products (id, name, description, price, stock, category_id, is_visible)
+            VALUES ?
+            ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                description = VALUES(description),
+                price = VALUES(price),
+                stock = VALUES(stock),
+                category_id = VALUES(category_id),
+                is_visible = VALUES(is_visible)
+        `;
+
+        const values = products.map(p => {
+            const rawCatId = p.category_id ? Number(p.category_id) : null;
+            // If the category ID is specified but doesn't exist, default to null to avoid foreign key failure
+            const safeCatId = (rawCatId !== null && validCategoryIds.has(rawCatId)) ? rawCatId : null;
+
+            return [
+                p.id ? Number(p.id) : null,
+                p.name,
+                p.description || null,
+                p.price ? Number(p.price) : 0,
+                p.stock ? Number(p.stock) : 0,
+                safeCatId,
+                p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true
+            ];
+        });
+
+        db.query(sql, [values], (err, result) => {
+            if (err) {
+                console.error("Bulk product import error:", err);
+                return res.status(500).json({ message: "Database error during bulk product import: " + err.message });
+            }
+            res.json({ message: `${result.affectedRows} products imported/updated successfully` });
+        });
     });
 };
 
