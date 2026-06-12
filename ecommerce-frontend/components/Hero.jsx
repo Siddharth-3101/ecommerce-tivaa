@@ -15,6 +15,12 @@ async function fetchBannerSettings() {
 
 export default async function Hero() {
     const settings = await fetchBannerSettings();
+
+    // Check if the hero banner is explicitly disabled
+    if (settings.show_hero_banner === "false") {
+        return null;
+    }
+
     const desktopBanner = settings.desktop_banner || "/hero_banner.png";
     const mobileBanner = settings.mobile_banner || "/hero_banner_mobile.jpg";
 

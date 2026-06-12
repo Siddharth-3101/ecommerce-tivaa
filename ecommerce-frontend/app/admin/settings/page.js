@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 export default function AdminSettingsPage() {
     const [desktopBanner, setDesktopBanner] = useState("");
     const [mobileBanner, setMobileBanner] = useState("");
+    const [showHeroBanner, setShowHeroBanner] = useState(true);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingDesktop, setUploadingDesktop] = useState(false);
@@ -20,6 +21,7 @@ export default function AdminSettingsPage() {
                 if (res.data) {
                     setDesktopBanner(res.data.desktop_banner || "");
                     setMobileBanner(res.data.mobile_banner || "");
+                    setShowHeroBanner(res.data.show_hero_banner !== "false");
                 }
             } catch (err) {
                 console.error("Failed to load settings:", err);
@@ -65,7 +67,8 @@ export default function AdminSettingsPage() {
             await api.put("/settings", {
                 settings: {
                     desktop_banner: desktopBanner,
-                    mobile_banner: mobileBanner
+                    mobile_banner: mobileBanner,
+                    show_hero_banner: showHeroBanner ? "true" : "false"
                 }
             });
             alert("Banner settings saved successfully!");
@@ -89,12 +92,32 @@ export default function AdminSettingsPage() {
     return (
         <div className="container animate-fade-in" style={{ paddingBottom: '80px', maxWidth: '800px' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 300 }}>Banner Settings</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Upload custom images to use as the homepage hero banners.</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Upload custom images to use as the homepage hero banners or disable it entirely.</p>
 
             <form onSubmit={handleSave} className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
                 
+                {/* ENABLE / DISABLE HERO BANNER */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', background: 'rgba(122, 56, 194, 0.03)', padding: '16px 20px', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                    <div style={{ paddingRight: '16px' }}>
+                        <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
+                            Enable Homepage Hero Banner
+                        </label>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Uncheck this to completely remove the banner from the home page. The site layout will adjust automatically.
+                        </span>
+                    </div>
+                    <input 
+                        type="checkbox" 
+                        checked={showHeroBanner}
+                        onChange={(e) => setShowHeroBanner(e.target.checked)}
+                        style={{ width: '24px', height: '24px', cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
+                    />
+                </div>
+
+                <div style={{ height: '1px', background: 'var(--border)', marginBottom: '32px' }}></div>
+
                 {/* DESKTOP BANNER */}
-                <div style={{ marginBottom: '32px' }}>
+                <div style={{ marginBottom: '32px', opacity: showHeroBanner ? 1 : 0.5, pointerEvents: showHeroBanner ? 'auto' : 'none' }}>
                     <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
                         Desktop Hero Banner (Recommended size: 1920x800 px)
                     </label>
@@ -103,21 +126,20 @@ export default function AdminSettingsPage() {
                     </p>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {/* URL input */}
                         <input 
                             type="text" 
                             className="input-field" 
                             placeholder="Enter image URL or upload below..."
                             value={desktopBanner}
                             onChange={(e) => setDesktopBanner(e.target.value)}
+                            disabled={!showHeroBanner}
                         />
                         
-                        {/* Drag and Drop/Upload row */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <div style={{ position: 'relative' }}>
                                 <button 
                                     type="button" 
-                                    disabled={uploadingDesktop}
+                                    disabled={uploadingDesktop || !showHeroBanner}
                                     className="btn btn-secondary"
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                                 >
@@ -127,6 +149,7 @@ export default function AdminSettingsPage() {
                                 <input 
                                     type="file" 
                                     accept="image/*"
+                                    disabled={!showHeroBanner}
                                     onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
                                             handleImageUpload(e.target.files[0], "desktop");
@@ -147,7 +170,6 @@ export default function AdminSettingsPage() {
                             )}
                         </div>
 
-                        {/* Image Preview */}
                         {desktopBanner && (
                             <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '200px', background: '#fcfcfc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <img 
@@ -163,7 +185,7 @@ export default function AdminSettingsPage() {
                 <div style={{ height: '1px', background: 'var(--border)', marginBottom: '32px' }}></div>
 
                 {/* MOBILE BANNER */}
-                <div style={{ marginBottom: '40px' }}>
+                <div style={{ marginBottom: '40px', opacity: showHeroBanner ? 1 : 0.5, pointerEvents: showHeroBanner ? 'auto' : 'none' }}>
                     <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
                         Mobile Hero Banner (Recommended size: 800x800 px)
                     </label>
@@ -172,21 +194,20 @@ export default function AdminSettingsPage() {
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {/* URL input */}
                         <input 
                             type="text" 
                             className="input-field" 
                             placeholder="Enter image URL or upload below..."
                             value={mobileBanner}
                             onChange={(e) => setMobileBanner(e.target.value)}
+                            disabled={!showHeroBanner}
                         />
 
-                        {/* Drag and Drop/Upload row */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <div style={{ position: 'relative' }}>
                                 <button 
                                     type="button" 
-                                    disabled={uploadingMobile}
+                                    disabled={uploadingMobile || !showHeroBanner}
                                     className="btn btn-secondary"
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                                 >
@@ -196,6 +217,7 @@ export default function AdminSettingsPage() {
                                 <input 
                                     type="file" 
                                     accept="image/*"
+                                    disabled={!showHeroBanner}
                                     onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
                                             handleImageUpload(e.target.files[0], "mobile");
@@ -216,7 +238,6 @@ export default function AdminSettingsPage() {
                             )}
                         </div>
 
-                        {/* Image Preview */}
                         {mobileBanner && (
                             <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '200px', maxWidth: '200px', background: '#fcfcfc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <img 
