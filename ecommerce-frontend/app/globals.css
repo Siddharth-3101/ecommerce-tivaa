@@ -489,6 +489,7 @@ a:hover {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin; /* Thin scrollbar Firefox */
         scrollbar-color: var(--accent) rgba(122, 56, 194, 0.05);
+        justify-content: flex-start; /* Prevent left side cut-off on overflow */
     }
     
     .category-container::-webkit-scrollbar {
