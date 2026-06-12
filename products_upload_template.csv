@@ -1,0 +1,4 @@
+id,name,description,price,stock,category_id,is_visible
+,Emerald Drop Earrings,"Exquisite handcrafted drop earrings featuring premium emeralds.",2499.00,10,1,true
+,Classic Pearl Choker,"A timeless freshwater pearl choker necklace perfect for elegant styling.",4999.00,5,2,true
+,Ruby Solitaire Ring,"Elegant 18k rose gold ring with a single oval-cut ruby gemstone.",3200.00,15,3,true

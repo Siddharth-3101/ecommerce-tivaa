@@ -7,7 +7,7 @@ export const metadata = {
   title: "Tivaa Jewellery",
   description: "A breathtaking shopping experience",
   icons: {
-    icon: "/logo.png"
+    icon: "/favicon.ico"
   }
 };
 
