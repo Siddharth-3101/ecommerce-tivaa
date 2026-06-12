@@ -2,7 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import db from "../config/db.js";
 import dotenv from "dotenv";
-import { sendOrderEmailToAdmins } from "../utils/orderEmail.js";
+import { sendOrderEmailToAdmins, sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 dotenv.config();
 
 // ==========================================================
@@ -118,6 +118,7 @@ export const verifyPayment = (req, res) => {
             console.error("❌ Order Update Error:", err3);
           } else {
             sendOrderEmailToAdmins(order_id);
+            sendOrderEmailToCustomer(order_id);
           }
         }
       );
@@ -181,6 +182,7 @@ export const razorpayWebhook = (req, res) => {
                 console.error("❌ Webhook Order Update Error:", err);
               } else {
                 sendOrderEmailToAdmins(orderId);
+                sendOrderEmailToCustomer(orderId);
               }
             }
           );

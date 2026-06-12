@@ -1,6 +1,10 @@
 export function downloadInvoice(order, items) {
     if (typeof window === 'undefined') return;
 
+    const subtotal = items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+    const shippingCost = Number(order.shipping_cost || 0);
+    const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
+
     // Create a hidden iframe
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
@@ -38,7 +42,7 @@ export function downloadInvoice(order, items) {
         <html>
         <head>
             <meta charset="utf-8">
-            <title>Invoice - Order #${order.id}</title>
+            <title>Invoice - Order #${formattedOrderId}</title>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Poppins:wght@300;400;500;600;700&display=swap');
                 body {
@@ -165,7 +169,7 @@ export function downloadInvoice(order, items) {
                         </td>
                         <td style="text-align: right; vertical-align: top;">
                             <div style="font-size: 1.4rem; font-weight: 700; color: #2B1B35;">INVOICE</div>
-                            <div style="font-size: 0.9rem; color: #6F5B7A; margin-top: 6px;">Order ID: #${order.id}</div>
+                            <div style="font-size: 0.9rem; color: #6F5B7A; margin-top: 6px;">Order ID: #${formattedOrderId}</div>
                             <div style="font-size: 0.9rem; color: #6F5B7A;">Date: ${dateStr}</div>
                         </td>
                     </tr>
@@ -222,11 +226,11 @@ export function downloadInvoice(order, items) {
                 <table class="totals-table">
                     <tr class="totals-row">
                         <td class="totals-label">Subtotal</td>
-                        <td class="totals-value">Rs. ${Number(order.total).toFixed(2)}</td>
+                        <td class="totals-value">Rs. ${subtotal.toFixed(2)}</td>
                     </tr>
                     <tr class="totals-row">
                         <td class="totals-label">Shipping</td>
-                        <td class="totals-value" style="color: #10B981; font-weight: 600;">Free</td>
+                        <td class="totals-value" style="color: ${shippingCost > 0 ? '#2B1B35' : '#10B981'}; font-weight: 600;">${shippingCost > 0 ? `Rs. ${shippingCost.toFixed(2)}` : "Free"}</td>
                     </tr>
                     <tr class="totals-row">
                         <td class="totals-label" style="font-weight: 600; padding-top: 12px; border-top: 1px solid #EADCF8;">Total Amount Paid</td>

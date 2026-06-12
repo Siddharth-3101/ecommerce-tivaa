@@ -47,7 +47,7 @@ export default function FAQPage() {
     };
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 80px', minHeight: '90vh' }}>
+        <div className="animate-fade-in" style={{ padding: '30px 0 80px', minHeight: '90vh' }}>
             {/* Header section */}
             <div className="container" style={{ marginBottom: '48px' }}>
                 <div style={{ marginBottom: '24px' }}>

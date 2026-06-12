@@ -71,6 +71,7 @@ export const runSetup = async () => {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
                 total DECIMAL(10, 2) NOT NULL,
+                shipping_cost DECIMAL(10, 2) DEFAULT 0.00,
                 payment_method VARCHAR(100) NOT NULL,
                 order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending',
                 razorpay_order_id VARCHAR(255) NULL,

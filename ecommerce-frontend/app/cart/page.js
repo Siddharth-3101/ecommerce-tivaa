@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 export default function CartPage() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [shippingCost, setShippingCost] = useState(0);
     const router = useRouter();
 
     const loadCart = async () => {
@@ -26,6 +27,17 @@ export default function CartPage() {
         }
     };
 
+    const loadSettings = async () => {
+        try {
+            const res = await api.get("/settings");
+            if (res.data && res.data.shipping_cost) {
+                setShippingCost(Number(res.data.shipping_cost) || 0);
+            }
+        } catch (err) {
+            console.log("Failed to load settings in cart:", err);
+        }
+    };
+
     useEffect(() => {
         const user = getUser();
         if(!user) {
@@ -34,6 +46,7 @@ export default function CartPage() {
         }
         
         loadCart();
+        loadSettings();
 
         // Listen for internal cart syncs
         const handleCartSync = () => loadCart();
@@ -84,14 +97,14 @@ export default function CartPage() {
 
     if (loading)
         return (
-            <div className="container" style={{ paddingTop: '120px', display: 'flex', justifyContent: 'center' }}>
+            <div className="container" style={{ paddingTop: '30px', display: 'flex', justifyContent: 'center' }}>
                 <span style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
                 <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
 
     return (
-        <div className="container animate-fade-in" style={{ paddingTop: '100px', paddingBottom: '80px' }}>
+        <div className="container animate-fade-in" style={{ paddingTop: '30px', paddingBottom: '80px' }}>
             <div className="cart-header-row">
                 <div>
                     <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Your Selection</h1>
@@ -199,7 +212,7 @@ export default function CartPage() {
                         
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                             <span>Shipping</span>
-                            <span style={{ color: '#1a1a1a', fontWeight: 600 }}>Free</span>
+                            <span style={{ color: '#1a1a1a', fontWeight: 600 }}>{shippingCost > 0 ? `Rs. ${shippingCost.toFixed(2)}` : "Free"}</span>
                         </div>
                         
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '24px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -209,7 +222,7 @@ export default function CartPage() {
                         
                         <div style={{ display: "flex", justifyContent: "space-between", paddingTop: '24px', borderTop: '1px solid var(--border)', marginBottom: '32px' }}>
                             <span style={{ fontSize: '1.1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</span>
-                            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-main)' }}>Rs. {total.toFixed(2)}</span>
+                            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-main)' }}>Rs. ${(total + shippingCost).toFixed(2)}</span>
                         </div>
 
                         <Link href="/checkout" className="btn btn-black-solid" style={{ display: "flex", width: '100%', justifyContent: 'center', padding: '14px', fontSize: '0.95rem' }}>

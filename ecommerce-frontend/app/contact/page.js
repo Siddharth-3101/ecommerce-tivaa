@@ -44,7 +44,7 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 80px', minHeight: '90vh', background: 'var(--gradient-bg)' }}>
+        <div className="animate-fade-in" style={{ padding: '30px 0 80px', minHeight: '90vh', background: 'var(--gradient-bg)' }}>
             
             {/* Header section */}
             <div className="container" style={{ marginBottom: '48px' }}>

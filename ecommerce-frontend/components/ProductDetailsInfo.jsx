@@ -128,11 +128,11 @@ export default function ProductDetailsInfo({ product }) {
                         </Link>
                     ) : "Premium Collection"}
                 </span>
-                <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', margin: '8px 0', lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.5px' }}>
+                <h1 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', margin: '8px 0', lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.5px' }}>
                     {product.name}
                 </h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1.75rem', fontWeight: 600, color: 'var(--accent)' }}>
+                    <span style={{ fontSize: '1.45rem', fontWeight: 600, color: 'var(--accent)' }}>
                         Rs. {product.price}
                     </span>
                 </div>

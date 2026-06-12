@@ -20,7 +20,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                 <img
                     src="/placeholder.png"
                     alt={productName}
-                    style={{ width: '100%', height: 'auto', borderRadius: '2px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: 'auto', borderRadius: '2px', objectFit: 'contain' }}
                 />
             </div>
         );
@@ -29,7 +29,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
     const primaryImage = overrideImage || validImages[activeIndex];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px', width: '100%', margin: '0 auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '420px', width: '100%', margin: '0 auto' }}>
             
             {/* Primary Large Image View */}
             <div 
@@ -52,7 +52,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     style={{ 
                         width: '100%', 
                         height: '100%', 
-                        objectFit: 'cover', 
+                        objectFit: 'contain', 
                         borderRadius: '2px',
                         transition: 'opacity 0.3s ease'
                     }}

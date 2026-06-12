@@ -37,14 +37,14 @@ export default function OrderDetailsPage({ params }) {
     }, [id, router]);
 
     if (loading) return (
-        <div className="container" style={{ paddingTop: '120px', display: 'flex', justifyContent: 'center' }}>
+        <div className="container" style={{ paddingTop: '30px', display: 'flex', justifyContent: 'center' }}>
             <span style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
             <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
     if (!orderData) return (
-        <div className="container" style={{ paddingTop: '120px', textAlign: 'center' }}>
+        <div className="container" style={{ paddingTop: '30px', textAlign: 'center' }}>
             <h1>Order Not Found</h1>
             <Link href="/" className="btn btn-primary" style={{ marginTop: '24px' }}>Back to Home</Link>
         </div>
@@ -69,7 +69,7 @@ export default function OrderDetailsPage({ params }) {
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
-                description: `Order #${order.id}`,
+                description: `Order #TEJWL${String(order.id).padStart(2, '0')}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {
@@ -122,14 +122,14 @@ export default function OrderDetailsPage({ params }) {
     };
 
     return (
-        <div className="container animate-fade-in" style={{ paddingTop: '120px', paddingBottom: '80px' }}>
+        <div className="container animate-fade-in" style={{ paddingTop: '30px', paddingBottom: '80px' }}>
             {isSuccess && (
                 <div style={{ textAlign: 'center', marginBottom: '60px' }}>
                     <div style={{ width: '80px', height: '80px', background: 'var(--accent-glow)', color: 'var(--accent)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
                     <h1 className="placed-title" style={{ marginBottom: '12px' }}>Order Placed!</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Thank you for your purchase. Your order ID is #{order.id}</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Thank you for your purchase. Your order ID is #TEJWL${String(order.id).padStart(2, '0')}</p>
                 </div>
             )}
 
@@ -178,6 +178,10 @@ export default function OrderDetailsPage({ params }) {
                     <div className="card" style={{ padding: '24px' }}>
                         <h3 style={{ marginBottom: '16px', fontSize: '1.1rem' }}>Order Information</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Order ID</span>
+                                <span style={{ fontWeight: 600 }}>TEJWL${String(order.id).padStart(2, '0')}</span>
+                            </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Status</span>
                                 <span style={{ textTransform: 'capitalize', color: 'var(--accent)', fontWeight: 600 }}>{order.order_status}</span>

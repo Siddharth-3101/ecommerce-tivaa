@@ -6,6 +6,9 @@ import Script from "next/script";
 export const metadata = {
   title: "Tivaa Jewellery",
   description: "A breathtaking shopping experience",
+  icons: {
+    icon: "/logo.png"
+  }
 };
 
 export default function RootLayout({ children }) {

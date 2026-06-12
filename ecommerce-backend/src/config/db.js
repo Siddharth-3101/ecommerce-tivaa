@@ -53,4 +53,18 @@ db.query(`
   }
 });
 
+// Auto-migrate orders table schema to include shipping_cost
+db.query(`
+  ALTER TABLE orders 
+  ADD COLUMN shipping_cost DECIMAL(10, 2) DEFAULT 0.00;
+`, (err) => {
+  if (err) {
+    if (!err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+      console.error("Auto-migration orders shipping_cost note:", err.message);
+    }
+  } else {
+    console.log("Orders schema successfully updated for shipping_cost.");
+  }
+});
+
 export default db;

@@ -51,7 +51,7 @@ export default async function ProductPage({ params }) {
     const relatedProducts = await fetchRelatedProducts(product.category_name, product.id);
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 40px' }}>
+        <div className="animate-fade-in" style={{ padding: '30px 0 40px' }}>
             <div className="container">
                 <Link 
                     href={product.category_name ? `/products?category=${encodeURIComponent(product.category_name)}` : "/products"} 

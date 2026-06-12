@@ -8,6 +8,7 @@ export default function AdminSettingsPage() {
     const [desktopBanner, setDesktopBanner] = useState("");
     const [mobileBanner, setMobileBanner] = useState("");
     const [showHeroBanner, setShowHeroBanner] = useState(true);
+    const [shippingCost, setShippingCost] = useState("0");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploadingDesktop, setUploadingDesktop] = useState(false);
@@ -22,6 +23,7 @@ export default function AdminSettingsPage() {
                     setDesktopBanner(res.data.desktop_banner || "");
                     setMobileBanner(res.data.mobile_banner || "");
                     setShowHeroBanner(res.data.show_hero_banner !== "false");
+                    setShippingCost(res.data.shipping_cost || "0");
                 }
             } catch (err) {
                 console.error("Failed to load settings:", err);
@@ -68,10 +70,11 @@ export default function AdminSettingsPage() {
                 settings: {
                     desktop_banner: desktopBanner,
                     mobile_banner: mobileBanner,
-                    show_hero_banner: showHeroBanner ? "true" : "false"
+                    show_hero_banner: showHeroBanner ? "true" : "false",
+                    shipping_cost: shippingCost
                 }
             });
-            alert("Banner settings saved successfully!");
+            alert("Settings saved successfully!");
         } catch (err) {
             console.error("Failed to save settings:", err);
             alert(err.response?.data?.message || "Failed to save settings. Please try again.");
@@ -248,6 +251,28 @@ export default function AdminSettingsPage() {
                             </div>
                         )}
                     </div>
+                </div>
+
+                <div style={{ height: '1px', background: 'var(--border)', marginBottom: '32px' }}></div>
+
+                {/* SHIPPING COST */}
+                <div style={{ marginBottom: '40px' }}>
+                    <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
+                        Default Shipping Cost (INR)
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px' }}>
+                        Configure the default shipping rate added to checkout. Set to 0 for free shipping.
+                    </p>
+                    <input 
+                        type="number" 
+                        step="0.01"
+                        min="0"
+                        className="input-field" 
+                        placeholder="e.g. 50"
+                        value={shippingCost}
+                        onChange={(e) => setShippingCost(e.target.value)}
+                        required
+                    />
                 </div>
 
                 {/* SAVE BUTTON */}

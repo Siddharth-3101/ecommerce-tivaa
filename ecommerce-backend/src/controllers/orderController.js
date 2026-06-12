@@ -18,59 +18,67 @@ export const createOrder = (req, res) => {
     return res.status(400).json({ message: "Payment method required" });
   }
 
-  // Step 1 — Fetch cart items
-  const sqlCart = `
-        SELECT 
-            c.product_id, 
-            c.quantity, 
-            p.price, 
-            p.stock, 
-            p.name,
-            c.selected_variation
-        FROM cart c
-        JOIN products p ON p.id = c.product_id
-        WHERE c.user_id = ?
-    `;
-
-  db.query(sqlCart, [userId], (err, cartItems) => {
-    if (err) {
-      console.error("DB error:", err);
-      return res.status(500).json({ message: "Database error" });
+  // Fetch shipping cost from settings table
+  db.query("SELECT value FROM settings WHERE `key` = 'shipping_cost'", (errSettings, settingsRows) => {
+    let shippingCost = 0.00;
+    if (!errSettings && settingsRows && settingsRows.length > 0) {
+      shippingCost = parseFloat(settingsRows[0].value) || 0.00;
     }
 
-    if (cartItems.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
+    // Step 1 — Fetch cart items
+    const sqlCart = `
+          SELECT 
+              c.product_id, 
+              c.quantity, 
+              p.price, 
+              p.stock, 
+              p.name,
+              c.selected_variation
+          FROM cart c
+          JOIN products p ON p.id = c.product_id
+          WHERE c.user_id = ?
+      `;
 
-    // Step 2 — Check stock availability
-    for (const item of cartItems) {
-      const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
-      if (item.quantity > stockVal) {
-        return res.status(400).json({
-          message: `Not enough stock for ${item.name}`,
-        });
-      }
-    }
-
-    // Step 3 — Calculate total amount
-    const total = cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    // Step 4 — Create main order
-    const sqlCreateOrder = `
-            INSERT INTO orders (user_id, total, payment_method, order_status)
-            VALUES (?, ?, ?, 'pending')
-        `;
-
-    db.query(sqlCreateOrder, [userId, total, payment_method], (err2, result) => {
-      if (err2) {
-        console.error("DB error:", err2);
+    db.query(sqlCart, [userId], (err, cartItems) => {
+      if (err) {
+        console.error("DB error:", err);
         return res.status(500).json({ message: "Database error" });
       }
 
-      const orderId = result.insertId;
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+
+      // Step 2 — Check stock availability
+      for (const item of cartItems) {
+        const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
+        if (item.quantity > stockVal) {
+          return res.status(400).json({
+            message: `Not enough stock for ${item.name}`,
+          });
+        }
+      }
+
+      // Step 3 — Calculate total amount including shipping cost
+      const subtotal = cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const total = subtotal + shippingCost;
+
+      // Step 4 — Create main order with shipping_cost column
+      const sqlCreateOrder = `
+              INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status)
+              VALUES (?, ?, ?, ?, 'pending')
+          `;
+
+      db.query(sqlCreateOrder, [userId, total, shippingCost, payment_method], (err2, result) => {
+        if (err2) {
+          console.error("DB error:", err2);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        const orderId = result.insertId;
 
       // Step 5 — Insert order items
       const itemsSql = `
@@ -137,6 +145,7 @@ export const createOrder = (req, res) => {
       });
     });
   });
+});
 };
 
 // =============================================================

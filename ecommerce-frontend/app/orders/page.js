@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, ArrowRight, ArrowLeft, Calendar } from "lucide-react";
+import { ShoppingCart, ArrowRight, ArrowLeft, Calendar } from "lucide-react";
 
 export default function MyOrdersPage() {
     const router = useRouter();
@@ -104,7 +104,7 @@ export default function MyOrdersPage() {
     const paginatedOrders = orders.slice(offset, offset + limit);
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 80px' }}>
+        <div className="animate-fade-in" style={{ padding: '30px 0 80px' }}>
             <div className="container" style={{ marginBottom: '40px' }}>
                 <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '24px' }}>
                     <ArrowLeft size={16} /> Continue Shopping
@@ -123,7 +123,7 @@ export default function MyOrdersPage() {
                 {orders.length === 0 ? (
                     <div style={{ padding: '80px 40px', background: 'var(--bg-card)', border: '1px dashed var(--border)', borderRadius: '24px', textAlign: 'center', maxWidth: '600px', margin: '0 auto', boxShadow: 'var(--shadow-sm)' }}>
                         <div style={{ width: '88px', height: '88px', margin: '0 auto 24px', borderRadius: '50%', background: 'rgba(229,147,116,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
-                            <ShoppingBag size={36} />
+                            <ShoppingCart size={36} />
                         </div>
                         <h3 style={{ fontSize: '1.6rem', marginBottom: '12px', color: 'var(--text-main)' }}>No orders placed yet</h3>
                         <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '32px', maxWidth: '400px', margin: '0 auto 32px' }}>
@@ -143,7 +143,7 @@ export default function MyOrdersPage() {
                                         {/* Order Meta */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <h3 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>
-                                                Order #{order.id}
+                                                Order #TEJWL{String(order.id).padStart(2, '0')}
                                             </h3>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                                 <Calendar size={14} />

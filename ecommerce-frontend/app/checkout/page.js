@@ -7,11 +7,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 
+const INDIAN_STATES = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
+    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
+    "Uttar Pradesh", "Uttarakhand", "West Bengal", 
+    "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+    "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
 export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [user, setUser] = useState(null);
+    const [shippingCost, setShippingCost] = useState(0);
     const [formData, setFormData] = useState({
         shipping_address: "",
         city: "",
@@ -41,6 +53,16 @@ export default function CheckoutPage() {
                     return;
                 }
 
+                // Fetch settings to get shipping cost
+                try {
+                    const settingsRes = await api.get("/settings");
+                    if (settingsRes.data && settingsRes.data.shipping_cost) {
+                        setShippingCost(Number(settingsRes.data.shipping_cost) || 0);
+                    }
+                } catch (settingsErr) {
+                    console.log("Failed to load settings in checkout:", settingsErr);
+                }
+
                 // Fetch fresh profile containing saved address details
                 const profileRes = await api.get("/auth/me");
                 const profile = profileRes.data;
@@ -63,7 +85,8 @@ export default function CheckoutPage() {
         loadCartAndProfile();
     }, [router]);
 
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = subtotal + shippingCost;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -87,7 +110,7 @@ export default function CheckoutPage() {
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
-                description: `Order #${orderId}`,
+                description: `Order #TEJWL${String(orderId).padStart(2, '0')}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {
@@ -139,14 +162,14 @@ export default function CheckoutPage() {
     };
 
     if (loading) return (
-        <div className="container" style={{ paddingTop: '120px', display: 'flex', justifyContent: 'center' }}>
+        <div className="container" style={{ paddingTop: '30px', display: 'flex', justifyContent: 'center' }}>
             <span style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
             <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 
     return (
-        <div className="container animate-fade-in" style={{ paddingTop: '100px', paddingBottom: '80px' }}>
+        <div className="container animate-fade-in" style={{ paddingTop: '30px', paddingBottom: '80px' }}>
             <div className="checkout-grid">
                 <div>
                     <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>Checkout</h1>
@@ -182,13 +205,18 @@ export default function CheckoutPage() {
                                      </div>
                                      <div>
                                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>State</label>
-                                         <input 
-                                             type="text" 
+                                         <select 
                                              className="input-field" 
                                              required 
                                              value={formData.state}
                                              onChange={(e) => setFormData({...formData, state: e.target.value})}
-                                         />
+                                             style={{ background: '#ffffff', color: 'var(--text-main)' }}
+                                         >
+                                             <option value="" disabled>Select State</option>
+                                             {INDIAN_STATES.map(s => (
+                                                 <option key={s} value={s}>{s}</option>
+                                             ))}
+                                         </select>
                                      </div>
                                 </div>
                                 <div className="checkout-form-grid">
@@ -253,9 +281,19 @@ export default function CheckoutPage() {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontWeight: 600 }}>Total To Pay</span>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>₹{total.toFixed(2)}</span>
+                        <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+                                <span>Subtotal</span>
+                                <span>₹{subtotal.toFixed(2)}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+                                <span>Shipping</span>
+                                <span style={{ color: '#10B981', fontWeight: 600 }}>{shippingCost > 0 ? `₹${shippingCost.toFixed(2)}` : "Free"}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                                <span style={{ fontWeight: 600 }}>Total To Pay</span>
+                                <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>₹{total.toFixed(2)}</span>
+                            </div>
                         </div>
                     </div>
                 </aside>

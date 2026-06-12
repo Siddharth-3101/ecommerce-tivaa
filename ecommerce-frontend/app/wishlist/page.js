@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Heart, ShoppingBag, Trash2, ArrowLeft } from "lucide-react";
+import { Heart, ShoppingCart, Trash2, ArrowLeft } from "lucide-react";
 
 export default function WishlistPage() {
     const router = useRouter();
@@ -85,7 +85,7 @@ export default function WishlistPage() {
     }
 
     return (
-        <div className="animate-fade-in" style={{ padding: '120px 0 80px' }}>
+        <div className="animate-fade-in" style={{ padding: '30px 0 80px' }}>
             <div className="container" style={{ marginBottom: '40px' }}>
                 <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '16px' }}>
                     <ArrowLeft size={16} /> Continue Shopping
@@ -209,7 +209,7 @@ export default function WishlistPage() {
                                             "Out of Stock"
                                         ) : (
                                             <>
-                                                <ShoppingBag size={16} /> Add to Cart
+                                                <ShoppingCart size={16} /> Add to Cart
                                             </>
                                         )}
                                     </button>

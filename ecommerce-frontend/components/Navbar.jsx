@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut } from "lucide-react";
+import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut } from "lucide-react";
 
 // Recreated premium line-art vector icons from the theme assets
 const CustomSearchIcon = ({ size = 20, ...props }) => (
@@ -29,10 +29,11 @@ const CustomUserIcon = ({ size = 20, ...props }) => (
     </svg>
 );
 
-const CustomBagIcon = ({ size = 20, ...props }) => (
+const CustomCartIcon = ({ size = 20, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <rect x="4.5" y="8.5" width="15" height="12" rx="2.5" />
-        <path d="M9 8.5 C9 5.5 10 4.5 12 4.5 C14 4.5 15 5.5 15 8.5" />
+        <circle cx="9" cy="21" r="1" />
+        <circle cx="20" cy="21" r="1" />
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
     </svg>
 );
 
@@ -348,7 +349,7 @@ export default function Navbar() {
                         }}
                     >
                         <div style={{ position: 'relative', display: 'inline-flex' }}>
-                            <CustomBagIcon size={20} />
+                            <CustomCartIcon size={20} />
                             {count > 0 && (
                                 <span style={{ 
                                     position: 'absolute',
@@ -402,7 +403,7 @@ export default function Navbar() {
                              <input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search for perfection..."
+                                placeholder="Search..."
                                 className="input-field"
                                 autoFocus
                                 style={{ 
@@ -454,16 +455,16 @@ export default function Navbar() {
                     {/* Drawer Content */}
                     <div className="animate-slide-right" style={{ position: 'relative', width: '300px', height: '100dvh', minHeight: '100vh', background: '#ffffff', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', zIndex: 2001, boxShadow: '4px 0 24px rgba(0,0,0,0.1)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <img src="/logo.png" style={{ height: '48px', objectFit: 'contain' }} alt="Tivaa Logo" />
-                                <span style={{ color: '#7a38c2', fontWeight: 600, fontSize: '1.25rem', letterSpacing: '0.5px' }}>Tivaa Elegance</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img src="/logo.png" style={{ height: '72px', objectFit: 'contain' }} alt="Tivaa Logo" />
+                                <span style={{ color: '#7a38c2', fontWeight: 600, fontSize: '1.15rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>Tivaa Elegance</span>
                             </div>
                             <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>
                         </div>
 
                         {/* Search in Drawer */}
                         <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); setSearchQuery(""); }}>
-                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: '0px', borderColor: 'var(--border)' }} />
+                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: '0px', borderColor: 'var(--border)', height: '38px', padding: '8px 12px', fontSize: '0.85rem' }} />
                         </form>
 
                         {/* Navigation links inside Mobile Drawer */}
