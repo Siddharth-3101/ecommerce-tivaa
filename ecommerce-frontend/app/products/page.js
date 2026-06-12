@@ -137,14 +137,7 @@ export default async function ProductsPage({ searchParams }) {
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
                     {query ? `${data.total || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
                 </p>
-                {query && (
-                    <div style={{ marginTop: '16px', padding: '14px 20px', background: 'rgba(122, 56, 194, 0.05)', border: '1px dashed var(--accent)', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>Looking for something similar?</span>
-                        <Link href={`/products/related?q=${encodeURIComponent(query)}`} style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600, textDecoration: 'underline' }}>
-                            View Related Products
-                        </Link>
-                    </div>
-                )}
+
 
                 {/* Categories and Sort Filter Bar */}
                 <div style={{

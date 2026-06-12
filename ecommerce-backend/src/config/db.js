@@ -39,4 +39,18 @@ db.query(`
   }
 });
 
+// Auto-migrate settings table
+db.query(`
+  CREATE TABLE IF NOT EXISTS settings (
+    \`key\` VARCHAR(255) PRIMARY KEY,
+    \`value\` TEXT NOT NULL
+  );
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration settings note:", err.message);
+  } else {
+    console.log("Settings table successfully verified/created.");
+  }
+});
+
 export default db;

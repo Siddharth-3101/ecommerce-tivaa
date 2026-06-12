@@ -1,6 +1,23 @@
 import Link from "next/link";
 
-export default function Hero() {
+async function fetchBannerSettings() {
+    try {
+        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const res = await fetch(`${backendUrl}/api/settings`, { cache: 'no-store' });
+        if (res.ok) {
+            return await res.json();
+        }
+    } catch (err) {
+        console.error("Failed to load banner settings:", err);
+    }
+    return {};
+}
+
+export default async function Hero() {
+    const settings = await fetchBannerSettings();
+    const desktopBanner = settings.desktop_banner || "/hero_banner.png";
+    const mobileBanner = settings.mobile_banner || "/hero_banner_mobile.jpg";
+
     return (
         <section className="hero-adaptive-container">
             <Link 
@@ -10,12 +27,12 @@ export default function Hero() {
                 <picture>
                     {/* Mobile: square banner for phones ≤768px */}
                     <source
-                        srcSet="/hero_banner_mobile.jpg"
+                        srcSet={mobileBanner}
                         media="(max-width: 768px)"
                     />
                     {/* Desktop: wide banner for everything above 768px */}
                     <img 
-                        src="/hero_banner.png" 
+                        src={desktopBanner} 
                         alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
                         className="hero-adaptive-img"
                         draggable={false}
