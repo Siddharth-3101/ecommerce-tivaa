@@ -765,7 +765,7 @@ a:hover {
     color: var(--text-main);
     text-align: center;
     letter-spacing: 2px;
-    text-transform: uppercase;
+    text-transform: none;
     margin-bottom: 40px;
     position: relative;
 }

@@ -72,7 +72,7 @@ export default async function Home() {
 
             {/* SHOP BY CATEGORY SECTION */}
             <section className="container" style={{ padding: '80px 24px 60px' }}>
-                <h2 className="section-heading">Shop By Category</h2>
+                <h2 className="section-heading">Shop by Category</h2>
 
                 <div className="category-container">
                     {categories && categories.length > 0 ? (
