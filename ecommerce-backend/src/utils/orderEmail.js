@@ -56,7 +56,7 @@ export const sendOrderEmailToAdmins = async (orderId) => {
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(item.price * item.quantity).toFixed(2)}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</td>
       </tr>
     `).join("");
 
@@ -111,11 +111,11 @@ export const sendOrderEmailToAdmins = async (orderId) => {
               ${itemsListHtml}
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; border-top: 1px solid #ddd; color: #666;">Subtotal:</td>
-                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(order.total - order.shipping_cost).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(Number(order.total || 0) - Number(order.shipping_cost || 0)).toFixed(2)}</td>
               </tr>
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; color: #666;">Shipping:</td>
-                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost || 0).toFixed(2)}</td>
               </tr>
               <tr style="font-weight: bold; font-size: 1.1em;">
                 <td colspan="3" style="padding: 15px 10px 10px 10px; text-align: right; border-top: 1px solid #ddd;">Total Amount Paid:</td>
@@ -213,7 +213,7 @@ export const sendOrderEmailToCustomer = async (orderId) => {
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(item.price * item.quantity).toFixed(2)}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</td>
       </tr>
     `).join("");
 
@@ -256,11 +256,11 @@ export const sendOrderEmailToCustomer = async (orderId) => {
               ${itemsListHtml}
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; border-top: 1px solid #ddd; color: #666;">Subtotal:</td>
-                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(order.total - order.shipping_cost).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(Number(order.total || 0) - Number(order.shipping_cost || 0)).toFixed(2)}</td>
               </tr>
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; color: #666;">Shipping:</td>
-                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost || 0).toFixed(2)}</td>
               </tr>
               <tr style="font-weight: bold; font-size: 1.1em;">
                 <td colspan="3" style="padding: 15px 10px 10px 10px; text-align: right; border-top: 1px solid #ddd;">Total Paid:</td>

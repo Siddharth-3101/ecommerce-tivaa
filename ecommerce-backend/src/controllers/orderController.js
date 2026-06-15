@@ -1,5 +1,6 @@
 import db from "../config/db.js";
 import Razorpay from "razorpay";
+import { sendOrderEmailToAdmins, sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -118,6 +119,11 @@ export const createOrder = (req, res) => {
             db.query("DELETE FROM cart WHERE user_id = ?", [userId], (err5) => {
               if (err5) console.warn("Cart clear error:", err5);
             });
+          }
+
+          if (payment_method === 'cod') {
+            sendOrderEmailToAdmins(orderId);
+            sendOrderEmailToCustomer(orderId);
           }
 
           return res.json({
