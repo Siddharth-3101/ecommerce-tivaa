@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import { sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 
 // ===========================================================
 // CATEGORY MANAGEMENT
@@ -215,6 +216,10 @@ export const adminUpdateOrderStatus = (req, res) => {
                     );
                 });
             });
+        }
+
+        if (status === "paid") {
+            sendOrderEmailToCustomer(id);
         }
 
         res.json({ message: "Order status updated" });

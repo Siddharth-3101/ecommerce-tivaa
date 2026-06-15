@@ -220,8 +220,8 @@ export default function CartPage() {
                                     </div>
                                     
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-muted)' }}>Rs. {item.price}</span>
-                                        <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)' }}>Rs. {(Number(item.price) * Number(item.quantity)).toFixed(2)}</span>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-muted)' }}>₹{item.price}</span>
+                                        <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)' }}>₹{(Number(item.price) * Number(item.quantity)).toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -234,22 +234,22 @@ export default function CartPage() {
 
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                             <span>Subtotal ({items.reduce((acc, curr) => acc + curr.quantity, 0)} items)</span>
-                            <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>Rs. {total.toFixed(2)}</span>
+                            <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>₹{total.toFixed(2)}</span>
                         </div>
                         
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                             <span>Shipping</span>
-                            <span style={{ color: '#1a1a1a', fontWeight: 600 }}>{shippingCost > 0 ? `Rs. ${shippingCost.toFixed(2)}` : "Free"}</span>
+                            <span style={{ color: '#1a1a1a', fontWeight: 600 }}>{shippingCost > 0 ? `₹${shippingCost.toFixed(2)}` : "Free"}</span>
                         </div>
                         
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '24px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                             <span>Taxes</span>
-                            <span style={{ color: 'var(--text-main)' }}>Calculated at checkout</span>
+                            <span style={{ color: 'var(--text-main)' }}>Taxes Included</span>
                         </div>
                         
                         <div style={{ display: "flex", justifyContent: "space-between", paddingTop: '24px', borderTop: '1px solid var(--border)', marginBottom: '32px' }}>
                             <span style={{ fontSize: '1.1rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</span>
-                            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-main)' }}>Rs. ${(total + shippingCost).toFixed(2)}</span>
+                            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-main)' }}>₹{(total + shippingCost).toFixed(2)}</span>
                         </div>
 
                         <Link href="/checkout" className="btn btn-black-solid" style={{ display: "flex", width: '100%', justifyContent: 'center', padding: '14px', fontSize: '0.95rem' }}>

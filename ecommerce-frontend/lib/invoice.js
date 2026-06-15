@@ -32,8 +32,8 @@ export function downloadInvoice(order, items) {
                 ${item.selected_variation ? `<div style="font-size: 0.8rem; color: #6F5B7A; margin-top: 4px;">Variant: ${item.selected_variation}</div>` : ''}
             </td>
             <td style="padding: 12px; text-align: center; font-size: 0.95rem; color: #6F5B7A;">${item.quantity}</td>
-            <td style="padding: 12px; text-align: right; font-size: 0.95rem; color: #6F5B7A;">Rs. ${Number(item.price).toFixed(2)}</td>
-            <td style="padding: 12px; text-align: right; font-weight: 600; font-size: 0.95rem; color: #7A38C2;">Rs. ${(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
+            <td style="padding: 12px; text-align: right; font-size: 0.95rem; color: #6F5B7A;">₹${Number(item.price).toFixed(2)}</td>
+            <td style="padding: 12px; text-align: right; font-weight: 600; font-size: 0.95rem; color: #7A38C2;">₹${(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
         </tr>
     `).join('');
 
@@ -226,15 +226,15 @@ export function downloadInvoice(order, items) {
                 <table class="totals-table">
                     <tr class="totals-row">
                         <td class="totals-label">Subtotal</td>
-                        <td class="totals-value">Rs. ${subtotal.toFixed(2)}</td>
+                        <td class="totals-value">₹${subtotal.toFixed(2)}</td>
                     </tr>
                     <tr class="totals-row">
                         <td class="totals-label">Shipping</td>
-                        <td class="totals-value" style="color: ${shippingCost > 0 ? '#2B1B35' : '#10B981'}; font-weight: 600;">${shippingCost > 0 ? `Rs. ${shippingCost.toFixed(2)}` : "Free"}</td>
+                        <td class="totals-value" style="color: ${shippingCost > 0 ? '#2B1B35' : '#10B981'}; font-weight: 600;">${shippingCost > 0 ? `₹${shippingCost.toFixed(2)}` : "Free"}</td>
                     </tr>
                     <tr class="totals-row">
                         <td class="totals-label" style="font-weight: 600; padding-top: 12px; border-top: 1px solid #EADCF8;">Total Amount Paid</td>
-                        <td class="totals-value totals-grand" style="padding-top: 12px; border-top: 1px solid #EADCF8;">Rs. ${Number(order.total).toFixed(2)}</td>
+                        <td class="totals-value totals-grand" style="padding-top: 12px; border-top: 1px solid #EADCF8;">₹${Number(order.total).toFixed(2)}</td>
                     </tr>
                 </table>
 

@@ -167,7 +167,7 @@ export default function ProductCard({ product }) {
                         {product.name}
                     </span>
                     <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
-                        Rs. {product.price}
+                        ₹{product.price}
                     </span>
                 </div>
                 

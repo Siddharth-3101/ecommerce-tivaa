@@ -95,7 +95,7 @@ export default function ProductDetailsInfo({ product }) {
                 </h1>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <span style={{ fontSize: '1.45rem', fontWeight: 600, color: 'var(--accent)' }}>
-                        Rs. {product.price}
+                        ₹{product.price}
                     </span>
                 </div>
             </div>

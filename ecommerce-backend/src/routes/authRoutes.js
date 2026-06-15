@@ -1,6 +1,7 @@
 import express from "express";
 import {
   registerUser,
+  verifyRegister,
   loginUser,
   googleAuth,
   forgotPassword,
@@ -23,6 +24,9 @@ router.post("/google", googleAuth);
 
 // Register new user
 router.post("/register", registerUser);
+
+// Verify OTP and complete registration
+router.post("/verify-register", verifyRegister);
 
 // Login existing user
 router.post("/login", loginUser);

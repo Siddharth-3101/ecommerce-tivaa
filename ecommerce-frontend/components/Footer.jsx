@@ -56,7 +56,6 @@ export default function Footer() {
                         gap: '16px', 
                         margin: 0 
                     }}>
-                        <li><Link href="/products" className="footer-link" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Search</Link></li>
                         <li><Link href="/faq" className="footer-link" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>FAQs</Link></li>
                         <li><Link href="/contact" className="footer-link" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Contact Us</Link></li>
                         <li><Link href="/privacy" className="footer-link" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>Privacy Policy</Link></li>

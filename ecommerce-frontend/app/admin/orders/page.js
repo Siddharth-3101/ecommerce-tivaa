@@ -187,7 +187,7 @@ export default function AdminOrders() {
                                 {paginatedOrders.length > 0 ? paginatedOrders.map((o) => (
                                     <tr key={o.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseOut={(e) => e.currentTarget.style.background = "transparent"}>
                                         <td style={{ padding: "16px 24px" }}>
-                                            <div style={{ color: "var(--text-main)", fontWeight: 600 }}>#{o.id}</div>
+                                            <div style={{ color: "var(--text-main)", fontWeight: 600 }}>TEJWL{String(o.id).padStart(2, '0')}</div>
                                             {o.payment_id && (
                                                 <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "4px", fontFamily: "monospace" }}>
                                                     {o.payment_id}

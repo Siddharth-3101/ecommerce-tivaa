@@ -263,6 +263,44 @@ export default function Navbar() {
                         <CustomHeartIcon size={20} />
                     </Link>
 
+                    {/* Cart Shopping Bag */}
+                    <Link 
+                        href="/cart" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'scale(1.1)';
+                            e.currentTarget.style.color = 'var(--accent-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = 'var(--accent)';
+                        }}
+                    >
+                        <div style={{ position: 'relative', display: 'inline-flex' }}>
+                            <CustomCartIcon size={20} />
+                            {count > 0 && (
+                                <span style={{ 
+                                    position: 'absolute',
+                                    top: '-6px',
+                                    right: '-6px',
+                                    background: '#2B1B35', 
+                                    color: '#ffffff', 
+                                    minWidth: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%', 
+                                    fontSize: '0.65rem', 
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '2px'
+                                }}>
+                                    {count}
+                                </span>
+                            )}
+                        </div>
+                    </Link>
+
                     {/* Profile Dropdown / Login */}
                     <div style={{ position: 'relative' }}>
                         {user ? (
@@ -333,44 +371,6 @@ export default function Navbar() {
                             </Link>
                         )}
                     </div>
-
-                    {/* Cart Shopping Bag */}
-                    <Link 
-                        href="/cart" 
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                            e.currentTarget.style.color = 'var(--accent-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.color = 'var(--accent)';
-                        }}
-                    >
-                        <div style={{ position: 'relative', display: 'inline-flex' }}>
-                            <CustomCartIcon size={20} />
-                            {count > 0 && (
-                                <span style={{ 
-                                    position: 'absolute',
-                                    top: '-6px',
-                                    right: '-6px',
-                                    background: '#2B1B35', 
-                                    color: '#ffffff', 
-                                    minWidth: '16px',
-                                    height: '16px',
-                                    borderRadius: '50%', 
-                                    fontSize: '0.65rem', 
-                                    fontWeight: 700,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '2px'
-                                }}>
-                                    {count}
-                                </span>
-                            )}
-                        </div>
-                    </Link>
                 </div>
             </div>
 
@@ -432,7 +432,7 @@ export default function Navbar() {
                                         <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '2px' }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
-                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Rs. {item.price}</p>
+                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
                                         </div>
                                     </Link>
                                 ))}

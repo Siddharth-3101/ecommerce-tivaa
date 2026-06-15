@@ -213,7 +213,7 @@ export default function CheckoutPage() {
                     <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>Checkout</h1>
                     <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Please provide your shipping and payment details.</p>
 
-                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    <form id="checkout-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                         <div className="card checkout-card">
                             <h3 style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <span style={{ width: '32px', height: '32px', background: 'var(--accent)', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>1</span>
@@ -283,7 +283,7 @@ export default function CheckoutPage() {
                             </div>
                         </div>
 
-                        <button type="submit" disabled={submitting} className="btn btn-primary checkout-submit-btn">
+                        <button type="submit" disabled={submitting} className="btn btn-primary checkout-submit-btn desktop-only-btn">
                             {submitting ? "Processing Order..." : `Complete Purchase — ₹${total.toFixed(2)}`}
                         </button>
                     </form>
@@ -335,6 +335,10 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </aside>
+                
+                <button type="submit" form="checkout-form" disabled={submitting} className="btn btn-primary checkout-submit-btn mobile-only-btn">
+                    {submitting ? "Processing Order..." : `Complete Purchase — ₹${total.toFixed(2)}`}
+                </button>
             </div>
             
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
@@ -358,11 +362,22 @@ export default function CheckoutPage() {
                     font-size: 1.2rem;
                     box-shadow: 0 10px 20px var(--accent-glow);
                 }
+                .mobile-only-btn {
+                    display: none;
+                }
 
                 @media (max-width: 900px) {
                     .checkout-grid {
                         grid-template-columns: 1fr;
                         gap: 32px;
+                    }
+                    .desktop-only-btn {
+                        display: none;
+                    }
+                    .mobile-only-btn {
+                        display: block;
+                        width: 100%;
+                        margin-top: 16px;
                     }
                 }
 

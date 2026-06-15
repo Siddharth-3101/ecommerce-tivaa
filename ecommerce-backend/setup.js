@@ -29,6 +29,7 @@ export const runSetup = async () => {
                 pincode VARCHAR(20) NULL,
                 reset_token VARCHAR(255) NULL,
                 reset_token_expires TIMESTAMP NULL,
+                auth_provider VARCHAR(50) DEFAULT 'local',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `, (err) => err ? rej(err) : res()));
@@ -234,6 +235,9 @@ export const runSetup = async () => {
         }
         if (!userCols.includes("reset_token_expires")) {
             await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("auth_provider")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local'", (err) => err ? rej(err) : res()));
         }
 
         if (!orderCols.includes("razorpay_order_id")) {
