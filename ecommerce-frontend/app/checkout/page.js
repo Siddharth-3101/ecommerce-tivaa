@@ -44,14 +44,36 @@ export default function CheckoutPage() {
 
         async function loadCartAndProfile() {
             try {
-                const res = await api.get("/cart");
-                const data = res.data;
-                const items = Array.isArray(data) ? data : data.items || [];
-                setCartItems(items);
-                if (items.length === 0) {
-                    router.push("/cart");
-                    return;
+                const searchParams = new URLSearchParams(window.location.search);
+                const isBuyNow = searchParams.get("buyNow") === "true";
+                const productId = searchParams.get("productId");
+                const qty = Number(searchParams.get("quantity")) || 1;
+                const variation = searchParams.get("variation") || "";
+
+                let items = [];
+                if (isBuyNow && productId) {
+                    // Fetch product details from backend
+                    const prodRes = await api.get(`/products/${productId}`);
+                    const prod = prodRes.data;
+                    items = [{
+                        id: `buynow-${prod.id}`,
+                        product_id: prod.id,
+                        quantity: qty,
+                        price: prod.price,
+                        name: prod.name,
+                        image_url: prod.image_url,
+                        selected_variation: variation || null
+                    }];
+                } else {
+                    const res = await api.get("/cart");
+                    const data = res.data;
+                    items = Array.isArray(data) ? data : data.items || [];
+                    if (items.length === 0) {
+                        router.push("/cart");
+                        return;
+                    }
                 }
+                setCartItems(items);
 
                 // Fetch settings to get shipping cost
                 try {
@@ -77,6 +99,7 @@ export default function CheckoutPage() {
                     }));
                 }
             } catch (err) {
+                console.error(err);
                 router.push("/cart");
             } finally {
                 setLoading(false);
@@ -93,7 +116,22 @@ export default function CheckoutPage() {
         setSubmitting(true);
         try {
             // 1. Create order in the local database
-            const res = await api.post("/orders", formData);
+            const searchParams = new URLSearchParams(window.location.search);
+            const isBuyNow = searchParams.get("buyNow") === "true";
+            const productId = searchParams.get("productId");
+            const qty = Number(searchParams.get("quantity")) || 1;
+            const variation = searchParams.get("variation") || "";
+
+            const payload = { ...formData };
+            if (isBuyNow && productId) {
+                payload.buy_now = {
+                    product_id: Number(productId),
+                    quantity: qty,
+                    selected_variation: variation || null
+                };
+            }
+
+            const res = await api.post("/orders", payload);
             const { orderId, total } = res.data;
 
             // 2. Generate Razorpay order on the backend

@@ -51,7 +51,7 @@ export default function FAQPage() {
             {/* Header section */}
             <div className="container" style={{ marginBottom: '48px' }}>
                 <div style={{ marginBottom: '24px' }}>
-                    <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s' }}>
+                    <Link href="/products" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         <ArrowLeft size={16} /> Continue Shopping
                     </Link>
                 </div>

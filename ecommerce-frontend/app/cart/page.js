@@ -17,8 +17,35 @@ export default function CartPage() {
             const res = await api.get("/cart");
             const data = res.data;
             const cartItems = Array.isArray(data) ? data : data.items || [];
-            setItems(cartItems);
-            localStorage.setItem('tivaa-cart-items', JSON.stringify(cartItems));
+            
+            // Check for out-of-stock items
+            const outOfStockItems = cartItems.filter(item => item.stock === null || item.stock === undefined || item.stock <= 0);
+            
+            if (outOfStockItems.length > 0) {
+                // Delete out-of-stock items from backend cart
+                for (const item of outOfStockItems) {
+                    try {
+                        await api.delete(`/cart/${item.id}`);
+                    } catch (delErr) {
+                        console.error(`Failed to remove out of stock item ${item.id}:`, delErr);
+                    }
+                }
+                
+                // Alert user
+                const names = outOfStockItems.map(item => `"${item.name}"`).join(", ");
+                alert(`The following item(s) are out of stock and have been removed from your cart: ${names}`);
+                
+                // Keep only in-stock items
+                const inStockItems = cartItems.filter(item => item.stock !== null && item.stock !== undefined && item.stock > 0);
+                setItems(inStockItems);
+                localStorage.setItem('tivaa-cart-items', JSON.stringify(inStockItems));
+                
+                // Sync Navbar or other listeners
+                window.dispatchEvent(new Event('cart-updated'));
+            } else {
+                setItems(cartItems);
+                localStorage.setItem('tivaa-cart-items', JSON.stringify(cartItems));
+            }
         } catch (err) {
             console.log(err);
             setItems([]);

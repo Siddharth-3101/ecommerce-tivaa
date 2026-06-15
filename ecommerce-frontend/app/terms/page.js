@@ -8,18 +8,18 @@ export const metadata = {
 
 export default function TermsOfServicePage() {
     return (
-        <div style={{ background: 'var(--gradient-bg)', minHeight: '100vh', padding: '140px 0 80px' }}>
+        <div style={{ background: 'var(--gradient-bg)', minHeight: '100vh', padding: '30px 0 80px' }}>
             <div className="container animate-fade-in" style={{ maxWidth: '850px' }}>
                 
                 {/* Back button */}
-                <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', transition: 'color 0.2s', marginBottom: '24px' }}>
+                <Link href="/products" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
                     <ArrowLeft size={16} /> Continue Shopping
                 </Link>
 
                 {/* Header section */}
                 <div style={{ marginBottom: '36px' }}>
                     <h1 style={{ 
-                        fontSize: '3rem', 
+                        fontSize: 'clamp(2rem, 6vw, 3rem)', 
                         marginBottom: '12px', 
                         background: 'var(--gradient-logo)', 
                         WebkitBackgroundClip: 'text', 

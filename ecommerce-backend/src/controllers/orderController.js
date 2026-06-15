@@ -12,7 +12,7 @@ const razorpay = new Razorpay({
 // =============================================================
 export const createOrder = (req, res) => {
   const userId = req.user.id;
-  const { payment_method, shipping_address, city, state, pincode, phone } = req.body;
+  const { payment_method, shipping_address, city, state, pincode, phone, buy_now } = req.body;
 
   if (!payment_method) {
     return res.status(400).json({ message: "Payment method required" });
@@ -25,30 +25,7 @@ export const createOrder = (req, res) => {
       shippingCost = parseFloat(settingsRows[0].value) || 0.00;
     }
 
-    // Step 1 — Fetch cart items
-    const sqlCart = `
-          SELECT 
-              c.product_id, 
-              c.quantity, 
-              p.price, 
-              p.stock, 
-              p.name,
-              c.selected_variation
-          FROM cart c
-          JOIN products p ON p.id = c.product_id
-          WHERE c.user_id = ?
-      `;
-
-    db.query(sqlCart, [userId], (err, cartItems) => {
-      if (err) {
-        console.error("DB error:", err);
-        return res.status(500).json({ message: "Database error" });
-      }
-
-      if (cartItems.length === 0) {
-        return res.status(400).json({ message: "Cart is empty" });
-      }
-
+    const processOrderWithItems = (cartItems) => {
       // Step 2 — Check stock availability
       for (const item of cartItems) {
         const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
@@ -80,72 +57,133 @@ export const createOrder = (req, res) => {
 
         const orderId = result.insertId;
 
-      // Step 5 — Insert order items
-      const itemsSql = `
-                INSERT INTO order_items (order_id, product_id, quantity, price, selected_variation)
-                VALUES ?
-            `;
+        // Step 5 — Insert order items
+        const itemsSql = `
+                  INSERT INTO order_items (order_id, product_id, quantity, price, selected_variation)
+                  VALUES ?
+              `;
 
-      const values = cartItems.map((item) => [
-        orderId,
-        item.product_id,
-        item.quantity,
-        item.price,
-        item.selected_variation || null,
-      ]);
+        const values = cartItems.map((item) => [
+          orderId,
+          item.product_id,
+          item.quantity,
+          item.price,
+          item.selected_variation || null,
+        ]);
 
-      db.query(itemsSql, [values], (err3) => {
-        if (err3) {
-          console.error("DB error:", err3);
+        db.query(itemsSql, [values], (err3) => {
+          if (err3) {
+            console.error("DB error:", err3);
+            return res.status(500).json({ message: "Database error" });
+          }
+
+          // Step 6 — Reduce stock
+          cartItems.forEach((item) => {
+            db.query(
+              "UPDATE products SET stock = stock - ? WHERE id = ?",
+              [item.quantity, item.product_id]
+            );
+          });
+
+          // Step 7 — Add shipping details
+          const sqlShip = `
+                      INSERT INTO shipping_details 
+                      (order_id, address, city, state, pincode, phone)
+                      VALUES (?, ?, ?, ?, ?, ?)
+                  `;
+
+          db.query(
+            sqlShip,
+            [orderId, shipping_address, city, state, pincode, phone || null],
+            (err4) => {
+              if (err4) console.warn("Shipping insert error:", err4);
+            }
+          );
+
+          // Step 7.5 — Auto-save shipping address to user's account profile
+          db.query(
+            "UPDATE users SET address = ?, city = ?, state = ?, pincode = ?, phone = ? WHERE id = ?",
+            [shipping_address, city, state, pincode, phone || null, userId],
+            (errUserUpdate) => {
+              if (errUserUpdate) console.warn("Auto-save address error:", errUserUpdate);
+            }
+          );
+
+          // Step 8 — Clear user's cart (or just the buy now product if buy_now is active)
+          if (buy_now) {
+            db.query("DELETE FROM cart WHERE user_id = ? AND product_id = ?", [userId, buy_now.product_id], (err5) => {
+              if (err5) console.warn("Cart item clear error:", err5);
+            });
+          } else {
+            db.query("DELETE FROM cart WHERE user_id = ?", [userId], (err5) => {
+              if (err5) console.warn("Cart clear error:", err5);
+            });
+          }
+
+          return res.json({
+            message: "Order created successfully",
+            orderId,
+            total,
+          });
+        });
+      });
+    };
+
+    if (buy_now) {
+      // Fetch single product details for buy now
+      db.query(
+        "SELECT id, price, stock, name FROM products WHERE id = ?",
+        [buy_now.product_id],
+        (errProd, prodRows) => {
+          if (errProd) {
+            console.error("DB error fetching product for buy now:", errProd);
+            return res.status(500).json({ message: "Database error" });
+          }
+          if (prodRows.length === 0) {
+            return res.status(404).json({ message: "Product not found" });
+          }
+          const product = prodRows[0];
+          const singleItem = {
+            product_id: product.id,
+            quantity: Number(buy_now.quantity) || 1,
+            price: product.price,
+            stock: product.stock,
+            name: product.name,
+            selected_variation: buy_now.selected_variation || null
+          };
+          processOrderWithItems([singleItem]);
+        }
+      );
+    } else {
+      // Step 1 — Fetch cart items
+      const sqlCart = `
+            SELECT 
+                c.product_id, 
+                c.quantity, 
+                p.price, 
+                p.stock, 
+                p.name,
+                c.selected_variation
+            FROM cart c
+            JOIN products p ON p.id = c.product_id
+            WHERE c.user_id = ?
+        `;
+
+      db.query(sqlCart, [userId], (err, cartItems) => {
+        if (err) {
+          console.error("DB error:", err);
           return res.status(500).json({ message: "Database error" });
         }
 
-        // Step 6 — Reduce stock
-        cartItems.forEach((item) => {
-          db.query(
-            "UPDATE products SET stock = stock - ? WHERE id = ?",
-            [item.quantity, item.product_id]
-          );
-        });
+        if (cartItems.length === 0) {
+          return res.status(400).json({ message: "Cart is empty" });
+        }
 
-        // Step 7 — Add shipping details
-        const sqlShip = `
-                    INSERT INTO shipping_details 
-                    (order_id, address, city, state, pincode, phone)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                `;
-
-        db.query(
-          sqlShip,
-          [orderId, shipping_address, city, state, pincode, phone || null],
-          (err4) => {
-            if (err4) console.warn("Shipping insert error:", err4);
-          }
-        );
-
-        // Step 7.5 — Auto-save shipping address to user's account profile
-        db.query(
-          "UPDATE users SET address = ?, city = ?, state = ?, pincode = ?, phone = ? WHERE id = ?",
-          [shipping_address, city, state, pincode, phone || null, userId],
-          (errUserUpdate) => {
-            if (errUserUpdate) console.warn("Auto-save address error:", errUserUpdate);
-          }
-        );
-
-        // Step 8 — Clear user's cart
-        db.query("DELETE FROM cart WHERE user_id = ?", [userId], (err5) => {
-          if (err5) console.warn("Cart clear error:", err5);
-        });
-
-        return res.json({
-          message: "Order created successfully",
-          orderId,
-          total,
-        });
+        processOrderWithItems(cartItems);
       });
-    });
+    }
   });
-});
+};
 };
 
 // =============================================================

@@ -32,6 +32,7 @@ export default function ProductDetailsInfo({ product }) {
 
     // Track selected variations
     const [selectedOptions, setSelectedOptions] = useState({});
+    const [quantity, setQuantity] = useState(1);
 
     // Initialize with first option of each variation group
     useEffect(() => {
@@ -42,58 +43,19 @@ export default function ProductDetailsInfo({ product }) {
             }
         });
         setSelectedOptions(initial);
+        setQuantity(1); // reset to 1 when product changes
     }, [product.variations]);
 
     const [buyLoading, setBuyLoading] = useState(false);
     const user = getUser();
     const router = useRouter();
 
-    const handleBuyNow = async () => {
+    const handleBuyNow = () => {
         if (!user) {
             router.push("/login");
             return;
         }
-
-        try {
-            setBuyLoading(true);
-            
-            // Check if product with selected variation is already in the cart cache
-            const cached = localStorage.getItem('tivaa-cart-items');
-            let alreadyInCart = false;
-            
-            if (cached) {
-                try {
-                    const items = JSON.parse(cached);
-                    alreadyInCart = items.some(item => {
-                        const idMatch = item.product_id === product.id;
-                        const var1 = item.selected_variation ? item.selected_variation.trim() : null;
-                        const var2 = selectedVariationString ? selectedVariationString.trim() : null;
-                        return idMatch && var1 === var2;
-                    });
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-
-            if (!alreadyInCart) {
-                await api.post("/cart", {
-                    product_id: product.id,
-                    quantity: 1,
-                    selected_variation: selectedVariationString || null
-                });
-
-                // Trigger cart-updated event for live Navbar sync
-                window.dispatchEvent(new Event('cart-updated'));
-            }
-            
-            // Redirect straight to checkout
-            router.push("/checkout");
-        } catch (err) {
-            console.error(err);
-            alert(err.response?.data?.message || "Failed to proceed with Buy Now. Please try again.");
-        } finally {
-            setBuyLoading(false);
-        }
+        router.push(`/checkout?buyNow=true&productId=${product.id}&quantity=${quantity}&variation=${encodeURIComponent(selectedVariationString || "")}`);
     };
 
     const handleOptionSelect = (groupName, option) => {
@@ -230,6 +192,30 @@ export default function ProductDetailsInfo({ product }) {
                 </div>
             )}
 
+            {/* Quantity Selector */}
+            {product.stock > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '24px 0 16px 0' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quantity</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '4px', width: 'fit-content', padding: '4px', background: '#fafafa' }}>
+                        <button 
+                            type="button" 
+                            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}
+                        >
+                            -
+                        </button>
+                        <span style={{ fontSize: '1rem', fontWeight: 600, minWidth: '32px', textAlign: 'center', color: 'var(--text-main)' }}>{quantity}</span>
+                        <button 
+                            type="button" 
+                            onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
                 {product.stock > 0 ? (
@@ -240,6 +226,7 @@ export default function ProductDetailsInfo({ product }) {
                                 disabled={product.stock <= 0} 
                                 selectedVariation={selectedVariationString}
                                 stock={product.stock}
+                                quantity={quantity}
                             />
                         </div>
                         <div style={{ flex: '1', minWidth: '180px' }}>

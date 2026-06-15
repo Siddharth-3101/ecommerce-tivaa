@@ -1,13 +1,14 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
+import CategorySelect from "@/components/CategorySelect";
 
 export const dynamic = "force-dynamic";
 
 function partitionAndSortProducts(products, sort) {
     const inStock = [];
     const outOfStock = [];
-    
+
     for (const p of products) {
         const stockVal = p.stock === null || p.stock === undefined ? 0 : Number(p.stock);
         if (stockVal > 0) {
@@ -16,7 +17,7 @@ function partitionAndSortProducts(products, sort) {
             outOfStock.push(p);
         }
     }
-    
+
     const sortFn = (a, b) => {
         if (sort === "price_low") {
             return Number(a.price) - Number(b.price);
@@ -29,12 +30,12 @@ function partitionAndSortProducts(products, sort) {
         }
         return 0;
     };
-    
+
     if (sort) {
         inStock.sort(sortFn);
         outOfStock.sort(sortFn);
     }
-    
+
     return [...inStock, ...outOfStock];
 }
 
@@ -135,7 +136,7 @@ export default async function ProductsPage({ searchParams }) {
                     {query ? `Search results` : category ? `${category}` : "Our Collections"}
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
-                    {query ? `${data.total || 0} items found matching your search.` : "Explore our hand-picked selection of premium boutique essentials crafted for perfection."}
+                    {query ? `${data.total || 0} items found matching your search.` : ""}
                 </p>
 
 
@@ -150,26 +151,12 @@ export default async function ProductsPage({ searchParams }) {
                     paddingBottom: '16px',
                     borderBottom: '1px solid var(--border)'
                 }}>
-                    {/* Categories Filter Links */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Link 
-                            href={`/products${sort ? `?sort=${sort}` : ''}`} 
-                            className={`btn ${!category && !query ? 'btn-primary' : 'btn-secondary'}`} 
-                            style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
-                        >
-                            All Collections
-                        </Link>
-                        {categories && categories.length > 0 && categories.map(c => (
-                            <Link
-                                key={c.id}
-                                href={`/products?category=${encodeURIComponent(c.name)}${sort ? `&sort=${sort}` : ''}`}
-                                className={`btn ${category === c.name ? 'btn-primary' : 'btn-secondary'}`}
-                                style={{ padding: '6px 12px', fontSize: '0.85rem', borderRadius: '4px' }}
-                            >
-                                {c.name}
-                            </Link>
-                        ))}
-                    </div>
+                    {/* Categories Filter Links or Dropdown */}
+                    <CategorySelect
+                        categories={categories}
+                        currentCategory={category}
+                        currentSort={sort}
+                    />
 
                     {/* Sorting Selector */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -209,7 +196,7 @@ export default async function ProductsPage({ searchParams }) {
                                 Prev
                             </Link>
                         )}
-                        
+
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
                             const isActive = p === page;
                             return (
@@ -236,7 +223,7 @@ export default async function ProductsPage({ searchParams }) {
                                 </Link>
                             );
                         })}
-                        
+
                         {page < totalPages && (
                             <Link
                                 href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page + 1}`}

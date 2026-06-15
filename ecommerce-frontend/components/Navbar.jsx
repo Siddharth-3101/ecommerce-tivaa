@@ -247,10 +247,9 @@ export default function Navbar() {
                         {searchOpen ? <X size={20} /> : <CustomSearchIcon size={20} />}
                     </button>
 
-                    {/* Wishlist Link (Desktop Only) */}
+                    {/* Wishlist Link (Laptop & Mobile) */}
                     <Link 
                         href="/wishlist" 
-                        className="desktop-only" 
                         style={{ color: 'var(--accent)', padding: '6px', display: 'inline-flex', alignItems: 'center', transition: 'all 0.2s ease' }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'scale(1.1)';
@@ -483,54 +482,7 @@ export default function Navbar() {
                                     {c.name}
                                 </Link>
                             ))}
-                            
-                             <Link href="/contact" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Contact Us</Link>
                         </div>
-
-                        {/* User Account / Profile Section inside Mobile Drawer */}
-                        {user ? (
-                            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '4px', background: '#fafafa' }}>
-                                    <div style={{ 
-                                        width: '36px', 
-                                        height: '36px', 
-                                        borderRadius: '50%', 
-                                        background: '#1a1a1a', 
-                                        color: '#ffffff', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
-                                        fontWeight: 600, 
-                                        fontSize: '0.8rem'
-                                    }}>
-                                        {getInitials(user.name)}
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', minWidth: 0 }}>
-                                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</span>
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</span>
-                                    </div>
-                                </div>
-                                <Link href="/orders" className="btn btn-secondary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
-                                    My Orders
-                                </Link>
-                                <Link href="/wishlist" className="btn btn-secondary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
-                                    My Wishlist
-                                </Link>
-                                {user.role === 'admin' && (
-                                    <Link href="/admin" className="btn btn-primary" style={{ textAlign: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px' }} onClick={() => setMobileMenuOpen(false)}>
-                                        Admin Panel
-                                    </Link>
-                                )}
-                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="btn btn-danger" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', padding: '10px 16px', background: '#ffebeb', color: '#ff4d4d', border: 'none', cursor: 'pointer' }}>
-                                    Logout
-                                </button>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-                                <Link href="/login" className="btn btn-black-solid" style={{ textAlign: 'center', padding: '12px', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
-                                <Link href="/register" className="btn btn-secondary" style={{ textAlign: 'center', padding: '12px', justifyContent: 'center', fontSize: '0.8rem' }} onClick={() => setMobileMenuOpen(false)}>Create Account</Link>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

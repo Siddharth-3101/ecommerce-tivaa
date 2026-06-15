@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-export default function AddToCartButton({ productId, disabled, selectedVariation, stock }) {
+export default function AddToCartButton({ productId, disabled, selectedVariation, stock, quantity }) {
     const [loading, setLoading] = useState(false);
     const [added, setAdded] = useState(false);
     const [cartQty, setCartQty] = useState(0);
@@ -68,7 +68,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
             setLoading(true);
             await api.post("/cart", {
                 product_id: productId,
-                quantity: 1,
+                quantity: quantity || 1,
                 selected_variation: selectedVariation || null
             });
 
