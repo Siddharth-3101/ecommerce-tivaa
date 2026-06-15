@@ -86,20 +86,42 @@ export const adminReplyQuery = (req, res) => {
           to: queryData.email,
           subject: `Reply to your query: ${queryData.subject} - Tivaa Elegance`,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px; background: #fff;">
-              <h2 style="color: #c98e57; text-align: center;">Query Response</h2>
-              <p>Hello ${queryData.name},</p>
-              <p>We received your inquiry regarding <strong>"${queryData.subject}"</strong>:</p>
-              <blockquote style="background: #f9f9f9; border-left: 4px solid #c98e57; margin: 1.5em 10px; padding: 12px 20px; font-style: italic; color: #555;">
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff; box-shadow: 0 4px 24px rgba(0,0,0,0.04);">
+              <!-- Logo / Header -->
+              <div style="text-align: center; margin-bottom: 24px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
+                <h2 style="margin: 0; color: #7A38C2; font-size: 1.5rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; font-family: 'Playfair Display', Georgia, serif;">Tivaa Elegance</h2>
+                <span style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px;">Support Desk</span>
+              </div>
+              
+              <p style="font-size: 1rem; color: #1e293b; line-height: 1.6; margin-top: 0;">Hello <strong>${queryData.name}</strong>,</p>
+              <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">We have processed your inquiry regarding <strong>"${queryData.subject}"</strong>:</p>
+              
+              <!-- User Message -->
+              <div style="background: #f8fafc; border-left: 4px solid #94a3b8; margin: 16px 0; padding: 16px 20px; border-radius: 0 12px 12px 0; font-style: italic; color: #475569; font-size: 0.92rem; line-height: 1.6;">
                 "${queryData.message}"
-              </blockquote>
-              <p>Here is our response to your query:</p>
-              <div style="background: rgba(201, 142, 87, 0.05); border: 1px solid rgba(201, 142, 87, 0.2); padding: 18px; border-radius: 8px; color: #362e2a; font-weight: 500; line-height: 1.6; margin-bottom: 24px;">
+              </div>
+              
+              <p style="font-size: 0.95rem; color: #475569; line-height: 1.6; margin-top: 24px;"><strong>Here is our response to your query:</strong></p>
+              
+              <!-- Admin Response -->
+              <div style="background: rgba(122, 56, 194, 0.03); border: 1px solid rgba(122, 56, 194, 0.15); padding: 20px; border-radius: 12px; color: #1e293b; font-size: 0.98rem; line-height: 1.65; margin: 12px 0 28px 0; font-weight: 500;">
                 ${reply}
               </div>
-              <p>If you have any further questions, feel free to reply directly to this email or visit our FAQ page.</p>
-              <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
-              <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance Jewellers &copy; 2026</p>
+              
+              <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; text-align: center; margin-bottom: 24px;">If you have any further questions, feel free to reply directly to this email or visit our website.</p>
+              
+              <!-- CTA Button to Store -->
+              <div style="text-align: center; margin-bottom: 32px;">
+                <a href="http://tivaajewelery.us-east-1.elasticbeanstalk.com/products" style="background: #7A38C2; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; display: inline-block; box-shadow: 0 4px 12px rgba(122, 56, 194, 0.25);">
+                  Continue Shopping
+                </a>
+              </div>
+              
+              <!-- Footer -->
+              <div style="border-top: 1px solid #f1f5f9; padding-top: 24px; text-align: center;">
+                <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 4px 0;">This is an automated support response for your query.</p>
+                <p style="font-size: 0.78rem; color: #94a3b8; margin: 0; font-weight: 600;">Tivaa Elegance Jewellers &copy; 2026</p>
+              </div>
             </div>
           `,
         };
