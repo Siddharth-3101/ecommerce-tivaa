@@ -204,6 +204,7 @@ export const getUserOrders = (req, res) => {
       return res.status(500).json({ message: "Database error" });
     }
 
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return res.json(rows);
   });
 };
@@ -252,6 +253,7 @@ export const getOrderDetails = (req, res) => {
         return res.status(500).json({ message: "Database error" });
       }
 
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       return res.json({
         order: orders[0],
         items,

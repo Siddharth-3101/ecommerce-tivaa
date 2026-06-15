@@ -41,7 +41,7 @@ export default function MyOrdersPage() {
 
         const fetchOrders = async () => {
             try {
-                const res = await api.get("/orders/my");
+                const res = await api.get(`/orders/my?t=${Date.now()}`);
                 // The API returns orders sorted by date
                 setOrders(res.data || []);
             } catch (err) {
@@ -179,28 +179,30 @@ export default function MyOrdersPage() {
                                             </div>
 
                                             {/* Download Bill button */}
-                                            <button 
-                                                onClick={() => handleDownloadBill(order.id)}
-                                                disabled={downloadingId === order.id}
-                                                className="btn btn-secondary" 
-                                                style={{ 
-                                                    padding: '8px 16px', 
-                                                    fontSize: '0.85rem', 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    gap: '6px',
-                                                    background: '#ffffff',
-                                                    border: '1px solid var(--border)',
-                                                    cursor: downloadingId === order.id ? 'not-allowed' : 'pointer'
-                                                }}
-                                            >
-                                                {downloadingId === order.id ? (
-                                                    <span className="download-spinner"></span>
-                                                ) : (
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                                )}
-                                                Bill
-                                            </button>
+                                            {['paid', 'shipped', 'delivered'].includes(order.order_status?.toLowerCase()) && (
+                                                <button 
+                                                    onClick={() => handleDownloadBill(order.id)}
+                                                    disabled={downloadingId === order.id}
+                                                    className="btn btn-secondary" 
+                                                    style={{ 
+                                                        padding: '8px 16px', 
+                                                        fontSize: '0.85rem', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: '6px',
+                                                        background: '#ffffff',
+                                                        border: '1px solid var(--border)',
+                                                        cursor: downloadingId === order.id ? 'not-allowed' : 'pointer'
+                                                    }}
+                                                >
+                                                    {downloadingId === order.id ? (
+                                                        <span className="download-spinner"></span>
+                                                    ) : (
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                                    )}
+                                                    Bill
+                                                </button>
+                                            )}
 
                                             {/* Details button */}
                                             <Link 

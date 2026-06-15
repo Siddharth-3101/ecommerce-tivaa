@@ -159,10 +159,7 @@ export default async function ProductsPage({ searchParams }) {
                     />
 
                     {/* Sorting Selector */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>Sort by:</span>
-                        <SortSelect currentSort={sort} />
-                    </div>
+                    <SortSelect currentSort={sort} />
                 </div>
             </div>
 

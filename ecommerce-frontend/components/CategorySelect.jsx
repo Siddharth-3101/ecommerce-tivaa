@@ -22,8 +22,8 @@ export default function CategorySelect({ categories, currentCategory, currentSor
 
     if (categories && categories.length > 10) {
         return (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>Collection:</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '340px' }}>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500, width: '80px', flexShrink: 0 }}>Collection:</span>
                 <select
                     value={currentCategory || ""}
                     onChange={handleCategoryChange}
@@ -37,7 +37,10 @@ export default function CategorySelect({ categories, currentCategory, currentSor
                         fontWeight: 500,
                         outline: 'none',
                         cursor: 'pointer',
-                        minWidth: '200px',
+                        flexGrow: 1,
+                        width: '100%',
+                        minWidth: '0',
+                        maxWidth: '240px',
                         boxShadow: 'var(--shadow-sm)',
                         transition: 'all 0.2s ease',
                         fontFamily: 'inherit'

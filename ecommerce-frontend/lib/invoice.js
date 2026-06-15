@@ -5,17 +5,13 @@ export function downloadInvoice(order, items) {
     const shippingCost = Number(order.shipping_cost || 0);
     const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
 
-    // Create a hidden iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.left = '-9999px';
-    
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    // Open a new window/tab for the bill
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert("Please allow popups to view or print the bill.");
+        return;
+    }
+    const doc = printWindow.document;
     
     const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -251,12 +247,9 @@ export function downloadInvoice(order, items) {
     doc.write(htmlContent);
     doc.close();
 
-    // Trigger printing once iframe is fully loaded
-    iframe.contentWindow.focus();
+    // Trigger printing once loaded
     setTimeout(() => {
-        iframe.contentWindow.print();
-        setTimeout(() => {
-            document.body.removeChild(iframe);
-        }, 1000);
+        printWindow.focus();
+        printWindow.print();
     }, 500);
 }

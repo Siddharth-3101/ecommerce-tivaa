@@ -25,7 +25,7 @@ export default function OrderDetailsPage({ params }) {
 
         async function loadOrder() {
             try {
-                const res = await api.get(`/orders/my/${id}`);
+                const res = await api.get(`/orders/my/${id}?t=${Date.now()}`);
                 setOrderData(res.data);
             } catch (err) {
                 console.error(err);
@@ -129,7 +129,7 @@ export default function OrderDetailsPage({ params }) {
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
                     <h1 className="placed-title" style={{ marginBottom: '12px' }}>Order Placed!</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Thank you for your purchase. Your order ID is #TEJWL${String(order.id).padStart(2, '0')}</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Thank you for your purchase. Your order ID is #TEJWL{String(order.id).padStart(2, '0')}</p>
                 </div>
             )}
 
@@ -180,7 +180,7 @@ export default function OrderDetailsPage({ params }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Order ID</span>
-                                <span style={{ fontWeight: 600 }}>TEJWL${String(order.id).padStart(2, '0')}</span>
+                                <span style={{ fontWeight: 600 }}>TEJWL{String(order.id).padStart(2, '0')}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Status</span>
@@ -213,17 +213,19 @@ export default function OrderDetailsPage({ params }) {
                         </button>
                     )}
 
-                    <button 
-                        onClick={async () => {
-                            const { downloadInvoice } = await import("@/lib/invoice");
-                            downloadInvoice(order, items);
-                        }}
-                        className="btn btn-black-solid" 
-                        style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        Download Bill
-                    </button>
+                    {['paid', 'shipped', 'delivered'].includes(order.order_status?.toLowerCase()) && (
+                        <button 
+                            onClick={async () => {
+                                const { downloadInvoice } = await import("@/lib/invoice");
+                                downloadInvoice(order, items);
+                            }}
+                            className="btn btn-black-solid" 
+                            style={{ padding: '12px', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Bill
+                        </button>
+                    )}
                     <Link href="/" className="btn btn-secondary" style={{ padding: '12px' }}>Back to Store</Link>
                 </aside>
             </div>

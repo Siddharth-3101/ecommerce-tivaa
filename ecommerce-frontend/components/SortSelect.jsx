@@ -19,7 +19,8 @@ export default function SortSelect({ currentSort }) {
     };
 
     return (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '340px' }}>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500, width: '80px', flexShrink: 0 }}>Sort by:</span>
             <select
                 value={currentSort || ""}
                 onChange={handleChange}
@@ -33,7 +34,10 @@ export default function SortSelect({ currentSort }) {
                     fontWeight: 500,
                     outline: 'none',
                     cursor: 'pointer',
-                    minWidth: '180px',
+                    flexGrow: 1,
+                    width: '100%',
+                    minWidth: '0',
+                    maxWidth: '240px',
                     boxShadow: 'var(--shadow-sm)',
                     transition: 'all 0.2s ease',
                     fontFamily: 'inherit'
