@@ -136,41 +136,30 @@ export default function OrderDetailsPage({ params }) {
             <div className="order-grid">
                 <div>
                     <h2 style={{ marginBottom: '24px' }}>Order Items</h2>
-                    <div className="card" style={{ overflow: 'hidden' }}>
-                        <div style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
-                            <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)' }}>
-                                    <th style={{ textAlign: 'left', padding: '16px 24px' }}>Product</th>
-                                    <th style={{ textAlign: 'center', padding: '16px 24px' }}>Qty</th>
-                                    <th style={{ textAlign: 'right', padding: '16px 24px' }}>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map(item => (
-                                    <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                         <td style={{ padding: '16px 24px' }}>
-                                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                                 <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', background: '#1e2130' }}>
-                                                     <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                 </div>
-                                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                     <span style={{ fontWeight: 500 }}>{item.name}</span>
-                                                     {item.selected_variation && (
-                                                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px', fontWeight: 500 }}>
-                                                             Variant: {item.selected_variation}
-                                                         </span>
-                                                     )}
-                                                 </div>
-                                             </div>
-                                         </td>
-                                        <td style={{ textAlign: 'center', padding: '16px 24px' }}>{item.quantity}</td>
-                                        <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 600 }}>₹{item.price * item.quantity}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            </table>
-                        </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {items.map(item => (
+                            <div key={item.id} className="card" style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', background: '#f9f9f9', border: '1px solid var(--border)', flexShrink: 0 }}>
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "https://placehold.co/100x100?text=Premium"} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={item.name} />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-main)' }}>{item.name}</span>
+                                        {item.selected_variation && (
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px', fontWeight: 500 }}>
+                                                Variant: {item.selected_variation}
+                                            </span>
+                                        )}
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                            Qty: {item.quantity} × ₹{item.price}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-main)', flexShrink: 0 }}>
+                                    ₹{Number(item.price) * Number(item.quantity)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
