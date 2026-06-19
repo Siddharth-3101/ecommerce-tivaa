@@ -19,7 +19,7 @@ export const registerUser = (req, res) => {
   }
 
   // Check if email already exists
-  const checkEmailQuery = "SELECT id, auth_provider FROM users WHERE email = ?";
+  const checkEmailQuery = "SELECT id, auth_provider, role FROM users WHERE email = ?";
 
   db.query(checkEmailQuery, [email], async (err, result) => {
     if (err) {
@@ -29,7 +29,7 @@ export const registerUser = (req, res) => {
 
     if (result.length > 0) {
       const existingUser = result[0];
-      if (existingUser.auth_provider === "google") {
+      if (existingUser.auth_provider === "google" && existingUser.role !== "admin") {
         return res.status(400).json({
           message: "This email is associated with a Google Sign-In account. Please sign in using Google."
         });
@@ -137,7 +137,7 @@ export const loginUser = (req, res) => {
 
     const user = users[0];
 
-    if (user.auth_provider === "google") {
+    if (user.auth_provider === "google" && user.role !== "admin") {
       return res.status(400).json({
         message: "This account was created using Google Sign-In. Please sign in using Google."
       });
@@ -234,7 +234,7 @@ export const googleAuth = async (req, res) => {
         // User exists, log them in
         const user = users[0];
 
-        if (user.auth_provider !== "google") {
+        if (user.auth_provider !== "google" && user.role !== "admin") {
           return res.status(400).json({
             message: "This email is registered with a manual account. Please log in using your password."
           });
@@ -343,7 +343,7 @@ export const forgotPassword = async (req, res) => {
     return res.status(400).json({ message: "Email is required" });
   }
 
-  const findUserQuery = "SELECT id, auth_provider FROM users WHERE email = ?";
+  const findUserQuery = "SELECT id, auth_provider, role FROM users WHERE email = ?";
 
   db.query(findUserQuery, [email], async (err, users) => {
     if (err) {
@@ -357,7 +357,7 @@ export const forgotPassword = async (req, res) => {
 
     const user = users[0];
 
-    if (user.auth_provider === "google") {
+    if (user.auth_provider === "google" && user.role !== "admin") {
       return res.status(400).json({
         message: "This account was created using Google Sign-In. Please sign in using Google."
       });
