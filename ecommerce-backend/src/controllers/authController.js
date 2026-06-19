@@ -19,7 +19,7 @@ export const registerUser = (req, res) => {
   }
 
   // Check if email already exists
-  const checkEmailQuery = "SELECT id FROM users WHERE email = ?";
+  const checkEmailQuery = "SELECT id, auth_provider FROM users WHERE email = ?";
 
   db.query(checkEmailQuery, [email], async (err, result) => {
     if (err) {
@@ -28,6 +28,12 @@ export const registerUser = (req, res) => {
     }
 
     if (result.length > 0) {
+      const existingUser = result[0];
+      if (existingUser.auth_provider === "google") {
+        return res.status(400).json({
+          message: "This email is associated with a Google Sign-In account. Please sign in using Google."
+        });
+      }
       return res.status(400).json({ message: "Email already exists" });
     }
 
@@ -131,6 +137,12 @@ export const loginUser = (req, res) => {
 
     const user = users[0];
 
+    if (user.auth_provider === "google") {
+      return res.status(400).json({
+        message: "This account was created using Google Sign-In. Please sign in using Google."
+      });
+    }
+
     // Compare password (supports both secure bcrypt and plain-text fallbacks)
     try {
       let isValidPassword = false;
@@ -221,6 +233,12 @@ export const googleAuth = async (req, res) => {
       if (users.length > 0) {
         // User exists, log them in
         const user = users[0];
+
+        if (user.auth_provider !== "google") {
+          return res.status(400).json({
+            message: "This email is registered with a manual account. Please log in using your password."
+          });
+        }
         
         // Automatically promote user to admin in DB if their email matches ADMIN_EMAIL or default owner
         const adminEmail = process.env.ADMIN_EMAIL || "siddharth310107@gmail.com";
