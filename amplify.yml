@@ -10,10 +10,10 @@ applications:
           commands:
             - npm run build
       artifacts:
-        baseDirectory: ecommerce-frontend/.next
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
         paths:
-          - ecommerce-frontend/node_modules/**/*
-          - ecommerce-frontend/.next/cache/**/*
+          - node_modules/**/*
+          - .next/cache/**/*
