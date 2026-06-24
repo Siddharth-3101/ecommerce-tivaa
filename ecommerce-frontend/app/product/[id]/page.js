@@ -6,7 +6,7 @@ import Link from "next/link";
 
 async function fetchProduct(id) {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         const res = await fetch(`${backendUrl}/api/products/${id}`, {
             cache: "no-store",
         });
@@ -20,7 +20,7 @@ async function fetchProduct(id) {
 async function fetchRelatedProducts(categoryName, currentProductId) {
     try {
         if (!categoryName) return [];
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         const res = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`, {
             cache: "no-store",
         });

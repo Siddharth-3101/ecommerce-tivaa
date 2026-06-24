@@ -4,7 +4,7 @@ const nextConfig = {
   reactCompiler: true,
   output: 'standalone',
   async rewrites() {
-    const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+    const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
     return [
       {
         source: '/api/:path*',

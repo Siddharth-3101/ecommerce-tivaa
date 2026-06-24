@@ -8,6 +8,7 @@ applications:
             - npm ci --legacy-peer-deps
         build:
           commands:
+            - echo "BACKEND_API_URL=$BACKEND_API_URL" >> .env.production
             - npm run build
       artifacts:
         baseDirectory: .next

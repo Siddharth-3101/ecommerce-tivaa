@@ -41,7 +41,7 @@ function partitionAndSortProducts(products, sort) {
 
 async function fetchProducts(categoryName, query, sort, page = 1) {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         const limit = 12;
 
         let products = [];
@@ -103,7 +103,7 @@ async function fetchProducts(categoryName, query, sort, page = 1) {
 
 async function fetchCategories() {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         const res = await fetch(`${backendUrl}/api/categories`, {
             cache: 'no-store'
         });

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 async function fetchBannerSettings() {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         const res = await fetch(`${backendUrl}/api/settings`, { cache: 'no-store' });
         if (res.ok) {
             return await res.json();

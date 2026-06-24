@@ -40,7 +40,7 @@ function partitionAndSortProducts(products, sort) {
 
 async function fetchRelatedProducts(query, sort) {
     try {
-        const backendUrl = process.env.BACKEND_API_URL || "http://tivaajewelery.us-east-1.elasticbeanstalk.com";
+        const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
         
         // 1. Fetch direct matching products
         const searchRes = await fetch(`${backendUrl}/api/products/search?q=${encodeURIComponent(query)}`, { cache: 'no-store' });
