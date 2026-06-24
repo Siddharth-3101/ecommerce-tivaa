@@ -2,7 +2,7 @@ import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 10;
 
 async function fetchLandingData() {
     const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
