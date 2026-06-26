@@ -1,6 +1,8 @@
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import HomeCategoryGrid from "@/components/HomeCategoryGrid";
+
 
 export const revalidate = 10;
 
@@ -38,31 +40,7 @@ async function fetchLandingData() {
 export default async function Home() {
     const { products, categories } = await fetchLandingData();
 
-    // Map each category to a representative image dynamically
-    // If a product in that category has an image, we use it!
-    const getCategoryImage = (category) => {
-        // Prioritize category's own custom image_url if stored in the database
-        if (category.image_url && category.image_url.trim()) {
-            return category.image_url.trim();
-        }
 
-        // Fallback curated graphics matching the boutique aesthetic
-        const fallbacks = {
-            'hairbows': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg',
-            'meenakaari bangles': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700873/tivaa-products/dr1hiyiwgdfhphf4f8cz.jpg',
-            'general': '/placeholder.png'
-        };
-        
-        const catNameLower = category.name.trim().toLowerCase();
-        
-        // Search in fetched products for an image matching this category ID
-        const matchedProd = products.find(p => p.category_id === category.id && p.image_url);
-        if (matchedProd && matchedProd.image_url) {
-            return matchedProd.image_url.split(",")[0].trim();
-        }
-
-        return fallbacks[catNameLower] || fallbacks['general'];
-    };
 
     return (
         <div className="animate-fade-in" style={{ background: 'var(--gradient-bg)', minHeight: '100vh' }}>
@@ -73,54 +51,7 @@ export default async function Home() {
             {/* SHOP BY CATEGORY SECTION */}
             <section className="container" style={{ padding: '80px 24px 60px' }}>
                 <h2 className="section-heading">Shop by Category</h2>
-
-                <div className="category-container">
-                    {categories && categories.length > 0 ? (
-                        categories.filter(cat => !cat.parent_id).map((cat) => {
-                            const children = categories.filter(child => Number(child.parent_id) === Number(cat.id));
-                            
-                            return (
-                                <div key={cat.id} className="category-item animate-fade-in">
-                                    <Link 
-                                        href={`/products?category=${encodeURIComponent(cat.name)}`} 
-                                        className="category-main-link"
-                                    >
-                                        <div className="category-image-container">
-                                            <img 
-                                                src={getCategoryImage(cat)} 
-                                                alt={cat.name} 
-                                                className="category-image"
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                        <div className="category-title">
-                                            {cat.name} 
-                                            <span style={{ fontSize: '1.1rem', transition: 'transform 0.2s' }}>→</span>
-                                        </div>
-                                    </Link>
-                                    
-                                    {children.length > 0 && (
-                                        <div className="category-subs-container">
-                                            {children.map(sub => (
-                                                <Link
-                                                    key={sub.id}
-                                                    href={`/products?category=${encodeURIComponent(sub.name)}`}
-                                                    className="category-sub-pill"
-                                                >
-                                                    {sub.name}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <div style={{ padding: '40px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            No categories available at the moment.
-                        </div>
-                    )}
-                </div>
+                <HomeCategoryGrid categories={categories} products={products} />
             </section>
 
             {/* NEWLY ADDED SECTION */}
