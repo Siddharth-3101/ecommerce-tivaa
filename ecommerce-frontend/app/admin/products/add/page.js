@@ -162,11 +162,27 @@ export default function AddProductPage() {
                                 style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', cursor: 'pointer' }}
                             >
                                 <option value="" disabled>Select a Category...</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
+                                {(() => {
+                                    const parents = categories.filter(c => !c.parent_id);
+                                    const subs = categories.filter(c => c.parent_id);
+                                    const sorted = [];
+                                    parents.forEach(p => {
+                                        sorted.push(p);
+                                        const children = subs.filter(s => Number(s.parent_id) === Number(p.id));
+                                        children.forEach(c => {
+                                            sorted.push({ ...c, displayName: `${p.name} > ${c.name}` });
+                                        });
+                                    });
+                                    const orphans = subs.filter(s => !parents.some(p => Number(p.id) === Number(s.parent_id)));
+                                    orphans.forEach(s => {
+                                        sorted.push({ ...s, displayName: `Orphan > ${s.name}` });
+                                    });
+                                    return sorted.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.displayName || c.name}
+                                        </option>
+                                    ));
+                                })()}
                             </select>
                         </div>
                     </div>

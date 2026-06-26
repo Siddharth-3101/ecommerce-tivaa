@@ -1,4 +1,4 @@
-id,name,description,price,stock,category_id,is_visible
-,Emerald Drop Earrings,"Exquisite handcrafted drop earrings featuring premium emeralds.",2499.00,10,3,true
-,Classic Pearl Choker,"A timeless freshwater pearl choker necklace perfect for elegant styling.",4999.00,5,4,true
-,Ruby Solitaire Ring,"Elegant 18k rose gold ring with a single oval-cut ruby gemstone.",3200.00,15,1,true
+id,name,description,price,stock,category_id,image_url,is_visible
+,Emerald Drop Earrings,"Exquisite handcrafted drop earrings featuring premium emeralds.",2499.00,10,3,"https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg",true
+,Classic Pearl Choker,"A timeless freshwater pearl choker necklace perfect for elegant styling.",4999.00,5,4,"https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700873/tivaa-products/dr1hiyiwgdfhphf4f8cz.jpg",true
+,Ruby Solitaire Ring,"Elegant 18k rose gold ring with a single oval-cut ruby gemstone.",3200.00,15,1,"https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg",true

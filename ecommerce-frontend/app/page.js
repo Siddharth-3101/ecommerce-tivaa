@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import HomeCategorySelector from "@/components/HomeCategorySelector";
 
 export const revalidate = 10;
 
@@ -71,37 +72,9 @@ export default async function Home() {
             <Hero />
 
             {/* SHOP BY CATEGORY SECTION */}
-            <section className="container" style={{ padding: '80px 24px 60px' }}>
+            <section className="container" style={{ padding: '80px 24px 20px' }}>
                 <h2 className="section-heading">Shop by Category</h2>
-
-                <div className="category-container">
-                    {categories && categories.length > 0 ? (
-                        categories.map((cat) => (
-                            <Link 
-                                key={cat.id} 
-                                href={`/products?category=${encodeURIComponent(cat.name)}`} 
-                                className="category-item animate-fade-in"
-                            >
-                                <div className="category-image-container">
-                                    <img 
-                                        src={getCategoryImage(cat)} 
-                                        alt={cat.name} 
-                                        className="category-image"
-                                        loading="lazy"
-                                    />
-                                </div>
-                                <div className="category-title">
-                                    {cat.name} 
-                                    <span style={{ fontSize: '1.1rem', transition: 'transform 0.2s' }}>→</span>
-                                </div>
-                            </Link>
-                        ))
-                    ) : (
-                        <div style={{ padding: '40px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            No categories available at the moment.
-                        </div>
-                    )}
-                </div>
+                <HomeCategorySelector categories={categories} />
             </section>
 
             {/* NEWLY ADDED SECTION */}

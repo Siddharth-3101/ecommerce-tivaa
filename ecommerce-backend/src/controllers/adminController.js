@@ -7,20 +7,42 @@ import { sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 
 // Add Category
 export const addCategory = (req, res) => {
-    const { name, description, image_url } = req.body;
+    const { name, description, image_url, parent_id } = req.body;
 
     if (!name)
         return res.status(400).json({ message: "Category name required" });
 
-    const sql = "INSERT INTO categories (name, description, image_url) VALUES (?, ?, ?)";
+    const targetParentId = parent_id ? Number(parent_id) : null;
 
-    db.query(sql, [name, description || null, image_url || null], (err) => {
-        if (err) {
-            console.error("DB error:", err);
-            return res.status(500).json({ message: "DB error" });
-        }
-        res.json({ message: "Category added" });
-    });
+    const performInsert = () => {
+        const sql = "INSERT INTO categories (name, description, image_url, parent_id) VALUES (?, ?, ?, ?)";
+
+        db.query(sql, [name, description || null, image_url || null, targetParentId], (err) => {
+            if (err) {
+                console.error("DB error:", err);
+                return res.status(500).json({ message: "DB error" });
+            }
+            res.json({ message: "Category added" });
+        });
+    };
+
+    if (targetParentId) {
+        db.query("SELECT parent_id FROM categories WHERE id = ?", [targetParentId], (err, rows) => {
+            if (err) {
+                console.error("DB error checking parent:", err);
+                return res.status(500).json({ message: "DB error" });
+            }
+            if (rows.length === 0) {
+                return res.status(400).json({ message: "Selected parent category does not exist." });
+            }
+            if (rows[0].parent_id !== null) {
+                return res.status(400).json({ message: "The selected parent category is itself a sub-category. We only support a 2-level hierarchy." });
+            }
+            performInsert();
+        });
+    } else {
+        performInsert();
+    }
 };
 
 // Delete Category
@@ -41,8 +63,52 @@ export const deleteCategory = (req, res) => {
             });
         }
 
-        const sql = "DELETE FROM categories WHERE id = ?";
-        db.query(sql, [id], (err, result) => {
+        // Check if any sub-categories belong to this category
+        const checkSubSql = "SELECT COUNT(*) as count FROM categories WHERE parent_id = ?";
+        db.query(checkSubSql, [id], (subCheckErr, subCheckResult) => {
+            if (subCheckErr) {
+                console.error("DB error checking sub-categories:", subCheckErr);
+                return res.status(500).json({ message: "DB error" });
+            }
+
+            if (subCheckResult[0] && subCheckResult[0].count > 0) {
+                return res.status(400).json({
+                    message: "Cannot delete category because it contains active sub-categories. Please delete or reassign the sub-categories first."
+                });
+            }
+
+            const sql = "DELETE FROM categories WHERE id = ?";
+            db.query(sql, [id], (err, result) => {
+                if (err) {
+                    console.error("DB error:", err);
+                    return res.status(500).json({ message: "DB error" });
+                }
+
+                if (result.affectedRows === 0)
+                    return res.status(404).json({ message: "Category not found" });
+
+                res.json({ message: "Category deleted" });
+            });
+        });
+    });
+};
+
+// Update Category
+export const updateCategory = (req, res) => {
+    const { id } = req.params;
+    const { name, description, image_url, parent_id } = req.body;
+
+    const targetParentId = parent_id ? Number(parent_id) : null;
+
+    if (targetParentId && targetParentId === Number(id)) {
+        return res.status(400).json({ message: "A category cannot be its own parent." });
+    }
+
+    const performUpdate = () => {
+        const sql =
+            "UPDATE categories SET name = ?, description = ?, image_url = ?, parent_id = ? WHERE id = ?";
+
+        db.query(sql, [name, description, image_url || null, targetParentId, id], (err, result) => {
             if (err) {
                 console.error("DB error:", err);
                 return res.status(500).json({ message: "DB error" });
@@ -51,30 +117,40 @@ export const deleteCategory = (req, res) => {
             if (result.affectedRows === 0)
                 return res.status(404).json({ message: "Category not found" });
 
-            res.json({ message: "Category deleted" });
+            res.json({ message: "Category updated" });
         });
-    });
-};
+    };
 
-// Update Category
-export const updateCategory = (req, res) => {
-    const { id } = req.params;
-    const { name, description, image_url } = req.body;
+    if (targetParentId) {
+        // 1. Verify parent category exists and is a top-level category (parent_id is null)
+        db.query("SELECT parent_id FROM categories WHERE id = ?", [targetParentId], (err, rows) => {
+            if (err) {
+                console.error("DB error checking parent:", err);
+                return res.status(500).json({ message: "DB error" });
+            }
+            if (rows.length === 0) {
+                return res.status(400).json({ message: "Selected parent category does not exist." });
+            }
+            if (rows[0].parent_id !== null) {
+                return res.status(400).json({ message: "The selected parent category is itself a sub-category. We only support a 2-level hierarchy." });
+            }
 
-    const sql =
-        "UPDATE categories SET name = ?, description = ?, image_url = ? WHERE id = ?";
-
-    db.query(sql, [name, description, image_url || null, id], (err, result) => {
-        if (err) {
-            console.error("DB error:", err);
-            return res.status(500).json({ message: "DB error" });
-        }
-
-        if (result.affectedRows === 0)
-            return res.status(404).json({ message: "Category not found" });
-
-        res.json({ message: "Category updated" });
-    });
+            // 2. Ensure this category does not have sub-categories (if it does, it cannot become a sub-category)
+            db.query("SELECT COUNT(*) as count FROM categories WHERE parent_id = ?", [id], (err2, rows2) => {
+                if (err2) {
+                    console.error("DB error checking child sub-categories:", err2);
+                    return res.status(500).json({ message: "DB error" });
+                }
+                if (rows2[0] && rows2[0].count > 0) {
+                    return res.status(400).json({ message: "This category cannot become a sub-category because it already contains sub-categories." });
+                }
+                
+                performUpdate();
+            });
+        });
+    } else {
+        performUpdate();
+    }
 };
 
 // ===========================================================
@@ -245,7 +321,7 @@ export const bulkImportProducts = (req, res) => {
         const validCategoryIds = new Set(catRows.map(row => row.id));
 
         const sql = `
-            INSERT INTO products (id, name, description, price, stock, category_id, is_visible)
+            INSERT INTO products (id, name, description, price, stock, category_id, image_url, is_visible)
             VALUES ?
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
@@ -253,6 +329,7 @@ export const bulkImportProducts = (req, res) => {
                 price = VALUES(price),
                 stock = VALUES(stock),
                 category_id = VALUES(category_id),
+                image_url = VALUES(image_url),
                 is_visible = VALUES(is_visible)
         `;
 
@@ -268,6 +345,7 @@ export const bulkImportProducts = (req, res) => {
                 p.price ? Number(p.price) : 0,
                 p.stock ? Number(p.stock) : 0,
                 safeCatId,
+                p.image_url || null,
                 p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true
             ];
         });

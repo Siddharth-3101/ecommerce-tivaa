@@ -41,7 +41,9 @@ export const runSetup = async () => {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 description TEXT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                parent_id INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
             )
         `, (err) => err ? rej(err) : res()));
         console.log("Categories table verified/created");
@@ -251,6 +253,17 @@ export const runSetup = async () => {
 
         if (!categoryCols.includes("image_url")) {
             await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+
+        if (!categoryCols.includes("parent_id")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN parent_id INT NULL", (err) => err ? rej(err) : res()));
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
+                if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
+                    rej(err);
+                } else {
+                    res();
+                }
+            }));
         }
 
         if (!productCols.includes("variations")) {

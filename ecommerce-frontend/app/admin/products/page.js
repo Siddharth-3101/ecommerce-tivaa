@@ -101,7 +101,7 @@ export default function AdminProductsPage() {
                 return;
             }
 
-            const headers = ["id", "name", "description", "price", "stock", "category_id", "is_visible"];
+            const headers = ["id", "name", "description", "price", "stock", "category_id", "image_url", "is_visible"];
             const headerLine = headers.join(",");
             const rowLines = allProducts.map(p => 
                 headers.map(h => {
@@ -257,9 +257,27 @@ export default function AdminProductsPage() {
                         onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                     >
                         <option value="All">All Categories</option>
-                        {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
+                        {(() => {
+                            const parents = categories.filter(c => !c.parent_id);
+                            const subs = categories.filter(c => c.parent_id);
+                            const sorted = [];
+                            parents.forEach(p => {
+                                sorted.push(p);
+                                const children = subs.filter(s => Number(s.parent_id) === Number(p.id));
+                                children.forEach(c => {
+                                    sorted.push({ ...c, displayName: `${p.name} > ${c.name}` });
+                                });
+                            });
+                            const orphans = subs.filter(s => !parents.some(p => Number(p.id) === Number(s.parent_id)));
+                            orphans.forEach(s => {
+                                sorted.push({ ...s, displayName: `Orphan > ${s.name}` });
+                            });
+                            return sorted.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.displayName || c.name}
+                                </option>
+                            ));
+                        })()}
                     </select>
                 </div>
 

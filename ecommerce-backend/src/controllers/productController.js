@@ -33,11 +33,11 @@ export const getProducts = async (req, res) => {
   // 1. Category Filter
   if (category && category !== "All") {
     if (!isNaN(category)) {
-      countSql += " AND p.category_id = ?";
-      countParams.push(parseInt(category));
+      countSql += " AND (p.category_id = ? OR p.category_id IN (SELECT id FROM categories WHERE parent_id = ?))";
+      countParams.push(parseInt(category), parseInt(category));
     } else {
-      countSql += " AND c.name = ?";
-      countParams.push(category);
+      countSql += " AND (c.name = ? OR p.category_id IN (SELECT sub.id FROM categories sub JOIN categories parent ON sub.parent_id = parent.id WHERE parent.name = ?))";
+      countParams.push(category, category);
     }
   }
 
@@ -77,11 +77,11 @@ export const getProducts = async (req, res) => {
     // Reapply filters
     if (category && category !== "All") {
       if (!isNaN(category)) {
-        sql += " AND p.category_id = ?";
-        selectParams.push(parseInt(category));
+        sql += " AND (p.category_id = ? OR p.category_id IN (SELECT id FROM categories WHERE parent_id = ?))";
+        selectParams.push(parseInt(category), parseInt(category));
       } else {
-        sql += " AND c.name = ?";
-        selectParams.push(category);
+        sql += " AND (c.name = ? OR p.category_id IN (SELECT sub.id FROM categories sub JOIN categories parent ON sub.parent_id = parent.id WHERE parent.name = ?))";
+        selectParams.push(category, category);
       }
     }
 
@@ -295,8 +295,8 @@ export const filterProducts = (req, res) => {
   const params = [];
 
   if (category) {
-    sql += " AND c.name = ?";
-    params.push(category);
+    sql += " AND (c.name = ? OR p.category_id IN (SELECT sub.id FROM categories sub JOIN categories parent ON sub.parent_id = parent.id WHERE parent.name = ?))";
+    params.push(category, category);
   }
 
   if (min_price) {

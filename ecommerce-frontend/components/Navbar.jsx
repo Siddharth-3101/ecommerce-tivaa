@@ -471,17 +471,39 @@ export default function Navbar() {
                             <Link href="/" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Home</Link>
                             <Link href="/products" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>All Products</Link>
                             
-                            {categories.map(c => (
-                                <Link 
-                                    key={c.id} 
-                                    href={`/products?category=${encodeURIComponent(c.name)}`} 
-                                    className="btn" 
-                                    style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '8px 12px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }} 
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    {c.name}
-                                </Link>
-                            ))}
+                            {(() => {
+                                const parents = categories.filter(c => !c.parent_id);
+                                const subs = categories.filter(c => c.parent_id);
+
+                                return parents.map(parent => {
+                                    const children = subs.filter(child => Number(child.parent_id) === Number(parent.id));
+                                    
+                                    return (
+                                        <div key={parent.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Link 
+                                                href={`/products?category=${encodeURIComponent(parent.name)}`} 
+                                                className="btn" 
+                                                style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '10px 8px', fontSize: '0.88rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }} 
+                                                onClick={() => setMobileMenuOpen(false)}
+                                            >
+                                                {parent.name}
+                                            </Link>
+                                            
+                                            {children.map(child => (
+                                                <Link 
+                                                    key={child.id} 
+                                                    href={`/products?category=${encodeURIComponent(child.name)}`} 
+                                                    className="btn" 
+                                                    style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '6px 12px 6px 24px', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} 
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    ↳ {child.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
                     </div>
                 </div>

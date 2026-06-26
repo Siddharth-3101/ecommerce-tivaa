@@ -5,7 +5,7 @@ import api from "@/lib/api";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ name: "", description: "", image_url: "" });
+  const [form, setForm] = useState({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
   const [loading, setLoading] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -52,13 +52,20 @@ export default function CategoriesPage() {
         if (!form.name) return;
         setLoading(true);
         try {
+            const payload = {
+                name: form.name,
+                description: form.description,
+                image_url: form.image_url,
+                parent_id: form.type === "subcategory" && form.parent_id !== "" ? Number(form.parent_id) : null
+            };
+
             if (editingCategory) {
-                await api.put(`/admin/category/${editingCategory.id}`, form);
+                await api.put(`/admin/category/${editingCategory.id}`, payload);
                 setEditingCategory(null);
             } else {
-                await api.post("/admin/category", form);
+                await api.post("/admin/category", payload);
             }
-            setForm({ name: "", description: "", image_url: "" });
+            setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
             await fetchCategories();
         } catch (err) {
             alert(err.response?.data?.message || `Failed to ${editingCategory ? 'update' : 'add'} category`);
@@ -72,14 +79,16 @@ export default function CategoriesPage() {
         setForm({
             name: category.name || "",
             description: category.description || "",
-            image_url: category.image_url || ""
+            image_url: category.image_url || "",
+            parent_id: category.parent_id !== null && category.parent_id !== undefined ? String(category.parent_id) : "",
+            type: category.parent_id ? "subcategory" : "category"
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleCancelEdit = () => {
         setEditingCategory(null);
-        setForm({ name: "", description: "", image_url: "" });
+        setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
     };
 
     const handleDelete = async (id) => {
@@ -92,7 +101,40 @@ export default function CategoriesPage() {
         }
     };
 
-    return (
+  const getSortedHierarchicalCategories = () => {
+      const topLevel = categories.filter(c => !c.parent_id);
+      const subCategories = categories.filter(c => c.parent_id);
+
+      const result = [];
+      topLevel.forEach(parent => {
+          result.push(parent);
+          // Find all sub-categories for this parent
+          const children = subCategories.filter(child => Number(child.parent_id) === Number(parent.id));
+          children.forEach(child => {
+              result.push({
+                  ...child,
+                  is_subcategory: true,
+                  parent_name: parent.name
+              });
+          });
+      });
+
+      // Append orphans
+      const orphanSubs = subCategories.filter(child => !topLevel.some(parent => Number(parent.id) === Number(child.parent_id)));
+      orphanSubs.forEach(orphan => {
+          result.push({
+              ...orphan,
+              is_subcategory: true,
+              parent_name: "Unknown Parent"
+          });
+      });
+
+      return result;
+  };
+
+  const hierarchicalCategories = getSortedHierarchicalCategories();
+
+  return (
         <div className="animate-fade-in">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
                 <div>
@@ -110,7 +152,33 @@ export default function CategoriesPage() {
                 </h3>
                 <form onSubmit={handleAdd} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                     
-                    <div className="category-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                    <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                        <span style={{ fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 500 }}>Category Type:</span>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.9rem" }}>
+                            <input 
+                                type="radio" 
+                                name="category_type" 
+                                value="category"
+                                checked={form.type === "category"}
+                                onChange={() => setForm({ ...form, type: "category", parent_id: "" })}
+                                style={{ accentColor: "var(--accent)" }}
+                            />
+                            Main Category
+                        </label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.9rem" }}>
+                            <input 
+                                type="radio" 
+                                name="category_type" 
+                                value="subcategory"
+                                checked={form.type === "subcategory"}
+                                onChange={() => setForm({ ...form, type: "subcategory" })}
+                                style={{ accentColor: "var(--accent)" }}
+                            />
+                            Sub-category
+                        </label>
+                    </div>
+
+                    <div className="category-form-grid" style={{ display: "grid", gridTemplateColumns: form.type === "subcategory" ? "1fr 1fr 1fr" : "1fr 1fr", gap: "24px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Category Name *</label>
                             <input
@@ -121,6 +189,26 @@ export default function CategoriesPage() {
                                 required
                             />
                         </div>
+                        {form.type === "subcategory" && (
+                            <div>
+                                <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Select Main Category *</label>
+                                <select
+                                    className="input-field"
+                                    value={form.parent_id}
+                                    onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
+                                    required
+                                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', cursor: 'pointer' }}
+                                >
+                                    <option value="" disabled>Choose a main category...</option>
+                                    {categories
+                                        .filter(c => !c.parent_id && (!editingCategory || c.id !== editingCategory.id))
+                                        .map(c => (
+                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                        )}
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Description (optional)</label>
                             <input
@@ -222,66 +310,80 @@ export default function CategoriesPage() {
                         </button>
                     </div>
                 </form>
-      </div>
-
-      <div>
-        {initLoading ? (
-            <div style={{ textAlign: "center", padding: "40px" }}>Loading categories...</div>
-        ) : categories.length === 0 ? (
-          <div className="card" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
-              No categories have been added yet. Let's create one above.
-          </div>
-        ) : (
-          <div className="card" style={{ overflow: "hidden" }}>
-            <div style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
-              <table style={{ width: "100%", minWidth: "800px", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                  <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>ID</th>
-                  <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Image</th>
-                  <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Name</th>
-                  <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Description</th>
-                  <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {categories.map((c) => (
-                  <tr key={c.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseOut={(e) => e.currentTarget.style.background = "transparent"}>
-                    <td style={{ padding: "16px 24px", color: "var(--text-muted)" }}>#{c.id}</td>
-                    <td style={{ padding: "16px 24px" }}>
-                        <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#f9f9f9", border: "1px solid var(--border)" }}>
-                            <img src={c.image_url || "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={c.name} />
-                        </div>
-                    </td>
-                    <td style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-main)" }}>{c.name}</td>
-                    <td style={{ padding: "16px 24px", color: "var(--text-muted)", fontSize: "0.95rem" }}>{c.description || "-"}</td>
-                    <td style={{ padding: "16px 24px", textAlign: "right" }}>
-                        <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
-                            <button
-                                className="btn btn-secondary"
-                                onClick={() => handleEdit(c)}
-                                style={{ padding: "6px 12px", fontSize: "0.85rem" }}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                className="btn btn-danger"
-                                onClick={() => handleDelete(c.id)}
-                                style={{ padding: "6px 12px", fontSize: "0.85rem" }}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
             </div>
-          </div>
-        )}
-      </div>
+
+            <div>
+                {initLoading ? (
+                    <div style={{ textAlign: "center", padding: "40px" }}>Loading categories...</div>
+                ) : categories.length === 0 ? (
+                    <div className="card" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                        No categories have been added yet. Let's create one above.
+                    </div>
+                ) : (
+                    <div className="card" style={{ overflow: "hidden" }}>
+                        <div style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
+                            <table style={{ width: "100%", minWidth: "800px", borderCollapse: "collapse" }}>
+                                <thead>
+                                    <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>ID</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Image</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Name</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Type</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Description</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "right" }}>Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {hierarchicalCategories.map((c) => (
+                                        <tr key={c.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseOut={(e) => e.currentTarget.style.background = "transparent"}>
+                                            <td style={{ padding: "16px 24px", color: "var(--text-muted)" }}>#{c.id}</td>
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#f9f9f9", border: "1px solid var(--border)" }}>
+                                                    <img src={c.image_url || "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={c.name} />
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: "16px 24px 16px " + (c.is_subcategory ? "48px" : "24px"), fontWeight: c.is_subcategory ? 500 : 600, color: "var(--text-main)" }}>
+                                                {c.is_subcategory ? `↳ ${c.name}` : c.name}
+                                            </td>
+                                            <td style={{ padding: "16px 24px", fontSize: "0.85rem" }}>
+                                                {c.is_subcategory ? (
+                                                    <span style={{ color: "var(--accent)", background: "rgba(122, 56, 194, 0.08)", padding: "4px 8px", borderRadius: "12px", fontWeight: 500 }}>
+                                                        Sub of {c.parent_name}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.08)", padding: "4px 8px", borderRadius: "12px", fontWeight: 500 }}>
+                                                        Main Category
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: "16px 24px", color: "var(--text-muted)", fontSize: "0.95rem" }}>{c.description || "-"}</td>
+                                            <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                                <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
+                                                    <button
+                                                        className="btn btn-secondary"
+                                                        onClick={() => handleEdit(c)}
+                                                        style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-danger"
+                                                        onClick={() => handleDelete(c.id)}
+                                                        style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
       <style jsx>{`
         @media (max-width: 600px) {
           .category-form-grid {
