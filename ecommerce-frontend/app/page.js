@@ -1,7 +1,6 @@
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
-import HomeCategorySelector from "@/components/HomeCategorySelector";
 
 export const revalidate = 10;
 
@@ -72,9 +71,56 @@ export default async function Home() {
             <Hero />
 
             {/* SHOP BY CATEGORY SECTION */}
-            <section className="container" style={{ padding: '80px 24px 20px' }}>
+            <section className="container" style={{ padding: '80px 24px 60px' }}>
                 <h2 className="section-heading">Shop by Category</h2>
-                <HomeCategorySelector categories={categories} />
+
+                <div className="category-container">
+                    {categories && categories.length > 0 ? (
+                        categories.filter(cat => !cat.parent_id).map((cat) => {
+                            const children = categories.filter(child => Number(child.parent_id) === Number(cat.id));
+                            
+                            return (
+                                <div key={cat.id} className="category-item animate-fade-in">
+                                    <Link 
+                                        href={`/products?category=${encodeURIComponent(cat.name)}`} 
+                                        className="category-main-link"
+                                    >
+                                        <div className="category-image-container">
+                                            <img 
+                                                src={getCategoryImage(cat)} 
+                                                alt={cat.name} 
+                                                className="category-image"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                        <div className="category-title">
+                                            {cat.name} 
+                                            <span style={{ fontSize: '1.1rem', transition: 'transform 0.2s' }}>→</span>
+                                        </div>
+                                    </Link>
+                                    
+                                    {children.length > 0 && (
+                                        <div className="category-subs-container">
+                                            {children.map(sub => (
+                                                <Link
+                                                    key={sub.id}
+                                                    href={`/products?category=${encodeURIComponent(sub.name)}`}
+                                                    className="category-sub-pill"
+                                                >
+                                                    {sub.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div style={{ padding: '40px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            No categories available at the moment.
+                        </div>
+                    )}
+                </div>
             </section>
 
             {/* NEWLY ADDED SECTION */}

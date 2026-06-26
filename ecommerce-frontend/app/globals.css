@@ -526,11 +526,16 @@ a:hover {
 .category-item {
     display: flex;
     flex-direction: column;
-    text-decoration: none;
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.category-item:hover {
+.category-main-link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.category-main-link:hover {
     transform: translateY(-4px);
 }
 
@@ -545,7 +550,7 @@ a:hover {
     transition: box-shadow 0.35s ease;
 }
 
-.category-item:hover .category-image-container {
+.category-main-link:hover .category-image-container {
     box-shadow: 0 16px 40px rgba(155, 105, 255, 0.2);
 }
 
@@ -556,7 +561,7 @@ a:hover {
     transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.category-item:hover .category-image {
+.category-main-link:hover .category-image {
     transform: scale(1.05);
 }
 
@@ -572,9 +577,40 @@ a:hover {
     letter-spacing: 0.2px;
 }
 
-.category-item:hover .category-title {
+.category-main-link:hover .category-title {
     color: var(--accent-purple-deep);
 }
+
+/* Category sub-categories styling */
+.category-subs-container {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding-bottom: 4px;
+}
+
+.category-sub-pill {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: rgba(122, 56, 194, 0.04);
+    border: 1.5px solid rgba(122, 56, 194, 0.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.category-sub-pill:hover {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(122, 56, 194, 0.15);
+}
+
 
 /* Global Boutique Responsive Product Grid */
 .product-grid-boutique {
