@@ -166,9 +166,22 @@ export default function ProductCard({ product }) {
                     >
                         {product.name}
                     </span>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
-                        ₹{product.price}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {product.discounted_price ? (
+                            <>
+                                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
+                                    ₹{product.discounted_price}
+                                </span>
+                                <span style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: 'var(--text-muted)', fontFamily: "'Poppins', sans-serif" }}>
+                                    ₹{product.price}
+                                </span>
+                            </>
+                        ) : (
+                            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
+                                ₹{product.price}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 
                 {product.stock > 0 && (

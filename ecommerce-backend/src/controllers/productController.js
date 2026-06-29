@@ -156,7 +156,7 @@ export const getProductById = (req, res) => {
 // ADD NEW PRODUCT
 // ===========================================================
 export const addProduct = (req, res) => {
-  const { name, description, price, stock, category_id, image_url, variations, features } = req.body;
+  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
@@ -165,15 +165,17 @@ export const addProduct = (req, res) => {
   // Prevent MySQL strict mode errors by converting empty strings to null/0 for numeric columns
   const safeStock = stock === "" || stock === undefined ? 0 : stock;
   const safeCategoryId = category_id === "" || category_id === undefined ? null : category_id;
+  const safePurchasePrice = purchase_price === "" || purchase_price === undefined ? null : purchase_price;
+  const safeDiscountedPrice = discounted_price === "" || discounted_price === undefined ? null : discounted_price;
 
   const sql = `
-        INSERT INTO products (name, description, price, stock, category_id, image_url, variations, features)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
   db.query(
     sql,
-    [name, description, price, safeStock, safeCategoryId, image_url, variations || null, features || null],
+    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null],
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
@@ -193,21 +195,23 @@ export const addProduct = (req, res) => {
 // ===========================================================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { name, description, price, stock, category_id, image_url, variations, features } = req.body;
+  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features } = req.body;
 
   // Prevent MySQL strict mode errors by converting empty strings to null/0 for numeric columns
   const safeStock = stock === "" || stock === undefined ? 0 : stock;
   const safeCategoryId = category_id === "" || category_id === undefined ? null : category_id;
+  const safePurchasePrice = purchase_price === "" || purchase_price === undefined ? null : purchase_price;
+  const safeDiscountedPrice = discounted_price === "" || discounted_price === undefined ? null : discounted_price;
 
   const sql = `
         UPDATE products 
-        SET name=?, description=?, price=?, stock=?, category_id=?, image_url=?, variations=?, features=?
+        SET name=?, description=?, price=?, purchase_price=?, discounted_price=?, stock=?, category_id=?, image_url=?, variations=?, features=?
         WHERE id=?
     `;
 
   db.query(
     sql,
-    [name, description, price, safeStock, safeCategoryId, image_url, variations || null, features || null, id],
+    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null, id],
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);
@@ -359,3 +363,54 @@ export const toggleProductVisibility = (req, res) => {
     });
   });
 };
+
+// ===========================================================
+// ADMIN: BULK DELETE PRODUCTS
+// ===========================================================
+export const bulkDeleteProducts = (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ message: "Invalid payload: expected an array of product ids" });
+  }
+
+  db.query(
+    "UPDATE products SET is_active = false WHERE id IN (?)",
+    [ids],
+    async (err, result) => {
+      if (err) {
+        console.error("DB Error bulk deleting products:", err);
+        return res.status(500).json({ message: "Database error: " + err.message });
+      }
+
+      await clearCache("products");
+      return res.json({ message: `${result.affectedRows} products deleted successfully` });
+    }
+  );
+};
+
+// ===========================================================
+// ADMIN: RESET AUTO INCREMENT COUNTER
+// ===========================================================
+export const resetProductAutoIncrement = (req, res) => {
+  db.query("SELECT MAX(id) as maxId FROM products", (err, rows) => {
+    if (err) {
+      console.error("DB Error getting max product ID:", err);
+      return res.status(500).json({ message: "Database error: " + err.message });
+    }
+
+    const maxId = rows[0]?.maxId || 0;
+    const nextId = maxId + 1;
+
+    db.query(`ALTER TABLE products AUTO_INCREMENT = ${nextId}`, (alterErr) => {
+      if (alterErr) {
+        console.error("DB Error altering auto increment:", alterErr);
+        return res.status(500).json({ message: "Database error: " + alterErr.message });
+      }
+      return res.json({ 
+        message: `Product ID counter successfully reset to ${nextId}`, 
+        nextId 
+      });
+    });
+  });
+};
+

@@ -16,6 +16,8 @@ import {
   updateProduct,
   deleteProduct,
   toggleProductVisibility,
+  bulkDeleteProducts,
+  resetProductAutoIncrement,
 } from "../controllers/productController.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -29,6 +31,8 @@ const router = express.Router();
 router.post("/product", verifyToken, verifyAdmin, addProduct);
 router.put("/product/:id", verifyToken, verifyAdmin, updateProduct);
 router.delete("/product/:id", verifyToken, verifyAdmin, deleteProduct);
+router.post("/products/bulk-delete", verifyToken, verifyAdmin, bulkDeleteProducts);
+router.post("/products/reset-auto-increment", verifyToken, verifyAdmin, resetProductAutoIncrement);
 router.put("/product/:id/toggle-visibility", verifyToken, verifyAdmin, toggleProductVisibility);
 router.post("/products/bulk", verifyToken, verifyAdmin, bulkImportProducts);
 

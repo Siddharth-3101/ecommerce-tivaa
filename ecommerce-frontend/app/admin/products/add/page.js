@@ -14,6 +14,8 @@ export default function AddProductPage() {
     const [product, setProduct] = useState({
         name: "",
         price: "",
+        purchase_price: "",
+        discounted_price: "",
         stock: "",
         description: "",
         features: "",
@@ -189,7 +191,7 @@ export default function AddProductPage() {
 
                     <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                         <div>
-                            <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Price (₹) *</label>
+                            <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Selling Price (₹) *</label>
                             <input
                                 className="input-field"
                                 type="number"
@@ -198,6 +200,31 @@ export default function AddProductPage() {
                                 value={product.price}
                                 onChange={(e) => setProduct({ ...product, price: e.target.value })}
                                 required
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Discounted Price (₹)</label>
+                            <input
+                                className="input-field"
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={product.discounted_price}
+                                onChange={(e) => setProduct({ ...product, discounted_price: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "20px" }}>
+                        <div>
+                            <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Purchase Price (₹)</label>
+                            <input
+                                className="input-field"
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={product.purchase_price}
+                                onChange={(e) => setProduct({ ...product, purchase_price: e.target.value })}
                             />
                         </div>
                         <div>

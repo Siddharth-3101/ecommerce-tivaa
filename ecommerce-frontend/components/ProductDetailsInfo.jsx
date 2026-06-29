@@ -93,10 +93,21 @@ export default function ProductDetailsInfo({ product }) {
                 <h1 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', margin: '8px 0', lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.5px' }}>
                     {product.name}
                 </h1>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '1.45rem', fontWeight: 600, color: 'var(--accent)' }}>
-                        ₹{product.price}
-                    </span>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {product.discounted_price ? (
+                        <>
+                            <span style={{ fontSize: '1.6rem', fontWeight: 600, color: 'var(--accent)' }}>
+                                ₹{product.discounted_price}
+                            </span>
+                            <span style={{ fontSize: '1.1rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>
+                                ₹{product.price}
+                            </span>
+                        </>
+                    ) : (
+                        <span style={{ fontSize: '1.45rem', fontWeight: 600, color: 'var(--accent)' }}>
+                            ₹{product.price}
+                        </span>
+                    )}
                 </div>
             </div>
 

@@ -55,6 +55,8 @@ export const runSetup = async () => {
                 name VARCHAR(255) NOT NULL,
                 description LONGTEXT NULL,
                 price DECIMAL(10, 2) NOT NULL,
+                purchase_price DECIMAL(10, 2) NULL,
+                discounted_price DECIMAL(10, 2) NULL,
                 stock INT DEFAULT 0,
                 category_id INT NULL,
                 image_url LONGTEXT NULL,
@@ -201,6 +203,14 @@ export const runSetup = async () => {
 
         if (!productCols.includes("is_active")) {
             await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
+        }
+        if (!productCols.includes("purchase_price")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN purchase_price DECIMAL(10, 2) NULL", (err) => err ? rej(err) : res()));
+            console.log("Migration: added purchase_price to products");
+        }
+        if (!productCols.includes("discounted_price")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN discounted_price DECIMAL(10, 2) NULL", (err) => err ? rej(err) : res()));
+            console.log("Migration: added discounted_price to products");
         }
         if (!productCols.includes("category_id")) {
             await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN category_id INT NULL", (err) => err ? rej(err) : res()));

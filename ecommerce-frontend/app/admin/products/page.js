@@ -11,6 +11,8 @@ export default function AdminProductsPage() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [selectedProductIds, setSelectedProductIds] = useState([]);
+    const [importing, setImporting] = useState(false);
 
     // Filter states
     const [selectedCategory, setSelectedCategory] = useState("All");
@@ -52,6 +54,7 @@ export default function AdminProductsPage() {
                 console.error("Failed to load products", err);
             } finally {
                 setLoading(false);
+                setSelectedProductIds([]); // Clear selection when page or filters change
             }
         }
         fetchProducts();
@@ -82,6 +85,35 @@ export default function AdminProductsPage() {
         }
     };
 
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedProductIds(products.map(p => p.id));
+        } else {
+            setSelectedProductIds([]);
+        }
+    };
+
+    const handleSelectOne = (e, id) => {
+        if (e.target.checked) {
+            setSelectedProductIds(prev => [...prev, id]);
+        } else {
+            setSelectedProductIds(prev => prev.filter(item => item !== id));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Are you sure you want to delete the ${selectedProductIds.length} selected products?`)) return;
+        try {
+            await api.post("/admin/products/bulk-delete", { ids: selectedProductIds });
+            alert("Selected products deleted successfully.");
+            setSelectedProductIds([]);
+            setRefreshTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Bulk delete error:", err);
+            alert(err.response?.data?.message || "Failed to delete selected products.");
+        }
+    };
+
     const handleToggleVisibility = async (id) => {
         try {
             await api.put(`/admin/product/${id}/toggle-visibility`);
@@ -101,7 +133,7 @@ export default function AdminProductsPage() {
                 return;
             }
 
-            const headers = ["id", "name", "description", "price", "stock", "category_id", "image_url", "is_visible"];
+            const headers = ["id", "name", "description", "price", "stock", "category_id", "image_url", "is_visible", "purchase_price", "discounted_price"];
             const headerLine = headers.join(",");
             const rowLines = allProducts.map(p => 
                 headers.map(h => {
@@ -128,8 +160,9 @@ export default function AdminProductsPage() {
 
     const handleImportCSV = async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file || importing) return;
 
+        setImporting(true);
         const reader = new FileReader();
         reader.onload = async (event) => {
             try {
@@ -195,6 +228,8 @@ export default function AdminProductsPage() {
             } catch (err) {
                 console.error(err);
                 alert(err.response?.data?.message || "Failed to import products. Please check the CSV format.");
+            } finally {
+                setImporting(false);
             }
         };
         reader.readAsText(file);
@@ -209,13 +244,22 @@ export default function AdminProductsPage() {
                     <p style={{ color: "var(--text-muted)" }}>Manage your inventory and catalog</p>
                 </div>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                    {selectedProductIds.length > 0 && (
+                        <button 
+                            onClick={handleBulkDelete} 
+                            className="btn btn-danger animate-fade-in"
+                            style={{ padding: "10px 18px", fontSize: "0.9rem" }}
+                        >
+                            Delete Selected ({selectedProductIds.length})
+                        </button>
+                    )}
                     <button onClick={handleDownloadCSV} className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "10px 18px", fontSize: "0.9rem" }}>
                         Download CSV
                     </button>
-                    <label className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "10px 18px", cursor: "pointer", margin: 0, fontSize: "0.9rem" }}>
-                        Import CSV
-                        <input type="file" accept=".csv" onChange={handleImportCSV} style={{ display: "none" }} />
+                    <label htmlFor="csv-upload-input" className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "10px 18px", cursor: "pointer", margin: 0, fontSize: "0.9rem" }}>
+                        Import {importing ? "..." : "CSV"}
                     </label>
+                    <input id="csv-upload-input" type="file" accept=".csv" onChange={handleImportCSV} style={{ display: "none" }} disabled={importing} />
                     <Link href="/admin/products/add" className="btn btn-primary" style={{ padding: "10px 18px" }}>
                         <svg style={{ marginRight: "8px" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         New Product
@@ -340,11 +384,21 @@ export default function AdminProductsPage() {
                 <>
                     <div className="card" style={{ overflow: "hidden" }}>
                         <div style={{ overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
-                            <table style={{ width: "100%", minWidth: "900px", borderCollapse: "collapse", textAlign: "left" }}>
+                            <table style={{ width: "100%", minWidth: "1100px", borderCollapse: "collapse", textAlign: "left" }}>
                             <thead>
                                 <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                                    <th style={{ padding: "16px 24px", width: "50px" }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={products.length > 0 && selectedProductIds.length === products.length}
+                                            onChange={handleSelectAll}
+                                            style={{ cursor: "pointer" }}
+                                        />
+                                    </th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Product Name</th>
-                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Price</th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Selling Price</th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Discounted Price</th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Purchase Price</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Stock</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Category</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Visibility</th>
@@ -355,6 +409,14 @@ export default function AdminProductsPage() {
                             <tbody>
                                 {products.length > 0 ? products.map((p) => (
                                     <tr key={p.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.2s" }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"} onMouseOut={(e) => e.currentTarget.style.background = "transparent"}>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedProductIds.includes(p.id)}
+                                                onChange={(e) => handleSelectOne(e, p.id)}
+                                                style={{ cursor: "pointer" }}
+                                            />
+                                        </td>
                                         <td style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: "16px" }}>
                                             <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#1e2130" }}>
                                                 <img src={p.image_url ? p.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={p.name} />
@@ -362,6 +424,12 @@ export default function AdminProductsPage() {
                                             <span style={{ fontWeight: 500 }}>{p.name}</span>
                                         </td>
                                         <td style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-main)" }}>₹{p.price}</td>
+                                        <td style={{ padding: "16px 24px", color: p.discounted_price ? "var(--text-main)" : "var(--text-muted)" }}>
+                                            {p.discounted_price ? `₹${p.discounted_price}` : "-"}
+                                        </td>
+                                        <td style={{ padding: "16px 24px", color: p.purchase_price ? "var(--text-main)" : "var(--text-muted)" }}>
+                                            {p.purchase_price ? `₹${p.purchase_price}` : "-"}
+                                        </td>
                                         <td style={{ padding: "16px 24px" }}>
                                             {p.stock > 0 ? (
                                                 <span style={{ padding: "4px 8px", background: "rgba(16, 185, 129, 0.1)", color: "var(--success)", borderRadius: "12px", fontSize: "0.85rem", fontWeight: 600 }}>{p.stock} in stock</span>
@@ -389,7 +457,7 @@ export default function AdminProductsPage() {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="6" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                                        <td colSpan="9" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                                             No products found matching the criteria.
                                         </td>
                                     </tr>

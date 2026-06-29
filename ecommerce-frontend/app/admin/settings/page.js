@@ -13,6 +13,7 @@ export default function AdminSettingsPage() {
     const [saving, setSaving] = useState(false);
     const [uploadingDesktop, setUploadingDesktop] = useState(false);
     const [uploadingMobile, setUploadingMobile] = useState(false);
+    const [resetting, setResetting] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -80,6 +81,23 @@ export default function AdminSettingsPage() {
             alert(err.response?.data?.message || "Failed to save settings. Please try again.");
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleResetAutoIncrement = async () => {
+        if (!confirm("Are you sure you want to reset the product ID auto-increment counter?\n\nThis will safely reset the next product ID to start from the next sequential ID, but will not re-index existing products.")) {
+            return;
+        }
+
+        setResetting(true);
+        try {
+            const res = await api.post("/admin/products/reset-auto-increment");
+            alert(res.data?.message || "Product ID counter reset successfully!");
+        } catch (err) {
+            console.error("Failed to reset auto-increment:", err);
+            alert(err.response?.data?.message || "Failed to reset product ID counter.");
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -285,6 +303,34 @@ export default function AdminSettingsPage() {
                     {saving ? "Saving Changes..." : "Save Settings"}
                 </button>
             </form>
+
+            {/* Database Maintenance / Operations */}
+            <div className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '40px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Database Maintenance</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '24px' }}>
+                    Perform administrative database operations. Make sure you understand the effects before running these commands.
+                </p>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '16px', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '8px' }}>
+                    <div style={{ flex: '1', minWidth: '240px' }}>
+                        <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: 'var(--danger)', marginBottom: '4px' }}>
+                            Reset Product ID Counter
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Resets the auto-increment sequencer to the next logical ID (e.g., 1 if empty, or MAX(id) + 1). Use this to fill gaps after deleting products.
+                        </span>
+                    </div>
+                    <button 
+                        type="button"
+                        onClick={handleResetAutoIncrement}
+                        disabled={resetting}
+                        className="btn btn-danger"
+                        style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0 }}
+                    >
+                        {resetting ? "Resetting..." : "Reset Counter"}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
