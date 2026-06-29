@@ -14,6 +14,7 @@ export default function AdminSettingsPage() {
     const [uploadingDesktop, setUploadingDesktop] = useState(false);
     const [uploadingMobile, setUploadingMobile] = useState(false);
     const [resetting, setResetting] = useState(false);
+    const [resequencing, setResequencing] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -98,6 +99,23 @@ export default function AdminSettingsPage() {
             alert(err.response?.data?.message || "Failed to reset product ID counter.");
         } finally {
             setResetting(false);
+        }
+    };
+
+    const handleResequenceProductIds = async () => {
+        if (!confirm("WARNING: Resequencing product IDs is a force operation that will re-sequence all existing product IDs (1, 2, 3...).\n\nIf you have any active testing orders, wishlists, shopping carts, or reviews, their relations will become mismatched.\n\nAre you sure you want to proceed?")) {
+            return;
+        }
+
+        setResequencing(true);
+        try {
+            const res = await api.post("/admin/products/resequence-ids");
+            alert(res.data?.message || "Product IDs re-sequenced successfully!");
+        } catch (err) {
+            console.error("Failed to resequence product IDs:", err);
+            alert(err.response?.data?.message || "Failed to resequence product IDs.");
+        } finally {
+            setResequencing(false);
         }
     };
 
@@ -328,6 +346,28 @@ export default function AdminSettingsPage() {
                         style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0 }}
                     >
                         {resetting ? "Resetting..." : "Reset Counter"}
+                    </button>
+                </div>
+
+                <div style={{ height: '1px', background: 'var(--border)', margin: '24px 0' }}></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '16px', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '8px' }}>
+                    <div style={{ flex: '1', minWidth: '240px' }}>
+                        <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: 'var(--danger)', marginBottom: '4px' }}>
+                            Force Resequence Product IDs
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Re-numbers all existing products sequentially starting from 1 (e.g. 1, 2, 3...) and resets the sequencer counter. WARNING: Links to orders, carts, and wishlists will become mismatched.
+                        </span>
+                    </div>
+                    <button 
+                        type="button"
+                        onClick={handleResequenceProductIds}
+                        disabled={resequencing}
+                        className="btn btn-danger"
+                        style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0 }}
+                    >
+                        {resequencing ? "Resequencing..." : "Force Resequence"}
                     </button>
                 </div>
             </div>

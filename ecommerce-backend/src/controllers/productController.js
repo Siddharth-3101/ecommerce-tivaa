@@ -414,3 +414,44 @@ export const resetProductAutoIncrement = (req, res) => {
   });
 };
 
+// ===========================================================
+// ADMIN: FORCE RESEQUENCE ALL PRODUCT IDS
+// ===========================================================
+export const resequenceProductIds = (req, res) => {
+  db.query("SET FOREIGN_KEY_CHECKS = 0", (err) => {
+    if (err) {
+      console.error("DB Error disabling FK checks:", err);
+      return res.status(500).json({ message: "Database error: " + err.message });
+    }
+
+    db.query("SET @count = 0", (err2) => {
+      if (err2) {
+        console.error("DB Error setting counter:", err2);
+        db.query("SET FOREIGN_KEY_CHECKS = 1");
+        return res.status(500).json({ message: "Database error: " + err2.message });
+      }
+
+      db.query("UPDATE products SET id = (@count := @count + 1)", (err3) => {
+        if (err3) {
+          console.error("DB Error updating IDs:", err3);
+          db.query("SET FOREIGN_KEY_CHECKS = 1");
+          return res.status(500).json({ message: "Database error: " + err3.message });
+        }
+
+        db.query("ALTER TABLE products AUTO_INCREMENT = 1", (err4) => {
+          db.query("SET FOREIGN_KEY_CHECKS = 1", async (err5) => {
+            if (err4 || err5) {
+              console.error("DB Error finalizing resequence:", err4 || err5);
+              return res.status(500).json({ message: "Database error: " + (err4 || err5).message });
+            }
+
+            await clearCache("products");
+            return res.json({ message: "All product IDs successfully re-sequenced sequentially (1, 2, 3...)." });
+          });
+        });
+      });
+    });
+  });
+};
+
+

@@ -18,6 +18,7 @@ import {
   toggleProductVisibility,
   bulkDeleteProducts,
   resetProductAutoIncrement,
+  resequenceProductIds,
 } from "../controllers/productController.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -33,6 +34,7 @@ router.put("/product/:id", verifyToken, verifyAdmin, updateProduct);
 router.delete("/product/:id", verifyToken, verifyAdmin, deleteProduct);
 router.post("/products/bulk-delete", verifyToken, verifyAdmin, bulkDeleteProducts);
 router.post("/products/reset-auto-increment", verifyToken, verifyAdmin, resetProductAutoIncrement);
+router.post("/products/resequence-ids", verifyToken, verifyAdmin, resequenceProductIds);
 router.put("/product/:id/toggle-visibility", verifyToken, verifyAdmin, toggleProductVisibility);
 router.post("/products/bulk", verifyToken, verifyAdmin, bulkImportProducts);
 
