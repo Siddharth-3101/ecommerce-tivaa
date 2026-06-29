@@ -454,4 +454,29 @@ export const resequenceProductIds = (req, res) => {
   });
 };
 
+// ===========================================================
+// ADMIN: DELETE ALL PRODUCTS AND RESET ID COUNTER
+// ===========================================================
+export const resetAllProducts = (req, res) => {
+  db.query("SET FOREIGN_KEY_CHECKS = 0", (err) => {
+    if (err) {
+      console.error("DB Error disabling FK checks:", err);
+      return res.status(500).json({ message: "Database error: " + err.message });
+    }
+
+    db.query("TRUNCATE TABLE products", (err2) => {
+      db.query("SET FOREIGN_KEY_CHECKS = 1", async (err3) => {
+        if (err2 || err3) {
+          console.error("DB Error resetting products:", err2 || err3);
+          return res.status(500).json({ message: "Database error: " + (err2 || err3).message });
+        }
+
+        await clearCache("products");
+        return res.json({ message: "All products have been deleted and the ID counter has been reset to 1 successfully." });
+      });
+    });
+  });
+};
+
+
 

@@ -15,6 +15,7 @@ export default function AdminSettingsPage() {
     const [uploadingMobile, setUploadingMobile] = useState(false);
     const [resetting, setResetting] = useState(false);
     const [resequencing, setResequencing] = useState(false);
+    const [resettingAll, setResettingAll] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -116,6 +117,27 @@ export default function AdminSettingsPage() {
             alert(err.response?.data?.message || "Failed to resequence product IDs.");
         } finally {
             setResequencing(false);
+        }
+    };
+
+    const handleResetAllProducts = async () => {
+        if (!confirm("WARNING: This is a destructive operation that will permanently delete ALL products in the database.\n\nAll existing product categories, feature lists, images, and pricing will be lost. This action cannot be undone.\n\nDo you want to proceed?")) {
+            return;
+        }
+        
+        if (!confirm("CONFIRMATION REQUIRED: Please confirm once more that you want to delete ALL products. This will completely clear your catalog.")) {
+            return;
+        }
+
+        setResettingAll(true);
+        try {
+            const res = await api.post("/admin/products/reset-all");
+            alert(res.data?.message || "Catalog cleared successfully!");
+        } catch (err) {
+            console.error("Failed to reset products catalog:", err);
+            alert(err.response?.data?.message || "Failed to reset products catalog.");
+        } finally {
+            setResettingAll(false);
         }
     };
 
@@ -368,6 +390,28 @@ export default function AdminSettingsPage() {
                         style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0 }}
                     >
                         {resequencing ? "Resequencing..." : "Force Resequence"}
+                    </button>
+                </div>
+
+                <div style={{ height: '1px', background: 'var(--border)', margin: '24px 0' }}></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '16px', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '8px' }}>
+                    <div style={{ flex: '1', minWidth: '240px' }}>
+                        <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: 'var(--danger)', marginBottom: '4px' }}>
+                            Reset Products Catalog (Delete All)
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Permanently deletes all products in the database and resets the auto-increment ID counter to 1. WARNING: This action is destructive and cannot be undone.
+                        </span>
+                    </div>
+                    <button 
+                        type="button"
+                        onClick={handleResetAllProducts}
+                        disabled={resettingAll}
+                        className="btn btn-danger"
+                        style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0 }}
+                    >
+                        {resettingAll ? "Resetting..." : "Reset All Products"}
                     </button>
                 </div>
             </div>
