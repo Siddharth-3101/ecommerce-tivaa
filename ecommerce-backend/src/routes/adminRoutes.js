@@ -20,6 +20,7 @@ import {
   resetProductAutoIncrement,
   resequenceProductIds,
   resetAllProducts,
+  checkDatabaseIntegrity,
 } from "../controllers/productController.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -37,6 +38,7 @@ router.post("/products/bulk-delete", verifyToken, verifyAdmin, bulkDeleteProduct
 router.post("/products/reset-auto-increment", verifyToken, verifyAdmin, resetProductAutoIncrement);
 router.post("/products/resequence-ids", verifyToken, verifyAdmin, resequenceProductIds);
 router.post("/products/reset-all", verifyToken, verifyAdmin, resetAllProducts);
+router.get("/db/check-integrity", verifyToken, verifyAdmin, checkDatabaseIntegrity);
 router.put("/product/:id/toggle-visibility", verifyToken, verifyAdmin, toggleProductVisibility);
 router.post("/products/bulk", verifyToken, verifyAdmin, bulkImportProducts);
 

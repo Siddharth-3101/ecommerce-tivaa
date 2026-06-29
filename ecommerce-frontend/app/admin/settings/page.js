@@ -16,6 +16,8 @@ export default function AdminSettingsPage() {
     const [resetting, setResetting] = useState(false);
     const [resequencing, setResequencing] = useState(false);
     const [resettingAll, setResettingAll] = useState(false);
+    const [checking, setChecking] = useState(false);
+    const [integrityResult, setIntegrityResult] = useState(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -138,6 +140,20 @@ export default function AdminSettingsPage() {
             alert(err.response?.data?.message || "Failed to reset products catalog.");
         } finally {
             setResettingAll(false);
+        }
+    };
+
+    const handleCheckDatabaseAlignment = async () => {
+        setChecking(true);
+        setIntegrityResult(null);
+        try {
+            const res = await api.get("/admin/db/check-integrity");
+            setIntegrityResult(res.data);
+        } catch (err) {
+            console.error("Failed to check database alignment:", err);
+            alert("Failed to run database check. Please check the backend connection.");
+        } finally {
+            setChecking(false);
         }
     };
 
@@ -350,6 +366,76 @@ export default function AdminSettingsPage() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '24px' }}>
                     Perform administrative database operations. Make sure you understand the effects before running these commands.
                 </p>
+
+                {/* DATABASE INTEGRITY CHECKER */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '16px', background: 'rgba(122, 56, 194, 0.02)', border: '1px solid rgba(122, 56, 194, 0.15)', borderRadius: '8px', marginBottom: '24px' }}>
+                    <div style={{ flex: '1', minWidth: '240px' }}>
+                        <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, color: 'var(--accent)', marginBottom: '4px' }}>
+                            Verify Database Alignment (Integrity Check)
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Check if any products are currently linked to order items, wishlists, or user shopping carts before executing deletions.
+                        </span>
+                    </div>
+                    <button 
+                        type="button"
+                        onClick={handleCheckDatabaseAlignment}
+                        disabled={checking}
+                        className="btn btn-secondary"
+                        style={{ padding: '12px 20px', fontSize: '0.9rem', flexShrink: 0, background: '#ffffff' }}
+                    >
+                        {checking ? "Checking Alignment..." : "Run Database Check"}
+                    </button>
+                </div>
+
+                {integrityResult && (
+                    <div style={{ 
+                        background: 'rgba(255, 255, 255, 0.02)', 
+                        border: '1px solid var(--border)', 
+                        borderRadius: '8px', 
+                        padding: '20px', 
+                        marginBottom: '24px',
+                        fontSize: '0.92rem'
+                    }}>
+                        <h4 style={{ margin: '0 0 16px 0', fontSize: '1rem', fontWeight: 600 }}>Database Alignment Results:</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '6px' }}>
+                                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem', marginBottom: '4px' }}>Total Active Products</span>
+                                <strong style={{ fontSize: '1.25rem' }}>{integrityResult.totalProducts}</strong>
+                            </div>
+                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '6px' }}>
+                                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem', marginBottom: '4px' }}>Linked to Order History</span>
+                                <strong style={{ fontSize: '1.25rem', color: integrityResult.linkedOrders > 0 ? 'var(--danger)' : 'var(--text-main)' }}>{integrityResult.linkedOrders} products</strong>
+                            </div>
+                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '6px' }}>
+                                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem', marginBottom: '4px' }}>Present in Wishlists</span>
+                                <strong style={{ fontSize: '1.25rem' }}>{integrityResult.linkedWishlists} products</strong>
+                            </div>
+                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', borderRadius: '6px' }}>
+                                <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem', marginBottom: '4px' }}>Present in Carts</span>
+                                <strong style={{ fontSize: '1.25rem' }}>{integrityResult.linkedCarts} products</strong>
+                            </div>
+                        </div>
+
+                        {integrityResult.linkedOrders > 0 && (
+                            <div style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--danger)', borderRadius: '6px', border: '1px solid rgba(239, 68, 68, 0.15)', marginBottom: '12px', fontWeight: 500 }}>
+                                🚨 Warning: {integrityResult.linkedOrders} products have associated order items in history. If you delete these products, those historical orders will point to invalid product information.
+                            </div>
+                        )}
+
+                        {(integrityResult.linkedWishlists > 0 || integrityResult.linkedCarts > 0) && (
+                            <div style={{ padding: '12px 16px', background: 'rgba(245, 158, 11, 0.08)', color: '#d97706', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.15)', fontWeight: 500 }}>
+                                ⚠️ Notice: Deleting these products will automatically remove them from customer shopping carts and wishlists.
+                            </div>
+                        )}
+
+                        {integrityResult.linkedOrders === 0 && integrityResult.linkedWishlists === 0 && integrityResult.linkedCarts === 0 && (
+                            <div style={{ padding: '12px 16px', background: 'rgba(16, 185, 129, 0.08)', color: 'var(--success)', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.15)', fontWeight: 500 }}>
+                                ✓ Database is fully aligned! No products are currently linked to orders, wishlists, or carts. You can safely clear or re-sequence your products catalog.
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '16px', background: 'rgba(239, 68, 68, 0.02)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '8px' }}>
                     <div style={{ flex: '1', minWidth: '240px' }}>

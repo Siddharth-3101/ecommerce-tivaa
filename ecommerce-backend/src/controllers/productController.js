@@ -478,5 +478,59 @@ export const resetAllProducts = (req, res) => {
   });
 };
 
+// ===========================================================
+// ADMIN: CHECK DB REFERENTIAL ALIGNMENT (INTEGRITY CHECK)
+// ===========================================================
+export const checkDatabaseIntegrity = (req, res) => {
+  const status = {
+    totalProducts: 0,
+    linkedOrders: 0,
+    linkedWishlists: 0,
+    linkedCarts: 0,
+    orphanedOrders: 0,
+    orphanedWishlists: 0,
+    orphanedCarts: 0,
+  };
+
+  db.query("SELECT COUNT(*) as count FROM products WHERE is_active = 1", (err, rows) => {
+    if (err) return res.status(500).json({ message: "DB Error counting products: " + err.message });
+    status.totalProducts = rows[0]?.count || 0;
+
+    db.query("SELECT COUNT(DISTINCT product_id) as count FROM order_items", (err, rows) => {
+      if (err) return res.status(500).json({ message: "DB Error counting linked order items: " + err.message });
+      status.linkedOrders = rows[0]?.count || 0;
+
+      db.query("SELECT COUNT(DISTINCT product_id) as count FROM wishlists", (err, rows) => {
+        if (err) return res.status(500).json({ message: "DB Error counting linked wishlists: " + err.message });
+        status.linkedWishlists = rows[0]?.count || 0;
+
+        db.query("SELECT COUNT(DISTINCT product_id) as count FROM cart", (err, rows) => {
+          if (err) return res.status(500).json({ message: "DB Error counting linked cart items: " + err.message });
+          status.linkedCarts = rows[0]?.count || 0;
+
+          // Check orphaned rows
+          db.query("SELECT COUNT(*) as count FROM order_items WHERE product_id NOT IN (SELECT id FROM products WHERE is_active = 1)", (err, rows) => {
+            if (err) return res.status(500).json({ message: "DB Error checking orphaned order items: " + err.message });
+            status.orphanedOrders = rows[0]?.count || 0;
+
+            db.query("SELECT COUNT(*) as count FROM wishlists WHERE product_id NOT IN (SELECT id FROM products)", (err, rows) => {
+              if (err) return res.status(500).json({ message: "DB Error checking orphaned wishlists: " + err.message });
+              status.orphanedWishlists = rows[0]?.count || 0;
+
+              db.query("SELECT COUNT(*) as count FROM cart WHERE product_id NOT IN (SELECT id FROM products)", (err, rows) => {
+                if (err) return res.status(500).json({ message: "DB Error checking orphaned carts: " + err.message });
+                status.orphanedCarts = rows[0]?.count || 0;
+
+                return res.json(status);
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+
 
 
