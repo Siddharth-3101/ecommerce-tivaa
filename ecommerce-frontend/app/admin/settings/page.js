@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
 
     return (
         <div className="container animate-fade-in" style={{ paddingBottom: '80px', maxWidth: '800px' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 300 }}>Banner Settings</h1>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', fontWeight: 300 }}>General Settings</h1>
             <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Upload custom images to use as the homepage hero banners or disable it entirely.</p>
 
             <form onSubmit={handleSave} className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
