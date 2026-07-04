@@ -6,11 +6,26 @@ export default function ProductImageGallery({ images = [], productName = "Produc
     const [activeIndex, setActiveIndex] = useState(0);
     const [overrideImage, setOverrideImage] = useState(null);
 
+    const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+    const [isZoomed, setIsZoomed] = useState(false);
+
     useEffect(() => {
         const handleEvent = (e) => setOverrideImage(e.detail);
         window.addEventListener('variationImageSelected', handleEvent);
         return () => window.removeEventListener('variationImageSelected', handleEvent);
     }, []);
+
+    const handleMouseMove = (e) => {
+        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - left) / width) * 100;
+        const y = ((e.clientY - top) / height) * 100;
+        setZoomPos({ x, y });
+        setIsZoomed(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsZoomed(false);
+    };
 
     const validImages = images.filter(img => img && img.trim() !== "");
 
@@ -33,6 +48,8 @@ export default function ProductImageGallery({ images = [], productName = "Produc
             
             {/* Primary Large Image View */}
             <div 
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
                 style={{ 
                     padding: '12px', 
                     background: 'var(--bg-card)', 
@@ -43,7 +60,8 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     alignItems: 'center',
                     justifyContent: 'center',
                     aspectRatio: '4/5',
-                    position: 'relative'
+                    position: 'relative',
+                    cursor: 'zoom-in'
                 }}
             >
                 <img
@@ -54,7 +72,9 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                         height: '100%', 
                         objectFit: 'contain', 
                         borderRadius: '2px',
-                        transition: 'opacity 0.3s ease'
+                        transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                        transform: isZoomed ? 'scale(1.8)' : 'scale(1)',
+                        transition: isZoomed ? 'none' : 'transform 0.3s ease, opacity 0.3s ease'
                     }}
                     className="gallery-primary-img"
                 />
