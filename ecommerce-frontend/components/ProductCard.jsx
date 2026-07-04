@@ -147,7 +147,7 @@ export default function ProductCard({ product }) {
             </div>
 
             {/* Content info below image */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', padding: '0 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px 4px', marginTop: '14px', padding: '0 14px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, paddingRight: '8px' }}>
                     <span 
                         style={{ 
@@ -186,7 +186,7 @@ export default function ProductCard({ product }) {
                 
                 {product.stock > 0 && (
                     cartQty > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 2 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 2, flexShrink: 0 }}>
                             <button
                                 onClick={handleDecrement}
                                 disabled={loading}

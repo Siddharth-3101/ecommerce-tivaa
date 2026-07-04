@@ -120,7 +120,7 @@ export const adminReplyQuery = (req, res) => {
               <!-- Footer -->
               <div style="border-top: 1px solid #f1f5f9; padding-top: 24px; text-align: center;">
                 <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 4px 0;">This is an automated support response for your query.</p>
-                <p style="font-size: 0.78rem; color: #94a3b8; margin: 0; font-weight: 600;">Tivaa Elegance Jewellers &copy; 2026</p>
+                <p style="font-size: 0.78rem; color: #94a3b8; margin: 0; font-weight: 600;">Tivaa Elegance &copy; 2026</p>
               </div>
             </div>
           `,

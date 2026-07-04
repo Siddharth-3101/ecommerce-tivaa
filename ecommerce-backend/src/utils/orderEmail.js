@@ -140,7 +140,7 @@ export const sendOrderEmailToAdmins = async (orderId) => {
           </div>
           
           <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
-          <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance Jewellers &copy; 2026</p>
+          <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
         </div>
       `,
     };
@@ -225,7 +225,7 @@ export const sendOrderEmailToCustomer = async (orderId) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background: #ffffff;">
           <h2 style="color: #7A38C2; text-align: center; border-bottom: 2px solid #7A38C2; padding-bottom: 10px; margin-bottom: 20px; font-family: 'Playfair Display', Georgia, serif;">Thank you for your purchase!</h2>
           <p>Dear ${order.customer_name},</p>
-          <p>We are delighted to confirm that your order on Tivaa Elegance was successfully placed and paid. Our boutique designers are already preparing your premium handcrafted jewelry pieces.</p>
+          <p>We are delighted to confirm that your order on Tivaa Elegance was successfully placed and paid. Our team is already preparing your premium handcrafted pieces.</p>
           
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em;">
             <tr>
@@ -282,7 +282,7 @@ export const sendOrderEmailToCustomer = async (orderId) => {
           </p>
           
           <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
-          <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance Jewellers &copy; 2026</p>
+          <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
         </div>
       `,
     };

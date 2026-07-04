@@ -161,7 +161,7 @@ export function downloadInvoice(order, items) {
                     <tr>
                         <td>
                             <div class="brand-title">TIVAA</div>
-                            <div class="brand-subtitle">Fine Jewelry & Boutique</div>
+                            <div class="brand-subtitle">Elegance</div>
                         </td>
                         <td style="text-align: right; vertical-align: top;">
                             <div style="font-size: 1.4rem; font-weight: 700; color: #2B1B35;">INVOICE</div>

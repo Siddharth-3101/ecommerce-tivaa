@@ -79,7 +79,7 @@ export const registerUser = (req, res) => {
               </div>
               <p>If you did not request this verification code, please ignore this email.</p>
               <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
-              <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance Jewellers &copy; 2026</p>
+              <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
             </div>
           `,
         };
@@ -397,7 +397,7 @@ export const forgotPassword = async (req, res) => {
               </div>
               <p>If you did not request a password reset, you can safely ignore this email.</p>
               <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
-              <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance Jewellers &copy; 2026</p>
+              <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
             </div>
           `,
         };

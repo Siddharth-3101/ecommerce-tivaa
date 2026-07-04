@@ -65,11 +65,11 @@ export default async function ProductPage({ params }) {
                 <div className="product-details-grid">
                     {/* LEFT SECTION (IMAGE GALLERY) */}
                     <div className="sticky-gallery">
-                        <ProductImageGallery images={images} productName={product.name} />
+                        <ProductImageGallery key={`gallery-${product.id}`} images={images} productName={product.name} />
                     </div>
 
                     {/* RIGHT SECTION (DETAILS WITH DYNAMIC VARIATIONS) */}
-                    <ProductDetailsInfo product={product} />
+                    <ProductDetailsInfo key={`info-${product.id}`} product={product} />
                 </div>
 
                 {/* Related Products Grid */}

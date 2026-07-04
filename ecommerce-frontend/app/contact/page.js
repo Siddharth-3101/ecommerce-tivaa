@@ -78,7 +78,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h4 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', fontWeight: 600, fontFamily: "'Poppins', sans-serif" }}>Tivaa Elegance</h4>
-                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Tivaa Elegance Jewellery Store</p>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Tivaa Elegance</p>
                                 </div>
                             </div>
 

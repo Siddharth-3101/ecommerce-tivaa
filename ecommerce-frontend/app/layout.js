@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 
 export const metadata = {
-  title: "Tivaa Jewellery",
+  title: "Tivaa Elegance",
   description: "A breathtaking shopping experience",
   icons: {
     icon: "/favicon.ico"
