@@ -22,8 +22,8 @@
     --gradient-logo-hover: linear-gradient(135deg, #B96EFF 0%, #7A38C2 100%);
     --gradient-bg: linear-gradient(135deg, #FAF8FD 0%, #F5ECFC 50%, #FAF8FD 100%);
     
-    /* Cohesive satin-silk lavender drape gradient matching the premium brand banner background */
-    --gradient-navbar: linear-gradient(to right, #aa70d7 0%, #d5b8f0 25%, #f6effc 50%, #d5b8f0 75%, #aa70d7 100%);
+    /* Cohesive transparent/light lavender glassmorphism matching the premium brand */
+    --gradient-navbar: linear-gradient(135deg, rgba(250, 248, 253, 0.9) 0%, rgba(246, 239, 252, 0.9) 100%);
 
     --accent: #7A38C2;
     --accent-hover: #8B3DFF;

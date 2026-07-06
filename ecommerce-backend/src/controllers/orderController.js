@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 import Razorpay from "razorpay";
 import { sendOrderEmailToAdmins, sendOrderEmailToCustomer } from "../utils/orderEmail.js";
+import { getEffectiveProductPriceAndStock } from "./cartController.js";
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -138,7 +139,7 @@ export const createOrder = (req, res) => {
     if (buy_now) {
       // Fetch single product details for buy now
       db.query(
-        "SELECT id, price, stock, name FROM products WHERE id = ?",
+        "SELECT id, price, stock, name, variations, discounted_price FROM products WHERE id = ?",
         [buy_now.product_id],
         (errProd, prodRows) => {
           if (errProd) {
@@ -149,11 +150,12 @@ export const createOrder = (req, res) => {
             return res.status(404).json({ message: "Product not found" });
           }
           const product = prodRows[0];
+          const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(product, buy_now.selected_variation);
           const singleItem = {
             product_id: product.id,
             quantity: Number(buy_now.quantity) || 1,
-            price: product.price,
-            stock: product.stock,
+            price: effectivePrice,
+            stock: effectiveStock,
             name: product.name,
             selected_variation: buy_now.selected_variation || null
           };
@@ -169,7 +171,9 @@ export const createOrder = (req, res) => {
                 p.price, 
                 p.stock, 
                 p.name,
-                c.selected_variation
+                c.selected_variation,
+                p.variations,
+                p.discounted_price
             FROM cart c
             JOIN products p ON p.id = c.product_id
             WHERE c.user_id = ?
@@ -185,7 +189,17 @@ export const createOrder = (req, res) => {
           return res.status(400).json({ message: "Cart is empty" });
         }
 
-        processOrderWithItems(cartItems);
+        // Apply overrides to items in checkout
+        const overriddenItems = cartItems.map(item => {
+          const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(item, item.selected_variation);
+          return {
+            ...item,
+            price: effectivePrice,
+            stock: effectiveStock
+          };
+        });
+
+        processOrderWithItems(overriddenItems);
       });
     }
   });

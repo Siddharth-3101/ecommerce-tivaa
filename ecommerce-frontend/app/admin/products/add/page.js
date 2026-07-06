@@ -442,8 +442,8 @@ export default function AddProductPage() {
                                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                                         <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600 }}>Options</label>
                                         {group.options.map((option, oIndex) => (
-                                            <div key={oIndex} style={{ display: "flex", gap: "12px", alignItems: "center", background: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "6px" }}>
-                                                <div style={{ flex: 1 }}>
+                                            <div key={oIndex} style={{ display: "flex", gap: "12px", alignItems: "center", background: "rgba(0,0,0,0.02)", padding: "12px", borderRadius: "6px", flexWrap: "wrap" }}>
+                                                <div style={{ flex: 2, minWidth: "120px" }}>
                                                     <input
                                                         className="input-field"
                                                         value={option.value}
@@ -455,9 +455,39 @@ export default function AddProductPage() {
                                                         placeholder="Option Value (e.g., Red, Small)"
                                                     />
                                                 </div>
+
+                                                {/* Price Override */}
+                                                <div style={{ flex: 1, minWidth: "80px" }}>
+                                                    <input
+                                                        className="input-field"
+                                                        type="number"
+                                                        value={option.price || ""}
+                                                        onChange={(e) => {
+                                                            const newGroups = [...variationGroups];
+                                                            newGroups[gIndex].options[oIndex].price = e.target.value;
+                                                            setVariationGroups(newGroups);
+                                                        }}
+                                                        placeholder="Price (Amount) (₹)"
+                                                    />
+                                                </div>
+
+                                                {/* Stock Override */}
+                                                <div style={{ flex: 1, minWidth: "80px" }}>
+                                                    <input
+                                                        className="input-field"
+                                                        type="number"
+                                                        value={option.stock || ""}
+                                                        onChange={(e) => {
+                                                            const newGroups = [...variationGroups];
+                                                            newGroups[gIndex].options[oIndex].stock = e.target.value;
+                                                            setVariationGroups(newGroups);
+                                                        }}
+                                                        placeholder="Stock (Qty)"
+                                                    />
+                                                </div>
                                                 
                                                 {/* Option Image Upload */}
-                                                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
+                                                <div style={{ flex: 1.5, minWidth: "100px", display: "flex", alignItems: "center", gap: "8px" }}>
                                                     {option.image_url ? (
                                                         <div style={{ position: "relative", width: "40px", height: "40px", borderRadius: "4px", overflow: "hidden", border: "1px solid var(--border)" }}>
                                                             <img src={option.image_url} alt="Variant" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -513,7 +543,7 @@ export default function AddProductPage() {
                                             type="button" 
                                             onClick={() => {
                                                 const newGroups = [...variationGroups];
-                                                newGroups[gIndex].options.push({ value: "", image_url: "" });
+                                                newGroups[gIndex].options.push({ value: "", image_url: "", price: "", stock: "" });
                                                 setVariationGroups(newGroups);
                                             }}
                                             style={{ alignSelf: "flex-start", background: "transparent", color: "var(--accent)", border: "none", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, padding: 0 }}

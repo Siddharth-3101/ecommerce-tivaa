@@ -1,6 +1,55 @@
 import db from "../config/db.js";
 
 // ===========================================================
+// HELPER: CALCULATE EFFECTIVE PRODUCT PRICE AND STOCK
+// ===========================================================
+export const getEffectiveProductPriceAndStock = (product, selectedVariationString) => {
+  let price = product.discounted_price ? Number(product.discounted_price) : Number(product.price);
+  let originalPrice = Number(product.price);
+  let stock = product.stock !== null && product.stock !== undefined ? Number(product.stock) : 999;
+  let isDiscounted = !!product.discounted_price;
+
+  if (product.variations && selectedVariationString) {
+    try {
+      const parsedGroups = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
+      if (Array.isArray(parsedGroups)) {
+        const selections = selectedVariationString.split(",").reduce((acc, part) => {
+          const splitIdx = part.indexOf(":");
+          if (splitIdx > -1) {
+            const key = part.substring(0, splitIdx).trim().toLowerCase();
+            const val = part.substring(splitIdx + 1).trim().toLowerCase();
+            acc[key] = val;
+          }
+          return acc;
+        }, {});
+
+        for (const group of parsedGroups) {
+          const groupKey = group.name.trim().toLowerCase();
+          const selectedVal = selections[groupKey];
+          if (selectedVal && group.options) {
+            const matchedOption = group.options.find(opt => opt.value.trim().toLowerCase() === selectedVal);
+            if (matchedOption) {
+              if (matchedOption.price !== undefined && matchedOption.price !== null && matchedOption.price !== "" && Number(matchedOption.price) > 0) {
+                price = Number(matchedOption.price);
+                originalPrice = Number(matchedOption.price);
+                isDiscounted = false;
+              }
+              if (matchedOption.stock !== undefined && matchedOption.stock !== null && matchedOption.stock !== "") {
+                stock = Number(matchedOption.stock);
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse variations for pricing calculation", e);
+    }
+  }
+
+  return { price, originalPrice, stock, isDiscounted };
+};
+
+// ===========================================================
 // ADD TO CART
 // ===========================================================
 export const addToCart = (req, res) => {
@@ -34,7 +83,8 @@ export const addToCart = (req, res) => {
       }
 
       const product = productRows[0];
-      const stockVal = product.stock === null || product.stock === undefined ? 0 : Number(product.stock);
+      const { stock: effectiveStock } = getEffectiveProductPriceAndStock(product, selected_variation);
+      const stockVal = effectiveStock;
 
       if (cartRows.length > 0) {
         const newQty = Number(cartRows[0].quantity) + quantity;
@@ -84,7 +134,8 @@ export const getCart = (req, res) => {
       c.quantity,
       c.selected_variation,
       p.stock,
-      (p.price * c.quantity) AS total
+      p.variations,
+      p.discounted_price
     FROM cart c
     JOIN products p ON p.id = c.product_id
     WHERE c.user_id = ?
@@ -96,7 +147,22 @@ export const getCart = (req, res) => {
       return res.status(500).json({ message: "Database error" });
     }
 
-    return res.json(rows);
+    const formattedRows = rows.map(row => {
+      const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(row, row.selected_variation);
+      return {
+        id: row.id,
+        product_id: row.product_id,
+        name: row.name,
+        price: effectivePrice,
+        image_url: row.image_url,
+        quantity: row.quantity,
+        selected_variation: row.selected_variation,
+        stock: effectiveStock,
+        total: effectivePrice * row.quantity
+      };
+    });
+
+    return res.json(formattedRows);
   });
 };
 

@@ -63,8 +63,8 @@ export default function WishlistButton({ productId, variant = "large" }) {
             className={`btn-wishlist-toggle ${liked ? "active" : ""}`}
             title={liked ? "Remove from Wishlist" : "Add to Wishlist"}
             style={{
-                width: variant === "small" ? "36px" : "56px",
-                height: variant === "small" ? "36px" : "56px",
+                width: variant === "small" ? "40px" : "60px",
+                height: variant === "small" ? "40px" : "60px",
                 borderRadius: "50%",
                 background: liked ? "rgba(229, 147, 116, 0.08)" : "#ffffff",
                 border: liked ? "1px solid var(--accent)" : "1px solid var(--border)",
@@ -78,7 +78,7 @@ export default function WishlistButton({ productId, variant = "large" }) {
             }}
         >
             <Heart
-                size={variant === "small" ? 16 : 22}
+                size={variant === "small" ? 18 : 24}
                 fill={liked ? "var(--accent)" : "none"}
                 style={{
                     transition: "transform 0.3s ease",

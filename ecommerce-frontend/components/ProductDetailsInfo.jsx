@@ -79,6 +79,35 @@ export default function ProductDetailsInfo({ product }) {
 
     const selectedVariationString = getSelectedVariationString();
 
+    // Calculate dynamic effective price and stock based on selection
+    const getEffectivePriceAndStock = () => {
+        let price = product.discounted_price ? Number(product.discounted_price) : Number(product.price);
+        let originalPrice = Number(product.price);
+        let stock = product.stock !== null && product.stock !== undefined ? Number(product.stock) : 999;
+        let isDiscounted = !!product.discounted_price;
+
+        parsedVariations.forEach((group) => {
+            const selectedVal = selectedOptions[group.name];
+            if (selectedVal && group.options) {
+                const matchedOption = group.options.find(opt => opt.value === selectedVal);
+                if (matchedOption) {
+                    if (matchedOption.price !== undefined && matchedOption.price !== null && matchedOption.price !== "" && Number(matchedOption.price) > 0) {
+                        price = Number(matchedOption.price);
+                        originalPrice = Number(matchedOption.price);
+                        isDiscounted = false; // Override price resets main product discount
+                    }
+                    if (matchedOption.stock !== undefined && matchedOption.stock !== null && matchedOption.stock !== "") {
+                        stock = Number(matchedOption.stock);
+                    }
+                }
+            }
+        });
+
+        return { price, originalPrice, stock, isDiscounted };
+    };
+
+    const { price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, isDiscounted: displayIsDiscounted } = getEffectivePriceAndStock();
+
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* Category, Name, Price */}
@@ -94,18 +123,18 @@ export default function ProductDetailsInfo({ product }) {
                     {product.name}
                 </h1>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {product.discounted_price ? (
+                    {displayIsDiscounted ? (
                         <>
                             <span style={{ fontSize: '1.6rem', fontWeight: 600, color: 'var(--accent)' }}>
-                                ₹{product.discounted_price}
+                                ₹{displayPrice}
                             </span>
                             <span style={{ fontSize: '1.1rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>
-                                ₹{product.price}
+                                ₹{displayOriginalPrice}
                             </span>
                         </>
                     ) : (
                         <span style={{ fontSize: '1.45rem', fontWeight: 600, color: 'var(--accent)' }}>
-                            ₹{product.price}
+                            ₹{displayPrice}
                         </span>
                     )}
                 </div>
@@ -144,8 +173,8 @@ export default function ProductDetailsInfo({ product }) {
                                                 onClick={() => handleOptionSelect(group.name, option)}
                                                 style={{
                                                     padding: 0,
-                                                    width: "48px",
-                                                    height: "48px",
+                                                    width: "56px",
+                                                    height: "56px",
                                                     borderRadius: "50%",
                                                     cursor: "pointer",
                                                     border: isActive ? "2px solid var(--text-main)" : "2px solid transparent",
@@ -171,9 +200,9 @@ export default function ProductDetailsInfo({ product }) {
                                             key={option.value}
                                             onClick={() => handleOptionSelect(group.name, option)}
                                             style={{
-                                                padding: "8px 20px",
+                                                padding: "10px 24px",
                                                 borderRadius: "50px",
-                                                fontSize: "0.85rem",
+                                                fontSize: "0.9rem",
                                                 fontWeight: isActive ? 600 : 400,
                                                 cursor: "pointer",
                                                 border: isActive ? "1.5px solid var(--text-main)" : "1.5px solid #e0e0e0",
@@ -204,7 +233,7 @@ export default function ProductDetailsInfo({ product }) {
             )}
 
             {/* Quantity Selector */}
-            {product.stock > 0 && (
+            {displayStock > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '24px 0 16px 0' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quantity</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '4px', width: 'fit-content', padding: '4px', background: '#fafafa' }}>
@@ -218,7 +247,7 @@ export default function ProductDetailsInfo({ product }) {
                         <span style={{ fontSize: '1rem', fontWeight: 600, minWidth: '32px', textAlign: 'center', color: 'var(--text-main)' }}>{quantity}</span>
                         <button 
                             type="button" 
-                            onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
+                            onClick={() => setQuantity(q => Math.min(displayStock, q + 1))}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', fontSize: '1.1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)' }}
                         >
                             +
@@ -229,21 +258,21 @@ export default function ProductDetailsInfo({ product }) {
 
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
-                {product.stock > 0 ? (
+                {displayStock > 0 ? (
                     <>
                         <div style={{ flex: '1', minWidth: '180px' }}>
                             <AddToCartButton 
                                 productId={product.id} 
-                                disabled={product.stock <= 0} 
+                                disabled={displayStock <= 0} 
                                 selectedVariation={selectedVariationString}
-                                stock={product.stock}
+                                stock={displayStock}
                                 quantity={quantity}
                             />
                         </div>
                         <div style={{ flex: '1', minWidth: '180px' }}>
                             <button
                                 onClick={handleBuyNow}
-                                disabled={product.stock <= 0 || buyLoading}
+                                disabled={displayStock <= 0 || buyLoading}
                                 className="btn btn-black-solid"
                                 style={{
                                     width: "100%",
@@ -267,7 +296,7 @@ export default function ProductDetailsInfo({ product }) {
                                     <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 1s ease-in-out infinite' }}></span>
                                 ) : (
                                     <>
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                                         Buy Now
                                     </>
                                 )}
@@ -281,7 +310,7 @@ export default function ProductDetailsInfo({ product }) {
             </div>
 
             {/* Stock Availability Banner */}
-            {product.stock <= 0 ? (
+            {displayStock <= 0 ? (
                 <div style={{ padding: '16px', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--danger)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', border: "1px solid rgba(239, 68, 68, 0.15)" }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     <span style={{ fontSize: '0.95rem' }}><strong>Currently Out of Stock.</strong> Please check back later.</span>
@@ -289,7 +318,7 @@ export default function ProductDetailsInfo({ product }) {
             ) : (
                 <div style={{ padding: '16px', background: 'rgba(16, 185, 129, 0.05)', color: 'rgba(16, 185, 129, 0.95)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', border: "1px solid rgba(16, 185, 129, 0.1)" }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    <span style={{ fontSize: '0.95rem' }}><strong>{product.stock} units available.</strong> Order now to secure yours.</span>
+                    <span style={{ fontSize: '0.95rem' }}><strong>{displayStock} units available.</strong> Order now to secure yours.</span>
                 </div>
             )}
 
