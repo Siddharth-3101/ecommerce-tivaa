@@ -321,7 +321,7 @@ export const bulkImportProducts = (req, res) => {
         const validCategoryIds = new Set(catRows.map(row => row.id));
 
         const sql = `
-            INSERT INTO products (id, name, description, price, stock, category_id, image_url, is_visible, purchase_price, discounted_price)
+            INSERT INTO products (id, name, description, price, stock, category_id, image_url, is_visible, purchase_price, discounted_price, purchased_from)
             VALUES ?
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
@@ -332,7 +332,8 @@ export const bulkImportProducts = (req, res) => {
                 image_url = VALUES(image_url),
                 is_visible = VALUES(is_visible),
                 purchase_price = VALUES(purchase_price),
-                discounted_price = VALUES(discounted_price)
+                discounted_price = VALUES(discounted_price),
+                purchased_from = VALUES(purchased_from)
         `;
 
         const values = products.map(p => {
@@ -350,7 +351,8 @@ export const bulkImportProducts = (req, res) => {
                 p.image_url || null,
                 p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true,
                 p.purchase_price !== undefined && p.purchase_price !== null && p.purchase_price !== "" ? Number(p.purchase_price) : null,
-                p.discounted_price !== undefined && p.discounted_price !== null && p.discounted_price !== "" ? Number(p.discounted_price) : null
+                p.discounted_price !== undefined && p.discounted_price !== null && p.discounted_price !== "" ? Number(p.discounted_price) : null,
+                p.purchased_from || null
             ];
         });
 

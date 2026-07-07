@@ -133,7 +133,7 @@ export default function AdminProductsPage() {
                 return;
             }
 
-            const headers = ["id", "name", "description", "price", "stock", "category_id", "image_url", "is_visible", "purchase_price", "discounted_price"];
+            const headers = ["id", "name", "description", "price", "stock", "category_id", "image_url", "is_visible", "purchase_price", "purchased_from", "discounted_price"];
             const headerLine = headers.join(",");
             const rowLines = allProducts.map(p => 
                 headers.map(h => {
@@ -399,6 +399,7 @@ export default function AdminProductsPage() {
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Selling Price</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Discounted Price</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Purchase Price</th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Purchased From</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Stock</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Category</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Visibility</th>
@@ -429,6 +430,9 @@ export default function AdminProductsPage() {
                                         </td>
                                         <td style={{ padding: "16px 24px", color: p.purchase_price ? "var(--text-main)" : "var(--text-muted)" }}>
                                             {p.purchase_price ? `₹${p.purchase_price}` : "-"}
+                                        </td>
+                                        <td style={{ padding: "16px 24px", color: p.purchased_from ? "var(--text-main)" : "var(--text-muted)" }}>
+                                            {p.purchased_from || "-"}
                                         </td>
                                         <td style={{ padding: "16px 24px" }}>
                                             {p.stock > 0 ? (

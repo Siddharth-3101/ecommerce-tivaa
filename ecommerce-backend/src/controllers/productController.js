@@ -156,7 +156,7 @@ export const getProductById = (req, res) => {
 // ADD NEW PRODUCT
 // ===========================================================
 export const addProduct = (req, res) => {
-  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features } = req.body;
+  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features, purchased_from } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
@@ -169,13 +169,13 @@ export const addProduct = (req, res) => {
   const safeDiscountedPrice = discounted_price === "" || discounted_price === undefined ? null : discounted_price;
 
   const sql = `
-        INSERT INTO products (name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO products (name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features, purchased_from)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
   db.query(
     sql,
-    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null],
+    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null, purchased_from || null],
     async (err) => {
       if (err) {
         console.error("DB Error:", err);
@@ -195,7 +195,7 @@ export const addProduct = (req, res) => {
 // ===========================================================
 export const updateProduct = (req, res) => {
   const { id } = req.params;
-  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features } = req.body;
+  const { name, description, price, purchase_price, discounted_price, stock, category_id, image_url, variations, features, purchased_from } = req.body;
 
   // Prevent MySQL strict mode errors by converting empty strings to null/0 for numeric columns
   const safeStock = stock === "" || stock === undefined ? 0 : stock;
@@ -205,13 +205,13 @@ export const updateProduct = (req, res) => {
 
   const sql = `
         UPDATE products 
-        SET name=?, description=?, price=?, purchase_price=?, discounted_price=?, stock=?, category_id=?, image_url=?, variations=?, features=?
+        SET name=?, description=?, price=?, purchase_price=?, discounted_price=?, stock=?, category_id=?, image_url=?, variations=?, features=?, purchased_from=?
         WHERE id=?
     `;
 
   db.query(
     sql,
-    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null, id],
+    [name, description, price, safePurchasePrice, safeDiscountedPrice, safeStock, safeCategoryId, image_url, variations || null, features || null, purchased_from || null, id],
     async (err, result) => {
       if (err) {
         console.error("DB Error:", err);

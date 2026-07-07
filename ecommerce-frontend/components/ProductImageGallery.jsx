@@ -20,11 +20,14 @@ export default function ProductImageGallery({ images = [], productName = "Produc
         const x = ((e.clientX - left) / width) * 100;
         const y = ((e.clientY - top) / height) * 100;
         setZoomPos({ x, y });
-        setIsZoomed(true);
     };
 
     const handleMouseLeave = () => {
         setIsZoomed(false);
+    };
+
+    const handleContainerClick = () => {
+        setIsZoomed(!isZoomed);
     };
 
     const validImages = images.filter(img => img && img.trim() !== "");
@@ -50,6 +53,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
             <div 
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                onClick={handleContainerClick}
                 style={{ 
                     padding: '12px', 
                     background: 'var(--bg-card)', 
@@ -61,7 +65,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     justifyContent: 'center',
                     aspectRatio: '4/5',
                     position: 'relative',
-                    cursor: 'zoom-in'
+                    cursor: isZoomed ? 'zoom-out' : 'zoom-in'
                 }}
             >
                 <img
@@ -73,7 +77,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                         objectFit: 'contain', 
                         borderRadius: '2px',
                         transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                        transform: isZoomed ? 'scale(1.8)' : 'scale(1)',
+                        transform: isZoomed ? 'scale(2)' : 'scale(1)',
                         transition: isZoomed ? 'none' : 'transform 0.3s ease, opacity 0.3s ease'
                     }}
                     className="gallery-primary-img"

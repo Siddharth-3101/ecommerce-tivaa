@@ -15,6 +15,7 @@ export default function AddProductPage() {
         name: "",
         price: "",
         purchase_price: "",
+        purchased_from: "",
         discounted_price: "",
         stock: "",
         description: "",
@@ -215,7 +216,7 @@ export default function AddProductPage() {
                         </div>
                     </div>
 
-                    <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "20px" }}>
+                    <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px", marginTop: "20px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Purchase Price (₹)</label>
                             <input
@@ -225,6 +226,16 @@ export default function AddProductPage() {
                                 placeholder="0.00"
                                 value={product.purchase_price}
                                 onChange={(e) => setProduct({ ...product, purchase_price: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Purchased From</label>
+                            <input
+                                className="input-field"
+                                type="text"
+                                placeholder="e.g. Sangi, Lifestylemart"
+                                value={product.purchased_from || ""}
+                                onChange={(e) => setProduct({ ...product, purchased_from: e.target.value })}
                             />
                         </div>
                         <div>

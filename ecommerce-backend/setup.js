@@ -218,6 +218,10 @@ export const runSetup = async () => {
         if (!productCols.includes("features")) {
             await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN features LONGTEXT NULL", (err) => err ? rej(err) : res()));
         }
+        if (!productCols.includes("purchased_from")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN purchased_from VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+            console.log("Migration: added purchased_from to products");
+        }
         
         await new Promise((res, rej) => db.query("ALTER TABLE products ADD CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
             if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
