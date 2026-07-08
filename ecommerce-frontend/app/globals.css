@@ -22,8 +22,8 @@
     --gradient-logo-hover: linear-gradient(135deg, #B96EFF 0%, #7A38C2 100%);
     --gradient-bg: linear-gradient(135deg, #FAF8FD 0%, #F5ECFC 50%, #FAF8FD 100%);
     
-    /* Richer semi-transparent lavender glassmorphism */
-    --gradient-navbar: linear-gradient(135deg, rgba(213, 184, 240, 0.82) 0%, rgba(246, 239, 252, 0.85) 50%, rgba(213, 184, 240, 0.82) 100%);
+    /* Richer semi-transparent cream glassmorphism matching the premium footer */
+    --gradient-navbar: linear-gradient(135deg, rgba(250, 245, 236, 0.85) 0%, rgba(255, 251, 242, 0.88) 50%, rgba(250, 245, 236, 0.85) 100%);
 
     --accent: #7A38C2;
     --accent-hover: #8B3DFF;
