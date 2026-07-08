@@ -109,7 +109,7 @@ export default function ProductDetailsInfo({ product }) {
     const { price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, isDiscounted: displayIsDiscounted } = getEffectivePriceAndStock();
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
             {/* Category, Name, Price */}
             <div>
                 <span style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>

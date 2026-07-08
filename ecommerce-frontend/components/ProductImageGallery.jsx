@@ -55,6 +55,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                 onMouseLeave={handleMouseLeave}
                 onClick={handleContainerClick}
                 style={{ 
+                    width: '100%',
                     padding: '12px', 
                     background: 'var(--bg-card)', 
                     border: '1px solid var(--border)', 
