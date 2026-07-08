@@ -989,3 +989,12 @@ a:hover {
         gap: 24px;
     }
 }
+
+/* ── Responsive Description Overrides ────────────────────────────────────── */
+.quill-content,
+.quill-content * {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+}
