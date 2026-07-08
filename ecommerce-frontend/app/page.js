@@ -67,21 +67,49 @@ export default async function Home() {
             <section className="container" style={{ padding: '0 24px 40px' }}>
                 <div className="promo-banners-grid">
                     {/* Banner 1: School Supplies */}
-                    <Link href="/products?category=School Supplies %26 Gifts" style={{ display: 'block', overflow: 'hidden', borderRadius: '18px', boxShadow: 'var(--shadow-sm)', transition: 'all 0.3s ease' }} className="promo-banner-card">
-                        <img 
-                            src="/school_supplies_promo.png" 
-                            alt="School Supplies - Everything kids need for school" 
-                            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '18px' }} 
-                        />
+                    <Link href="/products?category=School Supplies %26 Gifts" style={{ textDecoration: 'none' }}>
+                        <div className="promo-banner-card" style={{ background: '#D2E9FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                            <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
+                                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</h3>
+                                <p style={{ fontSize: '0.88rem', color: '#5a6e85', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Everything kids need for school</p>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0F9D94', fontFamily: 'var(--font-poppins)' }}>Shop Now</span>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                                        <span style={{ color: '#0F9D94', fontWeight: 'bold', fontSize: '0.95rem' }}>→</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ width: '220px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, marginRight: '-32px' }}>
+                                <img 
+                                    src="/school_supplies_bg.png" 
+                                    alt="School Supplies" 
+                                    style={{ height: '110%', width: 'auto', objectFit: 'contain' }} 
+                                />
+                            </div>
+                        </div>
                     </Link>
 
                     {/* Banner 2: Fashion & Jewellery */}
-                    <Link href="/products?category=Jewellery" style={{ display: 'block', overflow: 'hidden', borderRadius: '18px', boxShadow: 'var(--shadow-sm)', transition: 'all 0.3s ease' }} className="promo-banner-card">
-                        <img 
-                            src="/jewellery_promo.png" 
-                            alt="Fashion & Jewellery - Elevate your everyday style" 
-                            style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '18px' }} 
-                        />
+                    <Link href="/products?category=Jewellery" style={{ textDecoration: 'none' }}>
+                        <div className="promo-banner-card" style={{ background: '#E2F1F2', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                            <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
+                                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>Fashion & Jewellery</h3>
+                                <p style={{ fontSize: '0.88rem', color: '#5a6e85', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Elevate your everyday style</p>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0F9D94', fontFamily: 'var(--font-poppins)' }}>Shop Now</span>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                                        <span style={{ color: '#0F9D94', fontWeight: 'bold', fontSize: '0.95rem' }}>→</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ width: '220px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, marginRight: '-32px' }}>
+                                <img 
+                                    src="/jewellery_bg.png" 
+                                    alt="Fashion & Jewellery" 
+                                    style={{ height: '110%', width: 'auto', objectFit: 'contain' }} 
+                                />
+                            </div>
+                        </div>
                     </Link>
                 </div>
             </section>

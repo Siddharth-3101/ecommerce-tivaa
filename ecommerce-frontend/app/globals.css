@@ -727,6 +727,24 @@ a:hover {
     transform: scale(1.06);
 }
 
+@media (max-width: 480px) {
+    .promo-banner-card {
+        height: 170px !important;
+        padding: 20px !important;
+    }
+    .promo-banner-card h3 {
+        font-size: 1.25rem !important;
+    }
+    .promo-banner-card p {
+        font-size: 0.78rem !important;
+        margin-bottom: 12px !important;
+    }
+    .promo-banner-card img {
+        height: 90% !important;
+        width: auto !important;
+    }
+}
+
 /* Global Hero Boutique responsive heights */
 .hero-boutique {
     height: 60vh;
