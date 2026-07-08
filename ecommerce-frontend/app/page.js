@@ -51,6 +51,57 @@ export default async function Home() {
             {/* Redesigned Wide Hero Banner */}
             <Hero />
 
+            {/* Two Promo Banners */}
+            <section className="container" style={{ padding: '0 24px 40px' }}>
+                <div className="promo-banners-grid">
+                    {/* Banner 1: School Supplies */}
+                    <Link href="/products?category=School Supplies %26 Gifts" style={{ textDecoration: 'none' }}>
+                        <div className="promo-banner-card" style={{ background: '#E6F4F2', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                            <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</h3>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Everything kids need for school</p>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--accent)', fontFamily: 'var(--font-poppins)' }}>Shop Now</span>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                                        <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>→</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <img 
+                                    src="https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg" 
+                                    alt="School Supplies" 
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
+                                />
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Banner 2: Fashion & Jewellery */}
+                    <Link href="/products?category=Jewellery" style={{ textDecoration: 'none' }}>
+                        <div className="promo-banner-card" style={{ background: '#FAF5EC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                            <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>Fashion & Jewellery</h3>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Elevate your everyday style</p>
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--accent)', fontFamily: 'var(--font-poppins)' }}>Shop Now</span>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                                        <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>→</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <img 
+                                    src="https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700873/tivaa-products/dr1hiyiwgdfhphf4f8cz.jpg" 
+                                    alt="Fashion & Jewellery" 
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
+                                />
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            </section>
+
             {/* DYNAMIC CATEGORY SECTIONS */}
             {activeCategories.map(category => {
                 const categoryProducts = products.filter(p => p.category_id === category.id);
@@ -63,7 +114,7 @@ export default async function Home() {
 
                         {/* Borderless Boutique Product Card Grid */}
                         <div className="product-grid-boutique">
-                            {categoryProducts.slice(0, 12).map((p) => (
+                            {categoryProducts.slice(0, 18).map((p) => (
                                 <ProductCard key={p.id} product={p} />
                             ))}
                         </div>

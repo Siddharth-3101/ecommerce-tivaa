@@ -677,23 +677,55 @@ a:hover {
 
 
 /* Global Boutique Responsive Product Grid */
+/* Global Boutique Responsive Product Grid */
 .product-grid-boutique {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px 24px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 28px 16px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .product-grid-boutique {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .product-grid-boutique {
         grid-template-columns: repeat(2, 1fr);
-        gap: 24px 16px;
+        gap: 20px 12px;
     }
+}
+
+/* Promo Banners Grid */
+.promo-banners-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .promo-banners-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+.promo-banner-card {
+    transition: all 0.3s ease;
+}
+
+.promo-banner-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.promo-banner-card img {
+    transition: transform 0.4s ease;
+}
+
+.promo-banner-card:hover img {
+    transform: scale(1.06);
 }
 
 /* Global Hero Boutique responsive heights */
