@@ -190,10 +190,8 @@ export default function Navbar() {
                 left: 0,
                 width: "100%",
                 background: "var(--gradient-navbar)", 
-                borderBottom: scrolled ? "1.5px solid rgba(122, 56, 194, 0.25)" : "1.5px solid rgba(255, 255, 255, 0.25)",
-                boxShadow: scrolled ? "0 8px 32px rgba(122, 56, 194, 0.15)" : "none",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
+                borderBottom: "1.5px solid rgba(122, 56, 194, 0.15)",
+                boxShadow: scrolled ? "0 4px 20px rgba(122, 56, 194, 0.1)" : "none",
                 transition: "all 0.3s ease",
                 zIndex: 1000
             }}
