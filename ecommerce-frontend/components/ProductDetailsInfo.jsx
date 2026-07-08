@@ -241,7 +241,7 @@ export default function ProductDetailsInfo({ product }) {
             {displayStock > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '24px 0 16px 0' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quantity</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '4px', width: 'fit-content', padding: '4px', background: '#fafafa' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-input, 12px)', width: 'fit-content', padding: '4px', background: '#fafafa' }}>
                         <button 
                             type="button" 
                             onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -278,27 +278,22 @@ export default function ProductDetailsInfo({ product }) {
                             <button
                                 onClick={handleBuyNow}
                                 disabled={displayStock <= 0 || buyLoading}
-                                className="btn btn-black-solid"
+                                className="btn btn-secondary"
                                 style={{
                                     width: "100%",
-                                    padding: "16px",
+                                    height: "54px",
                                     fontSize: "1.1rem",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
                                     gap: "8px",
-                                    backgroundColor: "var(--text-main)",
-                                    color: "#ffffff",
-                                    border: "none",
-                                    borderRadius: "4px",
                                     cursor: "pointer",
                                     fontWeight: 600,
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                     transition: "all 0.2s"
                                 }}
                             >
                                 {buyLoading ? (
-                                    <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 1s ease-in-out infinite' }}></span>
+                                    <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(15, 157, 148, 0.3)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
                                 ) : (
                                     <>
                                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>

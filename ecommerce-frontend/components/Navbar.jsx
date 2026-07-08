@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut } from "lucide-react";
+import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut, Package } from "lucide-react";
 
 // Recreated premium line-art vector icons from the theme assets
 const CustomSearchIcon = ({ size = 20, ...props }) => (
@@ -39,6 +39,7 @@ const CustomCartIcon = ({ size = 20, ...props }) => (
 
 export default function Navbar() {
     const [count, setCount] = useState(0);
+    const [wishlistCount, setWishlistCount] = useState(0);
     const [user, setUser] = useState(null);
     const [scrolled, setScrolled] = useState(false);
     const [categories, setCategories] = useState([]);
@@ -92,6 +93,17 @@ export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
 
+    const loadWishlist = () => {
+        import("@/lib/auth").then(({ getToken }) => {
+            if (!getToken()) return;
+            api.get("/wishlist").then((res) => {
+                if (res.data) {
+                    setWishlistCount(res.data.length || 0);
+                }
+            }).catch(() => {});
+        });
+    };
+
     useEffect(() => {
         Promise.resolve().then(() => setUser(getUser()));
 
@@ -111,6 +123,7 @@ export default function Navbar() {
             });
         }
         loadCart();
+        loadWishlist();
 
         async function loadCategories() {
             try {
@@ -122,6 +135,7 @@ export default function Navbar() {
 
         const handleScroll = () => setScrolled(window.scrollY > 20);
         const handleCartUpdate = () => loadCart();
+        const handleWishlistUpdate = () => loadWishlist();
 
         const handleClickOutside = (e) => {
             if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -131,11 +145,13 @@ export default function Navbar() {
 
         window.addEventListener('scroll', handleScroll);
         window.addEventListener('cart-updated', handleCartUpdate);
+        window.addEventListener('wishlist-updated', handleWishlistUpdate);
         document.addEventListener('mousedown', handleClickOutside);
 
         return () => {
             window.removeEventListener('scroll', handleScroll);
             window.removeEventListener('cart-updated', handleCartUpdate);
+            window.removeEventListener('wishlist-updated', handleWishlistUpdate);
             document.removeEventListener('mousedown', handleClickOutside);
             if (profileTimeoutRef.current) clearTimeout(profileTimeoutRef.current);
             if (categoriesTimeoutRef.current) clearTimeout(categoriesTimeoutRef.current);
@@ -189,36 +205,55 @@ export default function Navbar() {
                 top: 0,
                 left: 0,
                 width: "100%",
-                background: "var(--gradient-navbar)", 
-                borderBottom: scrolled ? "1.5px solid rgba(122, 56, 194, 0.25)" : "1.5px solid rgba(255, 255, 255, 0.25)",
-                boxShadow: scrolled ? "0 8px 32px rgba(122, 56, 194, 0.15)" : "none",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
+                background: "var(--bg-glass)", 
+                borderBottom: "1px solid var(--border)",
+                boxShadow: scrolled ? "var(--shadow-sm)" : "none",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
                 transition: "all 0.3s ease",
                 zIndex: 1000
             }}
         >
-            {/* Header Main Bar */}
-            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 120px)", padding: "0 24px" }}>
+            {/* Announcement Top Bar */}
+            <div 
+                style={{ 
+                    background: "var(--accent)", 
+                    color: "#ffffff", 
+                    height: "36px", 
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center", 
+                    padding: "0 24px", 
+                    fontSize: "0.78rem", 
+                    fontWeight: 500,
+                    fontFamily: "var(--font-poppins)"
+                }}
+            >
+                <div>Free Shipping on orders above ₹499</div>
+                <div style={{ display: "flex", gap: "16px" }}>
+                    <Link href="/faq" style={{ color: "#ffffff", textDecoration: "none" }}>Help Center</Link>
+                    <Link href="/orders" style={{ color: "#ffffff", textDecoration: "none" }}>Track Order</Link>
+                </div>
+            </div>
 
-                {/* LEFT: Hamburger Menu Toggle */}
-                <div style={{ flex: 1 }}>
+            {/* Header Main Bar */}
+            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 72px)", padding: "0 24px" }}>
+
+                {/* LEFT: Hamburger Menu Toggle & Brand Logo */}
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                     <button
                         onClick={() => setMobileMenuOpen(true)}
-                        style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}
+                        style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center' }}
+                        aria-label="Open menu"
                     >
                         <Menu size={24} />
                     </button>
-                </div>
-
-                {/* CENTER: Logo (Centered on Laptop and Mobile) */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
                         <img 
                             src="/logo.png" 
                             alt="Tivaa Elegance" 
                             style={{ 
-                                height: 'var(--logo-height, 96px)', 
+                                height: '42px', 
                                 width: 'auto', 
                                 objectFit: 'contain',
                                 mixBlendMode: 'multiply'
@@ -227,78 +262,102 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                {/* RIGHT: Utility Icons (Laptop and Mobile) */}
-                <div style={{ flex: 1, display: "flex", gap: "20px", alignItems: "center", justifyContent: "flex-end" }}>
+                {/* CENTER: Persistent Search Bar (Desktop Only) */}
+                <div className="desktop-only" style={{ flex: 1, maxWidth: "500px", margin: "0 32px" }}>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (searchQuery.trim()) {
+                                router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+                                setSearchOpen(false);
+                                setSearchResults([]);
+                            }
+                        }}
+                        style={{ display: "flex", alignItems: "center", position: "relative" }}
+                    >
+                        <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search products, categories..."
+                            className="input-field"
+                            style={{ 
+                                width: "100%", 
+                                padding: "10px 16px 10px 44px", 
+                                borderRadius: "var(--radius-input, 12px)", 
+                                border: "1px solid var(--border)", 
+                                height: '48px',
+                                fontSize: '0.9rem'
+                            }}
+                        />
+                        <Search size={18} style={{ position: 'absolute', left: '16px', color: 'var(--text-muted)' }} />
+                        {isSearching && <span className="search-loader"></span>}
+
+                        {/* Live Search dropdown overlay */}
+                        {searchResults.length > 0 && (
+                            <div className="card" style={{ position: 'absolute', top: '54px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
+                                {searchResults.map(item => (
+                                    <Link 
+                                        key={item.id} 
+                                        href={`/product/${item.id}`} 
+                                        onClick={() => { setSearchResults([]); setSearchQuery(""); }} 
+                                        className="dropdown-item" 
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
+                                    >
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
+                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </form>
+                </div>
+
+                {/* RIGHT: Utility Icons (Wishlist, Orders, Profile) */}
+                <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "flex-end" }}>
                     
-                    {/* Search Icon */}
+                    {/* Search Icon (Mobile Only) */}
                     <button
                         onClick={() => setSearchOpen(!searchOpen)}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                            e.currentTarget.style.color = 'var(--accent-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.color = 'var(--accent)';
-                        }}
+                        className="mobile-only"
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', padding: '6px' }}
                         aria-label="Search Toggle"
                     >
-                        {searchOpen ? <X size={20} /> : <CustomSearchIcon size={20} />}
+                        {searchOpen ? <X size={22} /> : <Search size={22} />}
                     </button>
 
-                    {/* Wishlist Link (Laptop & Mobile) */}
+                    {/* Wishlist Link */}
                     <Link 
                         href="/wishlist" 
-                        style={{ color: 'var(--accent)', padding: '6px', display: 'inline-flex', alignItems: 'center', transition: 'all 0.2s ease' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                            e.currentTarget.style.color = 'var(--accent-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.color = 'var(--accent)';
-                        }}
-                    >
-                        <CustomHeartIcon size={20} />
-                    </Link>
-
-                    {/* Cart Shopping Bag */}
-                    <Link 
-                        href="/cart" 
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500, color: 'var(--accent)', padding: '6px', transition: 'all 0.2s ease' }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                            e.currentTarget.style.color = 'var(--accent-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.color = 'var(--accent)';
-                        }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
                     >
                         <div style={{ position: 'relative', display: 'inline-flex' }}>
-                            <CustomCartIcon size={20} />
+                            <Heart size={22} />
+                            {wishlistCount > 0 && (
+                                <span className="nav-badge">
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Wishlist</span>
+                    </Link>
+
+                    {/* Orders (Cart Shopping Bag) */}
+                    <Link 
+                        href="/cart" 
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
+                    >
+                        <div style={{ position: 'relative', display: 'inline-flex' }}>
+                            <Package size={22} />
                             {count > 0 && (
-                                <span style={{ 
-                                    position: 'absolute',
-                                    top: '-6px',
-                                    right: '-6px',
-                                    background: '#2B1B35', 
-                                    color: '#ffffff', 
-                                    minWidth: '16px',
-                                    height: '16px',
-                                    borderRadius: '50%', 
-                                    fontSize: '0.65rem', 
-                                    fontWeight: 700,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '2px'
-                                }}>
+                                <span className="nav-badge">
                                     {count}
                                 </span>
                             )}
                         </div>
+                        <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Orders</span>
                     </Link>
 
                     {/* Profile Dropdown / Login */}
@@ -307,39 +366,39 @@ export default function Navbar() {
                             <div
                                 onMouseEnter={handleProfileMouseEnter}
                                 onMouseLeave={handleProfileMouseLeave}
-                                style={{ display: 'flex', alignItems: 'center', height: 'var(--nav-height, 120px)', cursor: 'pointer' }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
                             >
                                 <div style={{ 
-                                    width: '32px', 
-                                    height: '32px', 
+                                    width: '24px', 
+                                    height: '24px', 
                                     borderRadius: '50%', 
-                                    background: '#2B1B35', 
+                                    background: 'var(--text-main)', 
                                     color: '#ffffff', 
                                     display: 'flex', 
                                     alignItems: 'center', 
                                     justifyContent: 'center', 
                                     fontWeight: 700, 
-                                    fontSize: '0.8rem',
-                                    border: '1px solid var(--border)'
+                                    fontSize: '0.65rem'
                                 }}>
                                     {getInitials(user.name)}
                                 </div>
+                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Profile</span>
 
                                 {profileOpen && (
-                                    <div style={{ position: 'absolute', top: 'calc(var(--nav-height, 120px) - 5px)', right: 0, width: '220px', zIndex: 1100 }}>
-                                        <div className="card animate-slide-down" style={{ padding: '8px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '4px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div style={{ position: 'absolute', top: '38px', right: 0, width: '220px', zIndex: 1100 }}>
+                                        <div className="card animate-slide-down" style={{ padding: '8px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
                                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
                                             </div>
-                                            <Link href="/orders" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            <Link href="/orders" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
                                                 My Orders
                                             </Link>
-                                            <Link href="/wishlist" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            <Link href="/wishlist" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
                                                 My Wishlist
                                             </Link>
                                             {user.role === 'admin' && (
-                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)' }}>
+                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)', borderRadius: '6px' }}>
                                                     Admin Panel
                                                 </Link>
                                             )}
@@ -357,27 +416,21 @@ export default function Navbar() {
                         ) : (
                             <Link 
                                 href="/login" 
-                                style={{ color: 'var(--accent)', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease' }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1.1)';
-                                    e.currentTarget.style.color = 'var(--accent-hover)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                    e.currentTarget.style.color = 'var(--accent)';
-                                }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
                             >
-                                <CustomUserIcon size={20} />
+                                <User size={22} />
+                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Profile</span>
                             </Link>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Slide Down Search Panel */}
+            {/* Slide Down Search Panel (Mobile Only) */}
             {searchOpen && (
                 <div 
                     ref={searchRef} 
+                    className="mobile-only"
                     style={{ 
                         background: '#ffffff', 
                         borderBottom: '1px solid var(--border)',
@@ -387,7 +440,7 @@ export default function Navbar() {
                         zIndex: 999
                     }}
                 >
-                    <div className="container" style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
+                    <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -395,11 +448,12 @@ export default function Navbar() {
                                     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
                                     setSearchOpen(false);
                                     setSearchQuery("");
+                                    setSearchResults([]);
                                 }
                             }}
                             style={{ display: "flex", alignItems: "center", position: "relative" }}
                         >
-                             <input
+                            <input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search..."
@@ -408,28 +462,28 @@ export default function Navbar() {
                                 style={{ 
                                     width: "100%", 
                                     padding: "12px 16px 12px 44px", 
-                                    borderRadius: "0px", 
-                                    border: "1px solid var(--text-main)", 
+                                    borderRadius: "var(--radius-input, 12px)", 
+                                    border: "1px solid var(--border)", 
                                     height: '46px',
                                     fontSize: '0.95rem'
                                 }}
                             />
-                            <CustomSearchIcon size={20} style={{ position: 'absolute', left: '16px', color: 'var(--accent)' }} />
+                            <Search size={20} style={{ position: 'absolute', left: '16px', color: 'var(--accent)' }} />
                             {isSearching && <span className="search-loader"></span>}
                         </form>
 
                         {/* Live Search dropdown overlay */}
                         {searchResults.length > 0 && (
-                            <div className="card" style={{ position: 'absolute', top: '52px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: '4px', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
+                            <div className="card" style={{ position: 'absolute', top: '52px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
                                 {searchResults.map(item => (
                                     <Link 
                                         key={item.id} 
                                         href={`/product/${item.id}`} 
                                         onClick={() => { setSearchResults([]); setSearchOpen(false); setSearchQuery(""); }} 
                                         className="dropdown-item" 
-                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '2px' }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
                                     >
-                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '2px' }} />
+                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
                                             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
@@ -455,15 +509,15 @@ export default function Navbar() {
                     <div className="animate-slide-right" style={{ position: 'relative', width: '300px', height: '100dvh', minHeight: '100vh', background: '#ffffff', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', zIndex: 2001, boxShadow: '4px 0 24px rgba(0,0,0,0.1)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <img src="/logo.png" style={{ height: '72px', objectFit: 'contain' }} alt="Tivaa Logo" />
-                                <span style={{ color: '#7a38c2', fontWeight: 600, fontSize: '1.15rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>Tivaa Elegance</span>
+                                <img src="/logo.png" style={{ height: '54px', objectFit: 'contain' }} alt="Tivaa Logo" />
+                                <span style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '1.1rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>Tivaa Elegance</span>
                             </div>
                             <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>
                         </div>
 
                         {/* Search in Drawer */}
                         <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); setSearchQuery(""); }}>
-                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: '0px', borderColor: 'var(--border)', height: '38px', padding: '8px 12px', fontSize: '0.85rem' }} />
+                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: 'var(--radius-input, 12px)', borderColor: 'var(--border)', height: '38px', padding: '8px 12px', fontSize: '0.85rem' }} />
                         </form>
 
                         {/* Navigation links inside Mobile Drawer */}
@@ -510,6 +564,22 @@ export default function Navbar() {
             )}
 
             <style jsx global>{`
+                .nav-badge {
+                    position: absolute;
+                    top: -6px;
+                    right: -8px;
+                    background: var(--text-main);
+                    color: #ffffff;
+                    min-width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    font-size: 10px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 2px;
+                }
                 .search-loader { 
                     position: absolute; 
                     right: 16px; 

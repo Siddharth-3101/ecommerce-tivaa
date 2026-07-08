@@ -40,107 +40,62 @@ async function fetchLandingData() {
 export default async function Home() {
     const { products, categories } = await fetchLandingData();
 
-    const getParentCategoryId = (categoryId, categoriesList) => {
-        const cat = categoriesList.find(c => c.id === categoryId);
-        if (!cat) return null;
-        if (cat.parent_id === null) return cat.id;
-        return getParentCategoryId(cat.parent_id, categoriesList);
+    const getCategoryAndChildrenIds = (parentId, categoriesList) => {
+        const ids = [parentId];
+        const children = categoriesList.filter(c => c.parent_id === parentId);
+        children.forEach(child => {
+            ids.push(...getCategoryAndChildrenIds(child.id, categoriesList));
+        });
+        return ids;
     };
 
-    const jewelleryProducts = [];
-    const schoolSuppliesProducts = [];
+    const getProductsForParent = (parentId, categoriesList, productsList) => {
+        const allowedIds = getCategoryAndChildrenIds(parentId, categoriesList);
+        return productsList.filter(p => allowedIds.includes(p.category_id));
+    };
 
-    // Fallbacks if category parent link is missing
-    const jewelleryKeywords = ["bracelet", "earring", "stud", "cuff", "necklace", "bangle", "charm", "pendant", "jewel", "enamel", "earing"];
-    const schoolKeywords = ["hairbow", "clip", "headband", "tie", "bow", "bottle", "lunch", "backpack", "pencil", "kit", "stationery", "school", "supplies"];
-
-    products.forEach(p => {
-        const parentId = getParentCategoryId(p.category_id, categories);
-        
-        if (parentId === 1) {
-            jewelleryProducts.push(p);
-        } else if (parentId === 3) {
-            schoolSuppliesProducts.push(p);
-        } else {
-            const nameLower = (p.name || "").toLowerCase();
-            const catLower = (p.category_name || "").toLowerCase();
-
-            const isJewellery = jewelleryKeywords.some(kw => nameLower.includes(kw) || catLower.includes(kw));
-            const isSchool = schoolKeywords.some(kw => nameLower.includes(kw) || catLower.includes(kw));
-
-            if (isJewellery) {
-                jewelleryProducts.push(p);
-            } else if (isSchool) {
-                schoolSuppliesProducts.push(p);
-            } else {
-                if (p.id % 2 === 0) {
-                    jewelleryProducts.push(p);
-                } else {
-                    schoolSuppliesProducts.push(p);
-                }
-            }
-        }
-    });
+    const parents = categories.filter(c => !c.parent_id);
 
     return (
-        <div className="animate-fade-in" style={{ background: 'var(--gradient-bg)', minHeight: '100vh' }}>
+        <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             
             {/* Redesigned Wide Hero Banner */}
             <Hero />
 
             {/* SHOP BY CATEGORY SECTION */}
             <section className="container" style={{ padding: '80px 24px 60px' }}>
-                <h2 className="section-heading">Shop by Category</h2>
+                <h2 className="section-heading" style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', fontFamily: 'var(--font-poppins)' }}>Shop by Category</h2>
                 <HomeCategoryGrid categories={categories} products={products} />
             </section>
 
-            {/* JEWELLERY SECTION */}
-            <section className="container" style={{ padding: '20px 24px 60px' }}>
-                <h2 className="section-heading">Jewellery</h2>
+            {/* DYNAMIC CATEGORY SECTIONS */}
+            {parents.map(parent => {
+                const parentProducts = getProductsForParent(parent.id, categories, products);
+                
+                // Only render section if it has products in it
+                if (parentProducts.length === 0) return null;
 
-                {/* Borderless Boutique Product Card Grid */}
-                <div className="product-grid-boutique">
-                    {jewelleryProducts && jewelleryProducts.length > 0 ? (
-                        jewelleryProducts.slice(0, 8).map((p) => (
-                            <ProductCard key={p.id} product={p} />
-                        ))
-                    ) : (
-                        <div style={{ padding: '60px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            No jewellery products available at the moment.
+                return (
+                    <section key={parent.id} className="container" style={{ padding: '40px 24px 80px' }}>
+                        <h2 className="section-heading" style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', fontFamily: 'var(--font-poppins)' }}>
+                            {parent.name}
+                        </h2>
+
+                        {/* Borderless Boutique Product Card Grid */}
+                        <div className="product-grid-boutique">
+                            {parentProducts.slice(0, 8).map((p) => (
+                                <ProductCard key={p.id} product={p} />
+                            ))}
                         </div>
-                    )}
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                    <Link href="/products?category=Jewellery" className="btn-black-solid">
-                        View all
-                    </Link>
-                </div>
-            </section>
-
-            {/* SCHOOL SUPPLIES SECTION */}
-            <section className="container" style={{ padding: '20px 24px 100px' }}>
-                <h2 className="section-heading">School Supplies</h2>
-
-                {/* Borderless Boutique Product Card Grid */}
-                <div className="product-grid-boutique">
-                    {schoolSuppliesProducts && schoolSuppliesProducts.length > 0 ? (
-                        schoolSuppliesProducts.slice(0, 8).map((p) => (
-                            <ProductCard key={p.id} product={p} />
-                        ))
-                    ) : (
-                        <div style={{ padding: '60px', background: '#fafafa', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            No school supplies products available at the moment.
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+                            <Link href={`/products?category=${encodeURIComponent(parent.name)}`} className="btn btn-secondary" style={{ padding: '12px 32px' }}>
+                                View all
+                            </Link>
                         </div>
-                    )}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                    <Link href="/products?category=School Supplies %26 Gifts" className="btn-black-solid">
-                        View all
-                    </Link>
-                </div>
-            </section>
+                    </section>
+                );
+            })}
         </div>
     );
 }

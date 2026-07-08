@@ -116,7 +116,22 @@ export default function ProductCard({ product }) {
     };
 
     return (
-        <div className="card-borderless" style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', textDecoration: 'none' }}>
+        <div 
+            className="card" 
+            style={{ 
+                position: 'relative', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                height: '100%', 
+                textDecoration: 'none',
+                background: '#ffffff',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-card, 18px)',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                boxShadow: 'var(--shadow-sm)'
+            }}
+        >
             <Link 
                 href={`/product/${product.id}`} 
                 style={{ 
@@ -129,150 +144,170 @@ export default function ProductCard({ product }) {
                 }} 
                 aria-label={product.name}
             />
-            <div className="product-image-container">
+            
+            {/* 1:1 Aspect Ratio Image Container */}
+            <div 
+                className="product-image-container" 
+                style={{ 
+                    position: 'relative', 
+                    width: '100%', 
+                    aspectRatio: '1/1', 
+                    overflow: 'hidden', 
+                    background: '#f8fafc' 
+                }}
+            >
                 <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
                     <WishlistButton productId={product.id} variant="small" />
                 </div>
                 <img
                     src={product.image_url ? product.image_url.split(",")[0].trim() : "/placeholder.png"}
-                    className="product-image"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.5s ease'
+                    }}
                     alt={product.name}
                     loading="lazy"
                 />
                 {product.stock === 0 && (
-                    <div className="badge-soldout">
+                    <div 
+                        style={{
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '12px',
+                            background: 'rgba(23, 59, 99, 0.95)',
+                            color: '#ffffff',
+                            padding: '4px 10px',
+                            borderRadius: '20px',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.5px',
+                            zIndex: 2
+                        }}
+                    >
                         Sold out
                     </div>
                 )}
             </div>
 
-            {/* Content info below image */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px 4px', marginTop: '14px', padding: '0 14px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, paddingRight: '8px' }}>
+            {/* Content Details */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '16px', flexGrow: 1 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1 }}>
                     <span 
                         style={{ 
-                            fontSize: '0.88rem', 
-                            fontWeight: 500, 
-                            fontFamily: "'Poppins', sans-serif",
-                            color: '#2B1B35', 
+                            fontSize: '0.9rem', 
+                            fontWeight: 600, 
+                            fontFamily: "var(--font-poppins)",
+                            color: 'var(--text-main)', 
                             display: '-webkit-box', 
                             WebkitLineClamp: 1, 
                             WebkitBoxOrient: 'vertical', 
                             overflow: 'hidden', 
                             marginBottom: '4px',
-                            textTransform: 'capitalize',
-                            letterSpacing: '0.1px'
+                            textTransform: 'capitalize'
                         }}
                     >
                         {product.name}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {product.discounted_price ? (
                             <>
-                                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
                                     ₹{product.discounted_price}
                                 </span>
-                                <span style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: 'var(--text-muted)', fontFamily: "'Poppins', sans-serif" }}>
+                                <span style={{ fontSize: '0.78rem', textDecoration: 'line-through', color: 'var(--text-muted)', fontFamily: "var(--font-poppins)" }}>
                                     ₹{product.price}
                                 </span>
                             </>
                         ) : (
-                            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#7A38C2', fontFamily: "'Poppins', sans-serif" }}>
+                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
                                 ₹{product.price}
                             </span>
                         )}
                     </div>
                 </div>
                 
-                {product.stock > 0 && (
-                    cartQty > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 2, flexShrink: 0 }}>
+                {/* Add to Cart Actions */}
+                <div style={{ position: 'relative', zIndex: 10, flexShrink: 0 }}>
+                    {product.stock > 0 && (
+                        cartQty > 0 ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f1f5f9', borderRadius: '20px', padding: '2px 8px' }}>
+                                <button
+                                    onClick={handleDecrement}
+                                    disabled={loading}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        cursor: 'pointer',
+                                        color: 'var(--text-main)',
+                                        fontSize: '0.95rem',
+                                        fontWeight: 'bold',
+                                        padding: '0 4px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                    aria-label="Decrease quantity"
+                                >
+                                    -
+                                </button>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 700, minWidth: '12px', textAlign: 'center', color: 'var(--text-main)' }}>
+                                    {cartQty}
+                                </span>
+                                <button
+                                    onClick={handleIncrement}
+                                    disabled={loading || cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0)}
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        cursor: 'pointer',
+                                        color: 'var(--text-main)',
+                                        fontSize: '0.95rem',
+                                        fontWeight: 'bold',
+                                        padding: '0 4px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                    aria-label="Increase quantity"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        ) : (
                             <button
-                                onClick={handleDecrement}
-                                disabled={loading}
+                                onClick={handleAddToCart}
+                                disabled={loading || added}
                                 style={{
-                                    width: '28px',
-                                    height: '28px',
+                                    width: '32px',
+                                    height: '32px',
                                     borderRadius: '50%',
-                                    border: '1.5px solid var(--border)',
-                                    background: 'transparent',
+                                    background: 'var(--accent)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    color: 'var(--text-main)',
-                                    padding: 0,
-                                    fontSize: '1rem',
-                                    fontWeight: 'bold',
-                                    transition: 'all 0.2s'
-                                }}
-                                aria-label="Decrease quantity"
-                            >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            </button>
-                            <span style={{ fontSize: '0.9rem', fontWeight: 700, minWidth: '16px', textAlign: 'center', color: 'var(--text-main)' }}>
-                                {cartQty}
-                            </span>
-                            <button
-                                onClick={handleIncrement}
-                                disabled={loading || cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0)}
-                                style={{
-                                    width: '28px',
-                                    height: '28px',
-                                    borderRadius: '50%',
+                                    color: '#ffffff',
+                                    transition: 'all 0.2s ease',
                                     border: 'none',
-                                    background: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? '#e0e0e0' : 'var(--accent)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'not-allowed' : 'pointer',
-                                    color: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'var(--text-muted)' : '#ffffff',
+                                    cursor: 'pointer',
                                     padding: 0,
-                                    fontSize: '1rem',
-                                    fontWeight: 'bold',
-                                    transition: 'all 0.2s',
-                                    boxShadow: cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0) ? 'none' : '0 4px 12px rgba(139, 61, 255, 0.2)'
+                                    outline: 'none',
+                                    boxShadow: 'var(--shadow-sm)'
                                 }}
-                                aria-label="Increase quantity"
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--accent-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--accent)'}
+                                aria-label="Add to Cart"
                             >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                {loading ? (
+                                    <span className="cart-btn-spinner"></span>
+                                ) : added ? (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                ) : (
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 600, lineHeight: 1 }}>+</span>
+                                )}
                             </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleAddToCart}
-                            disabled={loading || added}
-                            className={`product-cart-btn ${added ? 'added' : ''}`}
-                            aria-label="Add to Cart"
-                            style={{
-                                width: '34px',
-                                height: '34px',
-                                borderRadius: '50%',
-                                background: added ? '#7A38C2' : '#8B3DFF',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#ffffff',
-                                transition: 'all 0.25s ease',
-                                border: 'none',
-                                cursor: loading || added ? 'default' : 'pointer',
-                                flexShrink: 0,
-                                padding: 0,
-                                boxShadow: '0 4px 12px rgba(139, 61, 255, 0.3)',
-                                position: 'relative',
-                                zIndex: 2
-                            }}
-                        >
-                            {loading ? (
-                                <span className="cart-btn-spinner"></span>
-                            ) : added ? (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            ) : (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            )}
-                        </button>
-                    )
-                )}
+                        )
+                    )}
+                </div>
             </div>
 
             <style jsx>{`
@@ -286,19 +321,6 @@ export default function ProductCard({ product }) {
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
-                }
-                .product-cart-btn {
-                    position: relative;
-                    z-index: 2;
-                }
-                .product-cart-btn:hover {
-                    background: #A05CFF !important;
-                    transform: scale(1.08);
-                    box-shadow: 0 6px 18px rgba(139, 61, 255, 0.45) !important;
-                }
-                .product-cart-btn.added:hover {
-                    background: #7A38C2 !important;
-                    transform: none;
                 }
             `}</style>
         </div>

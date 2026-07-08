@@ -75,7 +75,7 @@ export default async function ProductPage({ params }) {
                 {/* Related Products Grid */}
                 {relatedProducts && relatedProducts.length > 0 && (
                     <div style={{ marginTop: '80px', borderTop: '1px solid var(--border)', paddingTop: '40px' }}>
-                        <h2 style={{ fontSize: '1.8rem', fontWeight: 300, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '32px', textAlign: 'center', fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', textAlign: 'center', fontFamily: "var(--font-poppins)" }}>
                             You May Also Like
                         </h2>
                         <div className="product-grid-boutique">

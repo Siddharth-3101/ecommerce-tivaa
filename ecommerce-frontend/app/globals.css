@@ -1,48 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Allura&family=Cinzel:wght@400;500;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Parisienne&display=swap');
 
 :root {
-    /* Lavender & Soft Purple boutique palette */
-    --bg: #FAF8FD;
-    --bg-card: #ffffff;
-    --bg-glass: rgba(250, 248, 253, 0.95);
+    /* TIVAA Teal & Dark Navy Palette */
+    --bg: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-glass: rgba(255, 255, 255, 0.95);
 
-    /* Elegant brand text colors */
-    --text-main: #2B1B35;
-    --text-muted: #6F5B7A;
-    --text-light: #A292B0;
+    /* Typography scale & text colors */
+    --text-main: #173B63;
+    --text-muted: #6B7280;
+    --text-light: #9CA3AF;
 
-    /* Highlight accents */
-    --accent-lavender: #EADCF8;
-    --accent-purple-soft: #CFA7F5;
-    --accent-purple-deep: #7A38C2;
-    --accent-pink-blush: #FFD6EC;
+    /* Accent & Brand Colors */
+    --accent: #0F9D94;
+    --accent-hover: #0D857E;
+    --accent-glow: rgba(15, 157, 148, 0.05);
+    --success: #22C55E;
+    --danger: #EF4444;
+    --rating: #FBBF24;
 
-    /* Elegant, premium gradients */
-    --gradient-logo: linear-gradient(135deg, #7A38C2 0%, #B96EFF 100%);
-    --gradient-logo-hover: linear-gradient(135deg, #B96EFF 0%, #7A38C2 100%);
-    --gradient-bg: linear-gradient(135deg, #FAF8FD 0%, #F5ECFC 50%, #FAF8FD 100%);
+    /* Layout & border variables */
+    --border: #E5E7EB;
+    --glass-border: rgba(229, 231, 235, 0.7);
+
+    /* Typography settings */
+    --font-poppins: 'Poppins', sans-serif;
+
+    /* Border Radius tokens */
+    --radius-btn: 10px;
+    --radius-card: 18px;
+    --radius-img: 18px;
+    --radius-input: 12px;
+    --radius-hero: 24px;
     
-    /* Richer semi-transparent cream glassmorphism matching the premium footer */
-    --gradient-navbar: linear-gradient(135deg, rgba(250, 245, 236, 0.85) 0%, rgba(255, 251, 242, 0.88) 50%, rgba(250, 245, 236, 0.85) 100%);
+    /* Shadows */
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
 
-    --accent: #7A38C2;
-    --accent-hover: #8B3DFF;
-    --accent-glow: rgba(122, 56, 194, 0.05);
-
-    --success: #10B981;
-    --danger: #B3566F;
-
-    /* Lavender-tinted borders and glass effects */
-    --border: #C0A9D8;
-    --glass-border: rgba(192, 169, 216, 0.7);
-    
-    /* Elegant premium shadows */
-    --shadow-sm: 0 4px 12px rgba(122, 56, 194, 0.05);
-    --shadow-md: 0 10px 30px rgba(155, 105, 255, 0.12);
-
-    /* Dynamic responsive header heights and logo sizes */
-    --nav-height: 120px;
-    --logo-height: 96px;
+    /* Announcement & Sticky Header dimensions */
+    --nav-height: 72px;
 }
 
 @media (max-width: 768px) {
@@ -130,7 +126,7 @@ a:hover {
     padding: 12px 16px;
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-input, 12px);
     color: var(--text-main);
     font-size: 1rem;
     transition: all 0.2s ease;
@@ -152,7 +148,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: var(--radius-btn, 10px);
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
@@ -162,56 +158,54 @@ a:hover {
 }
 
 .btn-primary {
-    background: var(--gradient-logo);
+    background: var(--accent);
     color: #fff;
-    box-shadow: 0 4px 14px var(--accent-glow);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-    background: var(--gradient-logo-hover);
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--accent-glow);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
     background: #ffffff;
-    color: var(--text-main);
-    border: 1px solid var(--border);
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
     box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-    background: #fcfcfc;
-    border-color: var(--accent-teal);
-    color: var(--accent-teal);
+    background: rgba(15, 157, 148, 0.04);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
 .btn-danger {
-    background: rgba(199, 131, 167, 0.1);
+    background: rgba(239, 68, 68, 0.1);
     color: var(--danger);
 }
 
 .btn-danger:hover {
-    background: rgba(199, 131, 167, 0.2);
+    background: rgba(239, 68, 68, 0.2);
 }
 
 .btn-lav {
-    background: var(--accent-purple);
+    background: var(--accent);
     color: #fff;
 }
 
 .btn-lav:hover {
-    background: #7277ad;
-    box-shadow: 0 4px 14px var(--accent-glow);
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-md);
 }
 
 /* Cards & Grid */
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: var(--radius-card, 18px);
     overflow: hidden;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-sm);
@@ -219,7 +213,7 @@ a:hover {
 
 .card:hover {
     transform: translateY(-4px);
-    border-color: var(--glass-border);
+    border-color: var(--accent);
     box-shadow: var(--shadow-md);
 }
 
@@ -540,14 +534,14 @@ a:hover {
     aspect-ratio: 1/1;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(135deg, #F5ECFC 0%, #EADCF8 100%);
+    background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
     border-radius: 20px;
-    box-shadow: 0 8px 24px rgba(155, 105, 255, 0.1);
+    box-shadow: var(--shadow-sm);
     transition: box-shadow 0.35s ease;
 }
 
 .category-item:hover .category-image-container {
-    box-shadow: 0 16px 40px rgba(155, 105, 255, 0.2);
+    box-shadow: var(--shadow-md);
 }
 
 .category-image {

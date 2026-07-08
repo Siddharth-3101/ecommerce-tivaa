@@ -118,7 +118,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
 
     if (cartQty > 0) {
         return (
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: '8px', height: '54px', overflow: 'hidden', width: '100%', background: '#ffffff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-btn, 10px)', height: '54px', overflow: 'hidden', width: '100%', background: '#ffffff' }}>
                 <button 
                     onClick={handleDecrement}
                     disabled={loading}
@@ -147,7 +147,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
                         transition: background-color 0.2s ease;
                     }
                     .qty-btn:hover:not(:disabled) {
-                        background-color: rgba(122, 56, 194, 0.04) !important;
+                        background-color: rgba(15, 157, 148, 0.04) !important;
                     }
                 `}</style>
             </div>

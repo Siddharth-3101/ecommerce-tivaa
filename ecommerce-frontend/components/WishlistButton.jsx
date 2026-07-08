@@ -48,6 +48,7 @@ export default function WishlistButton({ productId, variant = "large" }) {
                 await api.post("/wishlist", { productId });
                 setLiked(true);
             }
+            window.dispatchEvent(new Event("wishlist-updated"));
         } catch (err) {
             console.error("Wishlist operation failed:", err);
             alert("Failed to update wishlist. Please try again.");
@@ -66,7 +67,7 @@ export default function WishlistButton({ productId, variant = "large" }) {
                 width: variant === "small" ? "40px" : "60px",
                 height: variant === "small" ? "40px" : "60px",
                 borderRadius: "50%",
-                background: liked ? "rgba(229, 147, 116, 0.08)" : "#ffffff",
+                background: liked ? "rgba(15, 157, 148, 0.08)" : "#ffffff",
                 border: liked ? "1px solid var(--accent)" : "1px solid var(--border)",
                 display: "flex",
                 alignItems: "center",
