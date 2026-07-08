@@ -677,23 +677,22 @@ a:hover {
 
 
 /* Global Boutique Responsive Product Grid */
-/* Global Boutique Responsive Product Grid */
 .product-grid-boutique {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 28px 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px 24px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
     .product-grid-boutique {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .product-grid-boutique {
         grid-template-columns: repeat(2, 1fr);
-        gap: 20px 12px;
+        gap: 24px 16px;
     }
 }
 
