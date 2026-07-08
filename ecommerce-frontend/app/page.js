@@ -11,7 +11,7 @@ async function fetchLandingData() {
     
     try {
         const [prodRes, catRes] = await Promise.all([
-            fetch(`${backendUrl}/api/products`, { cache: 'no-store' }),
+            fetch(`${backendUrl}/api/products?limit=1000`, { cache: 'no-store' }),
             fetch(`${backendUrl}/api/categories`, { cache: 'no-store' })
         ]);
 
