@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeroSlider from "./HeroSlider";
 
 async function fetchBannerSettings() {
     try {
@@ -21,30 +22,33 @@ export default async function Hero() {
         return null;
     }
 
-    const desktopBanner = settings.desktop_banner || "/hero_banner.png";
-    const mobileBanner = settings.mobile_banner || "/hero_banner_mobile.jpg";
+    let slides = [];
+    if (settings.hero_slides) {
+        try {
+            slides = JSON.parse(settings.hero_slides);
+        } catch (e) {
+            console.error("Failed to parse hero_slides:", e);
+        }
+    }
+
+    // Fallback if no slides exist
+    if (!slides || slides.length === 0) {
+        slides = [
+            {
+                id: "fallback-1",
+                desktop_url: settings.desktop_banner || "/hero_banner.png",
+                mobile_url: settings.mobile_banner || "/hero_banner_mobile.jpg",
+                title: "Discover Everyday Essentials",
+                subtitle: "Fashion, Jewellery & More that you'll love",
+                link: "/products",
+                button_text: "Shop Now"
+            }
+        ];
+    }
 
     return (
-        <section className="hero-adaptive-container">
-            <Link 
-                href="/products" 
-                className="hero-banner-link"
-            >
-                <picture>
-                    {/* Mobile: square banner for phones ≤768px */}
-                    <source
-                        srcSet={mobileBanner}
-                        media="(max-width: 768px)"
-                    />
-                    {/* Desktop: wide banner for everything above 768px */}
-                    <img 
-                        src={desktopBanner} 
-                        alt="Tivaa Elegance - Timeless Beauty, Everyday You" 
-                        className="hero-adaptive-img"
-                        draggable={false}
-                    />
-                </picture>
-            </Link>
+        <section className="hero-adaptive-container" style={{ width: '100%', marginBottom: '40px' }}>
+            <HeroSlider slides={slides} />
         </section>
     );
 }

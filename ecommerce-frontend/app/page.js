@@ -62,12 +62,6 @@ export default async function Home() {
             {/* Redesigned Wide Hero Banner */}
             <Hero />
 
-            {/* SHOP BY CATEGORY SECTION */}
-            <section className="container" style={{ padding: '80px 24px 60px' }}>
-                <h2 className="section-heading" style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', fontFamily: 'var(--font-poppins)' }}>Shop by Category</h2>
-                <HomeCategoryGrid categories={categories} products={products} />
-            </section>
-
             {/* DYNAMIC CATEGORY SECTIONS */}
             {parents.map(parent => {
                 const parentProducts = getProductsForParent(parent.id, categories, products);
@@ -83,7 +77,7 @@ export default async function Home() {
 
                         {/* Borderless Boutique Product Card Grid */}
                         <div className="product-grid-boutique">
-                            {parentProducts.slice(0, 8).map((p) => (
+                            {parentProducts.slice(0, 12).map((p) => (
                                 <ProductCard key={p.id} product={p} />
                             ))}
                         </div>

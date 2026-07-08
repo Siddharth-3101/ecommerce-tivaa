@@ -7,7 +7,7 @@ export default function Footer() {
         <footer style={{ background: '#173B63', color: '#e2e8f0', paddingTop: '48px', paddingBottom: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
             <div className="container" style={{ padding: '0 24px' }}>
                 
-                {/* 5-Column Grid Layout */}
+                {/* 4-Column Grid Layout */}
                 <div className="footer-grid">
                     
                     {/* Column 1: Logo & Branding */}
@@ -19,23 +19,11 @@ export default function Footer() {
                             Curated products for every moment. Quality you can trust, style you'll love.
                         </p>
                         
-                        {/* Social Media Links */}
+                        {/* Social Media Links (Only Instagram!) */}
                         <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                            {/* Facebook */}
-                            <a href="#" className="footer-social-link" aria-label="Facebook">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                            </a>
                             {/* Instagram */}
                             <a href="https://www.instagram.com/tivaa_elegance_jewellery?igsh=OXYzajJ6MndvcjVi" target="_blank" rel="noreferrer" className="footer-social-link" aria-label="Instagram">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                            </a>
-                            {/* Pinterest */}
-                            <a href="#" className="footer-social-link" aria-label="Pinterest">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
-                            </a>
-                            {/* YouTube */}
-                            <a href="#" className="footer-social-link" aria-label="YouTube">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 11.54a29 29 0 0 0 .46 5.12 2.78 2.78 0 0 0 1.95 1.96c1.71.46 8.59.46 8.59.46s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96 29 29 0 0 0 .46-5.12 29 29 0 0 0-.46-5.12z"></path><polygon points="9.75 15.02 15.5 11.54 9.75 8.07 9.75 15.02"></polygon></svg>
                             </a>
                         </div>
                     </div>
@@ -75,49 +63,13 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Column 5: Newsletter */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <h4 style={{ color: '#ffffff', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Newsletter</h4>
-                        <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: 0 }}>
-                            Subscribe to get updates on new arrivals and offers.
-                        </p>
-                        <form onSubmit={(e) => { e.preventDefault(); alert('Subscribed!'); }} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <input 
-                                type="email" 
-                                placeholder="Enter your email" 
-                                required
-                                className="input-field" 
-                                style={{ 
-                                    height: '42px', 
-                                    background: '#ffffff', 
-                                    border: 'none', 
-                                    borderRadius: '8px', 
-                                    padding: '0 12px', 
-                                    fontSize: '0.85rem',
-                                    color: '#1a1a1a'
-                                }} 
-                            />
-                            <button type="submit" className="btn btn-primary" style={{ height: '42px', padding: '0', display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '8px', background: 'var(--accent)' }}>
-                                Subscribe
-                            </button>
-                        </form>
-                    </div>
-
                 </div>
 
-                {/* Bottom Part: Copyright & Payment Partners */}
-                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', marginTop: '40px', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                    <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0, fontFamily: 'var(--font-poppins)' }}>
+                {/* Bottom Part: Copyright (No Payment Partners) */}
+                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', marginTop: '40px', paddingTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0, fontFamily: 'var(--font-poppins)', textAlign: 'center' }}>
                         © 2026 TIVAA. All rights reserved.
                     </p>
-                    
-                    {/* Payment Logos */}
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <img src="https://img.icons8.com/color/36/000000/visa.png" alt="Visa" style={{ height: '24px', objectFit: 'contain' }} />
-                        <img src="https://img.icons8.com/color/36/000000/mastercard.png" alt="Mastercard" style={{ height: '24px', objectFit: 'contain' }} />
-                        <img src="https://img.icons8.com/color/48/000000/upi.png" alt="UPI" style={{ height: '24px', objectFit: 'contain' }} />
-                        <span style={{ color: '#cbd5e1', fontSize: '0.7rem', border: '1px solid rgba(255, 255, 255, 0.2)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>RuPay</span>
-                    </div>
                 </div>
 
             </div>
@@ -125,12 +77,12 @@ export default function Footer() {
             <style jsx global>{`
                 .footer-grid {
                     display: grid;
-                    grid-template-columns: 1.2fr 0.8fr 1fr 0.8fr 1.2fr;
+                    grid-template-columns: 1.5fr 1fr 1.2fr 1fr;
                     gap: 32px;
                 }
                 @media (max-width: 1024px) {
                     .footer-grid {
-                        grid-template-columns: repeat(3, 1fr);
+                        grid-template-columns: repeat(2, 1fr);
                     }
                 }
                 @media (max-width: 768px) {
