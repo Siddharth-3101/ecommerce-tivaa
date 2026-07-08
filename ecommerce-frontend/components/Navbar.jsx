@@ -214,28 +214,6 @@ export default function Navbar() {
                 zIndex: 1000
             }}
         >
-            {/* Announcement Top Bar */}
-            <div 
-                style={{ 
-                    background: "var(--accent)", 
-                    color: "#ffffff", 
-                    height: "36px", 
-                    display: "flex", 
-                    justifyContent: "space-between", 
-                    alignItems: "center", 
-                    padding: "0 24px", 
-                    fontSize: "0.78rem", 
-                    fontWeight: 500,
-                    fontFamily: "var(--font-poppins)"
-                }}
-            >
-                <div>Free Shipping on orders above ₹499</div>
-                <div style={{ display: "flex", gap: "16px" }}>
-                    <Link href="/faq" style={{ color: "#ffffff", textDecoration: "none" }}>Help Center</Link>
-                    <Link href="/orders" style={{ color: "#ffffff", textDecoration: "none" }}>Track Order</Link>
-                </div>
-            </div>
-
             {/* Header Main Bar */}
             <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 72px)", padding: "0 24px" }}>
 
@@ -253,7 +231,7 @@ export default function Navbar() {
                             src="/logo.png" 
                             alt="Tivaa Elegance" 
                             style={{ 
-                                height: '42px', 
+                                height: '56px', 
                                 width: 'auto', 
                                 objectFit: 'contain',
                                 mixBlendMode: 'multiply'
