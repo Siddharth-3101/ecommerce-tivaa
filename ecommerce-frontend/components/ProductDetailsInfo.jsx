@@ -119,6 +119,11 @@ export default function ProductDetailsInfo({ product }) {
                         </Link>
                     ) : "Premium Collection"}
                 </span>
+                {product.purchased_from && (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginLeft: '12px', background: 'rgba(122, 56, 194, 0.06)', padding: '4px 10px', borderRadius: '4px', textTransform: 'none', letterSpacing: 'normal', fontWeight: 500, display: 'inline-flex', alignItems: 'center' }}>
+                        Purchased from: <strong style={{ color: 'var(--text-main)', marginLeft: '4px' }}>{product.purchased_from}</strong>
+                    </span>
+                )}
                 <h1 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)', margin: '8px 0', lineHeight: 1.1, fontWeight: 400, letterSpacing: '-0.5px' }}>
                     {product.name}
                 </h1>
