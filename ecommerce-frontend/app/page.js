@@ -40,21 +40,10 @@ async function fetchLandingData() {
 export default async function Home() {
     const { products, categories } = await fetchLandingData();
 
-    const getCategoryAndChildrenIds = (parentId, categoriesList) => {
-        const ids = [parentId];
-        const children = categoriesList.filter(c => c.parent_id === parentId);
-        children.forEach(child => {
-            ids.push(...getCategoryAndChildrenIds(child.id, categoriesList));
-        });
-        return ids;
-    };
-
-    const getProductsForParent = (parentId, categoriesList, productsList) => {
-        const allowedIds = getCategoryAndChildrenIds(parentId, categoriesList);
-        return productsList.filter(p => allowedIds.includes(p.category_id));
-    };
-
-    const parents = categories.filter(c => !c.parent_id);
+    // Get all categories that contain at least one product directly
+    const activeCategories = categories.filter(cat => 
+        products.some(p => p.category_id === cat.id)
+    );
 
     return (
         <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -63,27 +52,24 @@ export default async function Home() {
             <Hero />
 
             {/* DYNAMIC CATEGORY SECTIONS */}
-            {parents.map(parent => {
-                const parentProducts = getProductsForParent(parent.id, categories, products);
-                
-                // Only render section if it has products in it
-                if (parentProducts.length === 0) return null;
+            {activeCategories.map(category => {
+                const categoryProducts = products.filter(p => p.category_id === category.id);
 
                 return (
-                    <section key={parent.id} className="container" style={{ padding: '40px 24px 80px' }}>
+                    <section key={category.id} className="container" style={{ padding: '40px 24px 80px' }}>
                         <h2 className="section-heading" style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', fontFamily: 'var(--font-poppins)' }}>
-                            {parent.name}
+                            {category.name}
                         </h2>
 
                         {/* Borderless Boutique Product Card Grid */}
                         <div className="product-grid-boutique">
-                            {parentProducts.slice(0, 12).map((p) => (
+                            {categoryProducts.slice(0, 12).map((p) => (
                                 <ProductCard key={p.id} product={p} />
                             ))}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                            <Link href={`/products?category=${encodeURIComponent(parent.name)}`} className="btn btn-secondary" style={{ padding: '12px 32px' }}>
+                            <Link href={`/products?category=${encodeURIComponent(category.name)}`} className="btn btn-secondary" style={{ padding: '12px 32px' }}>
                                 View all
                             </Link>
                         </div>
