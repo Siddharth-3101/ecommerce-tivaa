@@ -126,7 +126,15 @@ export default function HeroSlider({ slides = [] }) {
                                         )}
                                         {slide.subtitle && (
                                             <p className="hero-slide-subtitle">
-                                                {slide.subtitle}
+                                                {isMobile && (slide.subtitle.toLowerCase().includes("& more") || slide.subtitle.toLowerCase().includes("&more")) ? (
+                                                    <>
+                                                        {slide.subtitle.split(/& More/i)[0].trim()}
+                                                        <br />
+                                                        & More {slide.subtitle.split(/& More/i)[1]?.trim()}
+                                                    </>
+                                                ) : (
+                                                    slide.subtitle
+                                                )}
                                             </p>
                                         )}
                                         {slide.button_text && (
@@ -182,10 +190,10 @@ export default function HeroSlider({ slides = [] }) {
                 }
                 @media (max-width: 768px) {
                     .hero-slider-section {
-                        aspect-ratio: 16/9; /* Widescreen 16:9 aspect ratio for mobile view! */
+                        aspect-ratio: 3/2; /* Taller 3:2 aspect ratio for mobile view to prevent text overlap! */
                     }
                     .hero-slide-item {
-                        aspect-ratio: 16/9 !important;
+                        aspect-ratio: 3/2 !important;
                     }
                 }
 
@@ -321,11 +329,11 @@ export default function HeroSlider({ slides = [] }) {
 
                 @media (max-width: 768px) {
                     .hero-slide-overlay {
-                        left: 10%;
-                        max-width: 80%;
-                        bottom: 8%;
-                        top: auto;
-                        transform: none;
+                        left: 6%;
+                        max-width: 52%;
+                        top: 50%;
+                        bottom: auto;
+                        transform: translateY(-50%);
                     }
                     .hero-slide-content {
                         gap: 8px;

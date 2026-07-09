@@ -895,7 +895,7 @@ a:hover {
     .hero-adaptive-container {
         height: auto;
         min-height: auto;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 3 / 2;
     }
     .hero-adaptive-img {
         object-position: center center;
@@ -906,7 +906,7 @@ a:hover {
     .hero-adaptive-container {
         height: auto;
         min-height: auto;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 3 / 2;
     }
 }
 

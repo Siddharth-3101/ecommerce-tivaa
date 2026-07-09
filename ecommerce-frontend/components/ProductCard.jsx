@@ -192,9 +192,10 @@ export default function ProductCard({ product }) {
             </div>
 
             {/* Content Details */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', padding: '16px', flexGrow: 1 }}>
+            <div className="product-card-details" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexGrow: 1 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flexGrow: 1 }}>
                     <span 
+                        className="product-card-title"
                         style={{ 
                             fontSize: '0.9rem', 
                             fontWeight: 600, 
@@ -210,18 +211,18 @@ export default function ProductCard({ product }) {
                     >
                         {product.name}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="product-price-wrapper">
                         {product.discounted_price ? (
                             <>
-                                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
+                                <span className="product-price-discount" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
                                     ₹{product.discounted_price}
                                 </span>
-                                <span style={{ fontSize: '0.78rem', textDecoration: 'line-through', color: 'var(--text-muted)', fontFamily: "var(--font-poppins)" }}>
+                                <span className="product-price-original" style={{ fontSize: '0.78rem', textDecoration: 'line-through', color: 'var(--text-muted)', fontFamily: "var(--font-poppins)" }}>
                                     ₹{product.price}
                                 </span>
                             </>
                         ) : (
-                            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
+                            <span className="product-price-discount" style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent)', fontFamily: "var(--font-poppins)" }}>
                                 ₹{product.price}
                             </span>
                         )}
@@ -321,6 +322,38 @@ export default function ProductCard({ product }) {
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
+                }
+                .product-card-details {
+                    padding: 16px;
+                }
+                .product-price-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+                @media (max-width: 480px) {
+                    .product-card-details {
+                        padding: 10px 12px !important;
+                    }
+                    .product-card-title {
+                        font-size: 0.82rem !important;
+                        margin-bottom: 2px !important;
+                    }
+                    .product-price-wrapper {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        gap: 1px !important;
+                    }
+                    .product-price-discount {
+                        font-size: 0.88rem !important;
+                        line-height: 1.1 !important;
+                    }
+                    .product-price-original {
+                        font-size: 0.72rem !important;
+                        line-height: 1 !important;
+                        margin-left: 0 !important;
+                    }
                 }
             `}</style>
         </div>

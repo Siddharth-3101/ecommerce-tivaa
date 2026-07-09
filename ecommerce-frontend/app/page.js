@@ -68,7 +68,7 @@ export default async function Home() {
                 <div className="promo-banners-grid">
                     {/* Banner 1: School Supplies */}
                     <Link href="/products?category=School Supplies %26 Gifts" style={{ textDecoration: 'none' }}>
-                        <div className="promo-banner-card" style={{ background: '#D2E9FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                        <div className="promo-banner-card" style={{ background: '#E5F1FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</h3>
                                 <p style={{ fontSize: '0.88rem', color: '#5a6e85', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Everything kids need for school</p>
@@ -84,6 +84,7 @@ export default async function Home() {
                                     src="/school_supplies_bg.jpg" 
                                     alt="School Supplies" 
                                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
+                                
                                 />
                             </div>
                         </div>
@@ -91,7 +92,7 @@ export default async function Home() {
 
                     {/* Banner 2: Fashion & Jewellery */}
                     <Link href="/products?category=Jewellery" style={{ textDecoration: 'none' }}>
-                        <div className="promo-banner-card" style={{ background: '#E2F1F2', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
+                        <div className="promo-banner-card" style={{ background: '#EEF8F7', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>Fashion & Jewellery</h3>
                                 <p style={{ fontSize: '0.88rem', color: '#5a6e85', margin: '0 0 20px 0', fontFamily: 'var(--font-poppins)', lineHeight: '1.4' }}>Elevate your everyday style</p>
