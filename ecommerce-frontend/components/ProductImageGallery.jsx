@@ -56,17 +56,18 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                 onClick={handleContainerClick}
                 style={{ 
                     width: '100%',
-                    padding: '12px', 
-                    background: 'var(--bg-card)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '4px',
+                    padding: '0', 
+                    background: 'transparent', 
+                    border: 'none', 
+                    borderRadius: '16px',
                     overflow: 'hidden',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    aspectRatio: '4/5',
+                    aspectRatio: '1/1',
                     position: 'relative',
-                    cursor: isZoomed ? 'zoom-out' : 'zoom-in'
+                    cursor: isZoomed ? 'zoom-out' : 'zoom-in',
+                    boxShadow: 'var(--shadow-sm)'
                 }}
             >
                 <img
@@ -75,8 +76,8 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     style={{ 
                         width: '100%', 
                         height: '100%', 
-                        objectFit: 'contain', 
-                        borderRadius: '2px',
+                        objectFit: 'cover', 
+                        borderRadius: '16px',
                         transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                         transform: isZoomed ? 'scale(2)' : 'scale(1)',
                         transition: isZoomed ? 'none' : 'transform 0.3s ease, opacity 0.3s ease'
