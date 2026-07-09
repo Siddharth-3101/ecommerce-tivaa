@@ -43,7 +43,7 @@
 
 @media (max-width: 768px) {
     :root {
-        --nav-height: 80px;
+        --nav-height: 128px;
         --logo-height: 60px;
     }
 }
@@ -1044,4 +1044,80 @@ a:hover {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
+}
+
+/* ── Mobile View UI Layout enhancements ── */
+.mobile-bottom-nav {
+    display: none;
+}
+
+.mobile-search-container {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 60px !important;
+    }
+    
+    .mobile-search-container {
+        display: block;
+    }
+    
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: #ffffff;
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+        z-index: 1000;
+        justify-content: space-around;
+        align-items: center;
+        padding: 4px 12px;
+    }
+    
+    .mobile-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-light);
+        text-decoration: none;
+        font-family: var(--font-poppins);
+        font-size: 0.72rem;
+        font-weight: 500;
+        gap: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex: 1;
+        padding: 4px 0;
+    }
+    
+    .mobile-bottom-nav-item.active,
+    .mobile-bottom-nav-item:hover {
+        color: var(--accent);
+    }
+    
+    .nav-badge-mobile {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 50%;
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }

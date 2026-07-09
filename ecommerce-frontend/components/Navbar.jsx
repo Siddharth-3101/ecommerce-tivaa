@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut, Package } from "lucide-react";
+import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut, Package, Home } from "lucide-react";
 
 // Recreated premium line-art vector icons from the theme assets
 const CustomSearchIcon = ({ size = 20, ...props }) => (
@@ -295,16 +295,6 @@ export default function Navbar() {
 
                 {/* RIGHT: Utility Icons (Wishlist, Orders, Profile) */}
                 <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "flex-end" }}>
-                    
-                    {/* Search Icon (Mobile Only) */}
-                    <button
-                        onClick={() => setSearchOpen(!searchOpen)}
-                        className="mobile-only"
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', padding: '6px' }}
-                        aria-label="Search Toggle"
-                    >
-                        {searchOpen ? <X size={22} /> : <Search size={22} />}
-                    </button>
 
                     {/* Wishlist Link */}
                     <Link 
@@ -404,75 +394,58 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Slide Down Search Panel (Mobile Only) */}
-            {searchOpen && (
-                <div 
-                    ref={searchRef} 
-                    className="mobile-only"
-                    style={{ 
-                        background: '#ffffff', 
-                        borderBottom: '1px solid var(--border)',
-                        padding: '16px 24px',
-                        animation: 'slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        position: 'relative',
-                        zIndex: 999
+            {/* Persistent Mobile Search Bar (Only visible on mobile) */}
+            <div className="mobile-search-container" style={{ padding: '0 24px 12px 24px', background: 'transparent' }}>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        if (searchQuery.trim()) {
+                            router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+                            setSearchResults([]);
+                        }
                     }}
+                    style={{ display: "flex", alignItems: "center", position: "relative" }}
                 >
-                    <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                if (searchQuery.trim()) {
-                                    router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
-                                    setSearchOpen(false);
-                                    setSearchQuery("");
-                                    setSearchResults([]);
-                                }
-                            }}
-                            style={{ display: "flex", alignItems: "center", position: "relative" }}
-                        >
-                            <input
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search..."
-                                className="input-field"
-                                autoFocus
-                                style={{ 
-                                    width: "100%", 
-                                    padding: "12px 16px 12px 44px", 
-                                    borderRadius: "var(--radius-input, 12px)", 
-                                    border: "1px solid var(--border)", 
-                                    height: '46px',
-                                    fontSize: '0.95rem'
-                                }}
-                            />
-                            <Search size={20} style={{ position: 'absolute', left: '16px', color: 'var(--accent)' }} />
-                            {isSearching && <span className="search-loader"></span>}
-                        </form>
+                    <input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search products, categories..."
+                        className="input-field"
+                        style={{ 
+                            width: "100%", 
+                            padding: "10px 16px 10px 44px", 
+                            borderRadius: "var(--radius-input, 12px)", 
+                            border: "1px solid var(--border)", 
+                            height: '44px',
+                            fontSize: '0.9rem',
+                            background: '#ffffff'
+                        }}
+                    />
+                    <Search size={18} style={{ position: 'absolute', left: '16px', color: 'var(--text-muted)' }} />
+                    {isSearching && <span className="search-loader" style={{ right: '16px', top: '14px' }}></span>}
 
-                        {/* Live Search dropdown overlay */}
-                        {searchResults.length > 0 && (
-                            <div className="card" style={{ position: 'absolute', top: '52px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
-                                {searchResults.map(item => (
-                                    <Link 
-                                        key={item.id} 
-                                        href={`/product/${item.id}`} 
-                                        onClick={() => { setSearchResults([]); setSearchOpen(false); setSearchQuery(""); }} 
-                                        className="dropdown-item" 
-                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
-                                    >
-                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
-                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+                    {/* Live Search dropdown overlay */}
+                    {searchResults.length > 0 && (
+                        <div className="card" style={{ position: 'absolute', top: '50px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
+                            {searchResults.map(item => (
+                                <Link 
+                                    key={item.id} 
+                                    href={`/product/${item.id}`} 
+                                    onClick={() => { setSearchResults([]); setSearchQuery(""); }} 
+                                    className="dropdown-item" 
+                                    style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
+                                >
+                                    <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
+                                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </form>
+            </div>
 
             {/* Mobile Sidebar Navigation Drawer */}
             {mobileMenuOpen && (
@@ -596,6 +569,35 @@ export default function Navbar() {
                     .desktop-only { display: none !important; }
                 }
             `}</style>
+            {/* Mobile Bottom Navigation Bar */}
+            <div className="mobile-bottom-nav">
+                <Link href="/" className={`mobile-bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
+                    <Home size={20} />
+                    <span>Home</span>
+                </Link>
+                <button onClick={() => setMobileMenuOpen(true)} className="mobile-bottom-nav-item" style={{ cursor: 'pointer' }}>
+                    <Menu size={20} />
+                    <span>Categories</span>
+                </button>
+                <Link href="/wishlist" className={`mobile-bottom-nav-item ${pathname === '/wishlist' ? 'active' : ''}`}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Heart size={20} />
+                        {wishlistCount > 0 && <span className="nav-badge-mobile">{wishlistCount}</span>}
+                    </div>
+                    <span>Wishlist</span>
+                </Link>
+                <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Package size={20} />
+                        {count > 0 && <span className="nav-badge-mobile">{count}</span>}
+                    </div>
+                    <span>Orders</span>
+                </Link>
+                <Link href="/profile" className={`mobile-bottom-nav-item ${pathname === '/profile' || pathname === '/login' ? 'active' : ''}`}>
+                    <User size={20} />
+                    <span>Profile</span>
+                </Link>
+            </div>
         </header>
     );
 }
