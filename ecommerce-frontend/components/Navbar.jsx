@@ -198,6 +198,7 @@ export default function Navbar() {
     if (pathname?.startsWith("/admin")) return null;
 
     return (
+        <>
         <header 
             className="navbar" 
             style={{ 
@@ -569,35 +570,37 @@ export default function Navbar() {
                     .desktop-only { display: none !important; }
                 }
             `}</style>
-            {/* Mobile Bottom Navigation Bar */}
-            <div className="mobile-bottom-nav">
-                <Link href="/" className={`mobile-bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
-                    <Home size={20} />
-                    <span>Home</span>
-                </Link>
-                <button onClick={() => setMobileMenuOpen(true)} className="mobile-bottom-nav-item" style={{ cursor: 'pointer' }}>
-                    <Menu size={20} />
-                    <span>Categories</span>
-                </button>
-                <Link href="/wishlist" className={`mobile-bottom-nav-item ${pathname === '/wishlist' ? 'active' : ''}`}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Heart size={20} />
-                        {wishlistCount > 0 && <span className="nav-badge-mobile">{wishlistCount}</span>}
-                    </div>
-                    <span>Wishlist</span>
-                </Link>
-                <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Package size={20} />
-                        {count > 0 && <span className="nav-badge-mobile">{count}</span>}
-                    </div>
-                    <span>Orders</span>
-                </Link>
-                <Link href="/profile" className={`mobile-bottom-nav-item ${pathname === '/profile' || pathname === '/login' ? 'active' : ''}`}>
-                    <User size={20} />
-                    <span>Profile</span>
-                </Link>
-            </div>
         </header>
+
+        {/* Mobile Bottom Navigation Bar (Rendered outside the header container to avoid backdrop-filter limitations!) */}
+        <div className="mobile-bottom-nav">
+            <Link href="/" className={`mobile-bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
+                <Home size={20} />
+                <span>Home</span>
+            </Link>
+            <button onClick={() => setMobileMenuOpen(true)} className="mobile-bottom-nav-item" style={{ cursor: 'pointer' }}>
+                <Menu size={20} />
+                <span>Categories</span>
+            </button>
+            <Link href="/wishlist" className={`mobile-bottom-nav-item ${pathname === '/wishlist' ? 'active' : ''}`}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={20} />
+                    {wishlistCount > 0 && <span className="nav-badge-mobile">{wishlistCount}</span>}
+                </div>
+                <span>Wishlist</span>
+            </Link>
+            <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Package size={20} />
+                    {count > 0 && <span className="nav-badge-mobile">{count}</span>}
+                </div>
+                <span>Orders</span>
+            </Link>
+            <Link href="/profile" className={`mobile-bottom-nav-item ${pathname === '/profile' || pathname === '/login' ? 'active' : ''}`}>
+                <User size={20} />
+                <span>Profile</span>
+            </Link>
+        </div>
+        </>
     );
 }

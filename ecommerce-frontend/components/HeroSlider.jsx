@@ -7,8 +7,18 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export default function HeroSlider({ slides = [] }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const touchStart = useRef(0);
     const touchEnd = useRef(0);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Auto slide effect
     useEffect(() => {
@@ -90,44 +100,43 @@ export default function HeroSlider({ slides = [] }) {
                         className="hero-slide-item"
                     >
                         <Link href={slide.link || "/products"} style={{ display: 'block', width: '100%', height: '100%' }}>
-                            <picture>
-                                {/* Mobile Banner */}
-                                <source srcSet={slide.mobile_url || slide.desktop_url} media="(max-width: 768px)" />
-                                {/* Desktop Banner */}
-                                <img 
-                                    src={slide.desktop_url} 
-                                    alt={slide.title || "Tivaa Elegance Banner"} 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    draggable={false}
-                                />
-                            </picture>
+                            <img 
+                                src={isMobile ? (slide.mobile_url || slide.desktop_url) : slide.desktop_url} 
+                                alt={slide.title || "Tivaa Elegance Banner"} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                draggable={false}
+                            />
 
-                            {/* Text and Button Overlay (Aligned left, premium styling) */}
-                            <div className="hero-slide-overlay">
-                                <div className="hero-slide-content">
-                                    <h1 className="hero-slide-title">
-                                        {slide.title ? (
-                                            <>
-                                                {slide.title.replace(/Essentials/gi, "").trim()}
-                                                <br />
-                                                <span className="hero-slide-highlight">Essentials</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                Discover Everyday
-                                                <br />
-                                                <span className="hero-slide-highlight">Essentials</span>
-                                            </>
+                            {/* Render overlay ONLY if title or subtitle is explicitly typed by the user (prevents overlapping fallback text on custom upload banners!) */}
+                            {(slide.title || slide.subtitle) && (
+                                <div className="hero-slide-overlay">
+                                    <div className="hero-slide-content">
+                                        {slide.title && (
+                                            <h1 className="hero-slide-title">
+                                                {slide.title.toLowerCase().includes("essentials") ? (
+                                                    <>
+                                                        {slide.title.replace(/Essentials/gi, "").trim()}
+                                                        <br />
+                                                        <span className="hero-slide-highlight">Essentials</span>
+                                                    </>
+                                                ) : (
+                                                    slide.title
+                                                )}
+                                            </h1>
                                         )}
-                                    </h1>
-                                    <p className="hero-slide-subtitle">
-                                        {slide.subtitle || "Fashion, Jewellery & More that you'll love"}
-                                    </p>
-                                    <div className="hero-slide-btn">
-                                        {slide.button_text || "Shop Now"}
+                                        {slide.subtitle && (
+                                            <p className="hero-slide-subtitle">
+                                                {slide.subtitle}
+                                            </p>
+                                        )}
+                                        {slide.button_text && (
+                                            <div className="hero-slide-btn">
+                                                {slide.button_text}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </Link>
                     </div>
                 ))}
@@ -173,10 +182,10 @@ export default function HeroSlider({ slides = [] }) {
                 }
                 @media (max-width: 768px) {
                     .hero-slider-section {
-                        aspect-ratio: 16/9; /* Widescreen aspect ratio for mobile to prevent severe cropping of desktop banners! */
+                        aspect-ratio: 1/1; /* Square ratio for mobile to fit 800x800 banners and prevent text overlapping! */
                     }
                     .hero-slide-item {
-                        aspect-ratio: 16/9 !important;
+                        aspect-ratio: 1/1 !important;
                     }
                 }
 
