@@ -216,7 +216,7 @@ export default function Navbar() {
             }}
         >
             {/* Header Main Bar */}
-            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "var(--nav-height, 72px)", padding: "0 24px" }}>
+            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "72px", padding: "0 24px" }}>
 
                 {/* LEFT: Hamburger Menu Toggle & Brand Logo */}
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

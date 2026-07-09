@@ -76,7 +76,7 @@ export default function ProductImageGallery({ images = [], productName = "Produc
                     style={{ 
                         width: '100%', 
                         height: '100%', 
-                        objectFit: 'cover', 
+                        objectFit: 'contain', 
                         borderRadius: '16px',
                         transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                         transform: isZoomed ? 'scale(2)' : 'scale(1)',
