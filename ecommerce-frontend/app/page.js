@@ -104,7 +104,7 @@ export default async function Home() {
                             </div>
                             <div className="promo-banner-img-container" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <img 
-                                    src="/jewellery_bg.png" 
+                                    src="/jewellery_bg.jpg" 
                                     alt="Fashion & Jewellery" 
                                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
                                 />
