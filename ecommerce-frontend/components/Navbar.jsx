@@ -313,20 +313,20 @@ export default function Navbar() {
                         <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Wishlist</span>
                     </Link>
 
-                    {/* Orders (Cart Shopping Bag) */}
+                    {/* Cart Link */}
                     <Link 
                         href="/cart" 
                         style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
                     >
                         <div style={{ position: 'relative', display: 'inline-flex' }}>
-                            <Package size={22} />
+                            <ShoppingCart size={22} />
                             {count > 0 && (
                                 <span className="nav-badge">
                                     {count}
                                 </span>
                             )}
                         </div>
-                        <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Orders</span>
+                        <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Cart</span>
                     </Link>
 
                     {/* Profile Dropdown / Login */}
@@ -396,7 +396,7 @@ export default function Navbar() {
             </div>
 
             {/* Persistent Mobile Search Bar (Only visible on mobile) */}
-            <div className="mobile-search-container" style={{ padding: '0 24px 12px 24px', background: 'transparent' }}>
+            <div className="mobile-search-container" style={{ padding: '0 16px 8px 16px', background: 'transparent' }}>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -414,20 +414,20 @@ export default function Navbar() {
                         className="input-field"
                         style={{ 
                             width: "100%", 
-                            padding: "10px 16px 10px 44px", 
+                            padding: "8px 12px 8px 36px", 
                             borderRadius: "var(--radius-input, 12px)", 
                             border: "1px solid var(--border)", 
-                            height: '44px',
-                            fontSize: '0.9rem',
+                            height: '38px',
+                            fontSize: '0.85rem',
                             background: '#ffffff'
                         }}
                     />
-                    <Search size={18} style={{ position: 'absolute', left: '16px', color: 'var(--text-muted)' }} />
-                    {isSearching && <span className="search-loader" style={{ right: '16px', top: '14px' }}></span>}
+                    <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)' }} />
+                    {isSearching && <span className="search-loader" style={{ right: '12px', top: '11px' }}></span>}
 
                     {/* Live Search dropdown overlay */}
                     {searchResults.length > 0 && (
-                        <div className="card" style={{ position: 'absolute', top: '50px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
+                        <div className="card" style={{ position: 'absolute', top: '42px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
                             {searchResults.map(item => (
                                 <Link 
                                     key={item.id} 
@@ -591,14 +591,10 @@ export default function Navbar() {
             </Link>
             <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Package size={20} />
+                    <ShoppingCart size={20} />
                     {count > 0 && <span className="nav-badge-mobile">{count}</span>}
                 </div>
-                <span>Orders</span>
-            </Link>
-            <Link href="/profile" className={`mobile-bottom-nav-item ${pathname === '/profile' || pathname === '/login' ? 'active' : ''}`}>
-                <User size={20} />
-                <span>Profile</span>
+                <span>Cart</span>
             </Link>
         </div>
         </>

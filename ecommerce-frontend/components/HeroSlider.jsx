@@ -182,10 +182,10 @@ export default function HeroSlider({ slides = [] }) {
                 }
                 @media (max-width: 768px) {
                     .hero-slider-section {
-                        aspect-ratio: 1/1; /* Square ratio for mobile to fit 800x800 banners and prevent text overlapping! */
+                        aspect-ratio: 16/9; /* Widescreen 16:9 aspect ratio for mobile view! */
                     }
                     .hero-slide-item {
-                        aspect-ratio: 1/1 !important;
+                        aspect-ratio: 16/9 !important;
                     }
                 }
 

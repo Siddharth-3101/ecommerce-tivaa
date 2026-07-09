@@ -43,7 +43,7 @@
 
 @media (max-width: 768px) {
     :root {
-        --nav-height: 128px;
+        --nav-height: 118px;
         --logo-height: 60px;
     }
 }
@@ -895,7 +895,7 @@ a:hover {
     .hero-adaptive-container {
         height: auto;
         min-height: auto;
-        aspect-ratio: 1 / 1;
+        aspect-ratio: 16 / 9;
     }
     .hero-adaptive-img {
         object-position: center center;
@@ -906,7 +906,7 @@ a:hover {
     .hero-adaptive-container {
         height: auto;
         min-height: auto;
-        aspect-ratio: 1 / 1;
+        aspect-ratio: 16 / 9;
     }
 }
 
