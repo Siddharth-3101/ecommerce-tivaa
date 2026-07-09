@@ -108,12 +108,15 @@ export default function HeroSlider({ slides = [] }) {
                                     <h1 className="hero-slide-title">
                                         {slide.title ? (
                                             <>
-                                                {slide.title.replace(/Essentials/gi, "").trim()}{" "}
+                                                {slide.title.replace(/Essentials/gi, "").trim()}
+                                                <br />
                                                 <span className="hero-slide-highlight">Essentials</span>
                                             </>
                                         ) : (
                                             <>
-                                                Discover Everyday <span className="hero-slide-highlight">Essentials</span>
+                                                Discover Everyday
+                                                <br />
+                                                <span className="hero-slide-highlight">Essentials</span>
                                             </>
                                         )}
                                     </h1>

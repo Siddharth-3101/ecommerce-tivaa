@@ -743,6 +743,10 @@ a:hover {
         height: 90% !important;
         width: auto !important;
     }
+    .promo-banner-img-container {
+        width: 100px !important;
+        height: 100px !important;
+    }
 }
 
 /* Global Hero Boutique responsive heights */
@@ -859,7 +863,7 @@ a:hover {
     min-height: 480px;
     max-height: 900px;
     overflow: hidden;
-    background: linear-gradient(135deg, #c9a8e8 0%, #e8d5f5 40%, #f5eafd 60%, #dfc3f0 80%, #c0a0e0 100%);
+    background: transparent;
     display: block;
     z-index: 1;
 }

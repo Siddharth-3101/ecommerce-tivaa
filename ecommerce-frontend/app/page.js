@@ -79,11 +79,11 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ width: '220px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, marginRight: '-32px' }}>
+                            <div className="promo-banner-img-container" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <img 
-                                    src="/school_supplies_bg.png" 
+                                    src="/school_supplies_bg.jpg" 
                                     alt="School Supplies" 
-                                    style={{ height: '110%', width: 'auto', objectFit: 'contain' }} 
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
                                 />
                             </div>
                         </div>
@@ -102,11 +102,11 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ width: '220px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, marginRight: '-32px' }}>
+                            <div className="promo-banner-img-container" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <img 
                                     src="/jewellery_bg.png" 
                                     alt="Fashion & Jewellery" 
-                                    style={{ height: '110%', width: 'auto', objectFit: 'contain' }} 
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
                                 />
                             </div>
                         </div>
