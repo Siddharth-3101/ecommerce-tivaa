@@ -269,6 +269,10 @@ export const runSetup = async () => {
             await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN image_url VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
         }
 
+        if (!categoryCols.includes("show_in_homepage")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN show_in_homepage BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+        }
+
         if (!categoryCols.includes("parent_id")) {
             await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN parent_id INT NULL", (err) => err ? rej(err) : res()));
             await new Promise((res, rej) => db.query("ALTER TABLE categories ADD CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {

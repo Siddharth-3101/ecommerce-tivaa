@@ -95,7 +95,7 @@ export default function HeroSlider({ slides = [] }) {
                             position: 'relative', 
                             minWidth: '100%', 
                             width: '100%', 
-                            aspectRatio: '1920/800' 
+                            aspectRatio: '1920/412' 
                         }}
                         className="hero-slide-item"
                     >
@@ -184,16 +184,16 @@ export default function HeroSlider({ slides = [] }) {
                 </div>
             )}
 
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
                 .hero-slider-section {
-                    aspect-ratio: 1920/800;
+                    aspect-ratio: 1920/412;
                 }
                 @media (max-width: 768px) {
                     .hero-slider-section {
-                        aspect-ratio: 3/2; /* Taller 3:2 aspect ratio for mobile view to prevent text overlap! */
+                        aspect-ratio: 30/13; /* Taller aspect ratio for mobile view to prevent text overlap! */
                     }
                     .hero-slide-item {
-                        aspect-ratio: 3/2 !important;
+                        aspect-ratio: 30/13 !important;
                     }
                 }
 
@@ -359,7 +359,7 @@ export default function HeroSlider({ slides = [] }) {
                         bottom: 12px;
                     }
                 }
-            `}</style>
+            `}} />
         </section>
     );
 }

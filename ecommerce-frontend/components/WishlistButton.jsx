@@ -6,7 +6,7 @@ import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
-export default function WishlistButton({ productId, variant = "large" }) {
+export default function WishlistButton({ productId, variant = "large", className = "" }) {
     const [liked, setLiked] = useState(false);
     const [loading, setLoading] = useState(false);
     const user = getUser();
@@ -57,6 +57,56 @@ export default function WishlistButton({ productId, variant = "large" }) {
         }
     };
 
+    if (variant === "textOutline") {
+        return (
+            <button
+                onClick={handleToggle}
+                disabled={loading}
+                className={`btn-wishlist-text ${liked ? "active" : ""} ${className}`}
+                style={{
+                    width: "100%",
+                    height: "46px",
+                    borderRadius: "4px",
+                    border: "1px solid var(--border)",
+                    background: liked ? "rgba(15, 157, 148, 0.08)" : "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    cursor: "pointer",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    color: liked ? "var(--accent)" : "var(--text-main)",
+                    fontSize: "20px",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-poppins), sans-serif"
+                }}
+            >
+                <Heart
+                    size={22}
+                    fill={liked ? "var(--accent)" : "none"}
+                    color={liked ? "var(--accent)" : "var(--text-main)"}
+                    style={{
+                        transition: "transform 0.3s ease",
+                        transform: loading ? "scale(0.8)" : "scale(1)",
+                    }}
+                />
+                {liked ? "Added to Wishlist" : "Add to Wishlist"}
+                
+                <style dangerouslySetInnerHTML={{ __html: `
+                    .btn-wishlist-text:hover {
+                        border-color: var(--text-main);
+                    }
+                    .btn-wishlist-text.active:hover {
+                        border-color: var(--accent);
+                    }
+                    .btn-wishlist-text:active {
+                        transform: scale(0.98);
+                    }
+                `}} />
+            </button>
+        );
+    }
+
     return (
         <button
             onClick={handleToggle}
@@ -87,7 +137,7 @@ export default function WishlistButton({ productId, variant = "large" }) {
                 }}
             />
             
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
                 .btn-wishlist-toggle:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 6px 20px var(--accent-glow);
@@ -97,7 +147,7 @@ export default function WishlistButton({ productId, variant = "large" }) {
                 .btn-wishlist-toggle:active {
                     transform: scale(0.95);
                 }
-            `}</style>
+            `}} />
         </button>
     );
 }

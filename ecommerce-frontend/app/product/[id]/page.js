@@ -2,6 +2,8 @@ import ProductDetailsInfo from "@/components/ProductDetailsInfo";
 import ProductReviews from "@/components/ProductReviews";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductCard from "@/components/ProductCard";
+import ProductTabs from "@/components/ProductTabs";
+import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 import Link from "next/link";
 
 async function fetchProduct(id) {
@@ -26,8 +28,8 @@ async function fetchRelatedProducts(categoryName, currentProductId) {
         });
         if (!res.ok) return [];
         const products = await res.json();
-        // Exclude the current product and take at most 4 items
-        return products.filter((p) => p.id !== currentProductId).slice(0, 4);
+        // Exclude the current product and take at most 10 items for scrolling
+        return products.filter((p) => p.id !== currentProductId).slice(0, 10);
     } catch (err) {
         return [];
     }
@@ -50,45 +52,58 @@ export default async function ProductPage({ params }) {
     const images = product.image_url ? product.image_url.split(',') : [];
     const relatedProducts = await fetchRelatedProducts(product.category_name, product.id);
 
-    return (
-        <div className="animate-fade-in" style={{ padding: '30px 0 40px' }}>
-            <div className="container">
-                <Link 
-                    href={product.category_name ? `/products?category=${encodeURIComponent(product.category_name)}` : "/products"} 
-                    className="btn btn-secondary" 
-                    style={{ display: 'inline-flex', padding: '8px 16px', marginBottom: '32px', fontSize: '0.9rem' }}
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    Back to collection
-                </Link>
+    // Calculate a mock discount for demo purposes, or derive from price/discounted_price
+    let discountBadge = null;
+    if (product.discounted_price && product.price > product.discounted_price) {
+        const disc = Math.round((1 - (product.discounted_price / product.price)) * 100);
+        discountBadge = `-${disc}%`;
+    }
 
-                <div className="product-details-grid">
+    return (
+        <div className="animate-fade-in" style={{ padding: '30px 0 0', backgroundColor: '#fff', fontFamily: 'var(--font-poppins), sans-serif' }}>
+            <div className="container" style={{ maxWidth: '1200px' }}>
+                
+                {/* Breadcrumbs */}
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'none' }}>Home</Link>
+                    <span>&gt;</span>
+                    {product.category_name ? (
+                        <>
+                            <Link href={`/products?category=${encodeURIComponent(product.category_name)}`} style={{ color: 'var(--text-main)', textDecoration: 'none' }}>
+                                {product.category_name}
+                            </Link>
+                            <span>&gt;</span>
+                        </>
+                    ) : null}
+                    <span>{product.name}</span>
+                </div>
+
+                <div className="product-details-grid" style={{ gap: '48px', alignItems: 'stretch' }}>
                     {/* LEFT SECTION (IMAGE GALLERY) */}
-                    <div className="sticky-gallery">
-                        <ProductImageGallery key={`gallery-${product.id}`} images={images} productName={product.name} />
+                    <div className="sticky-gallery" style={{ top: '100px', height: '100%' }}>
+                        <ProductImageGallery key={`gallery-${product.id}`} images={images} productName={product.name} discount={discountBadge} />
                     </div>
 
                     {/* RIGHT SECTION (DETAILS WITH DYNAMIC VARIATIONS) */}
-                    <ProductDetailsInfo key={`info-${product.id}`} product={product} />
+                    <div>
+                        <ProductDetailsInfo key={`info-${product.id}`} product={product} />
+                    </div>
                 </div>
 
-                {/* Related Products Grid */}
-                {relatedProducts && relatedProducts.length > 0 && (
-                    <div style={{ marginTop: '80px', borderTop: '1px solid var(--border)', paddingTop: '40px' }}>
-                        <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', textAlign: 'center', fontFamily: "var(--font-poppins)" }}>
-                            You May Also Like
-                        </h2>
-                        <div className="product-grid-boutique">
-                            {relatedProducts.map((p) => (
-                                <ProductCard key={p.id} product={p} />
-                            ))}
-                        </div>
-                    </div>
-                )}
+                {/* Tabs Section */}
+                <ProductTabs description={product.description} features={product.features} />
 
-                {/* PRODUCT CUSTOMER REVIEWS (Hidden for now as requested) */}
-                {/* <ProductReviews productId={product.id} /> */}
-            </div>
+            {/* Related Products Slider (Client Component) */}
+            {relatedProducts && relatedProducts.length > 0 && (
+                <RelatedProductsSlider relatedProducts={relatedProducts} categoryName={product.category_name} />
+            )}
+        </div>
+
+            <style dangerouslySetInnerHTML={{__html: `
+                .product-scroll-container::-webkit-scrollbar {
+                    display: none;
+                }
+            `}} />
         </div>
     );
 }

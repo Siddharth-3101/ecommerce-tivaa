@@ -38,8 +38,8 @@ export default async function Hero() {
                 id: "fallback-1",
                 desktop_url: settings.desktop_banner || "/hero_banner.png",
                 mobile_url: settings.mobile_banner || "/hero_banner_mobile.jpg",
-                title: "Discover Everyday Essentials",
-                subtitle: "Fashion, Jewellery & More that you'll love",
+                title: "Come Shop with Us",
+                subtitle: "Fashion, Jewellery, Kids Items & More that you'll love",
                 link: "/products",
                 button_text: "Shop Now"
             }
@@ -47,7 +47,7 @@ export default async function Hero() {
     }
 
     return (
-        <section className="hero-adaptive-container" style={{ width: '100%', marginBottom: '40px' }}>
+        <section className="hero-adaptive-container" style={{ width: '100%', marginBottom: '16px' }}>
             <HeroSlider slides={slides} />
         </section>
     );

@@ -54,7 +54,12 @@ export default async function Home() {
         return productsList.filter(p => allowedIds.includes(p.category_id));
     };
 
-    // Filter to show only the two main categories (parent categories, where parent_id is null)
+    // Filter categories to show based on "Show in Home Page" flag, fallback to parent categories if empty
+    const homepageCategories = categories.filter(c => c.show_in_homepage === 1 || c.show_in_homepage === true);
+    const displayCategories = homepageCategories.length > 0 
+        ? homepageCategories 
+        : categories.filter(c => !c.parent_id);
+
     const parents = categories.filter(c => !c.parent_id);
 
     return (
@@ -64,10 +69,10 @@ export default async function Home() {
             <Hero />
 
             {/* Two Promo Banners */}
-            <section className="container" style={{ padding: '0 24px 40px' }}>
+            <section style={{ width: '100%', padding: '0 24px 20px' }}>
                 <div className="promo-banners-grid">
                     {/* Banner 1: School Supplies */}
-                    <Link href="/products?category=School Supplies %26 Gifts" style={{ textDecoration: 'none' }}>
+                    <Link href="/products?category=School Supplies" style={{ textDecoration: 'none' }}>
                         <div className="promo-banner-card" style={{ background: '#E5F1FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '220px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <h3 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</h3>
@@ -116,33 +121,144 @@ export default async function Home() {
             </section>
 
             {/* DYNAMIC CATEGORY SECTIONS */}
-            {parents.map(parent => {
-                const parentProducts = getProductsForParent(parent.id, categories, products);
-                
-                // Only render section if it has products in it
-                if (parentProducts.length === 0) return null;
+            {displayCategories.map(cat => {
+                const catProducts = getProductsForParent(cat.id, categories, products);
+                if (catProducts.length === 0) return null;
 
                 return (
-                    <section key={parent.id} className="container" style={{ padding: '40px 24px 80px' }}>
-                        <h2 className="section-heading" style={{ fontSize: '28px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '32px', fontFamily: 'var(--font-poppins)' }}>
-                            {parent.name}
-                        </h2>
-
-                        {/* Borderless Boutique Product Card Grid */}
-                        <div className="product-grid-boutique">
-                            {parentProducts.slice(0, 8).map((p) => (
-                                <ProductCard key={p.id} product={p} />
-                            ))}
+                    <section key={cat.id} style={{ width: '100%', padding: '20px 24px' }}>
+                        {/* Section Header with Left Heading and Right View All Link */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 className="section-heading-homepage">
+                                {cat.name}
+                            </h2>
+                            <Link 
+                                href={`/products?category=${encodeURIComponent(cat.name)}`} 
+                                className="category-view-all"
+                            >
+                                View All <span>&gt;</span>
+                            </Link>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                            <Link href={`/products?category=${encodeURIComponent(parent.name)}`} className="btn btn-secondary" style={{ padding: '12px 32px' }}>
-                                View all
-                            </Link>
+                        {/* Horizontal Single-Row Product List */}
+                        <div className="product-row-single-line">
+                            {catProducts.map((p) => (
+                                <div key={p.id} className="product-row-item">
+                                    <ProductCard product={p} />
+                                </div>
+                            ))}
                         </div>
                     </section>
                 );
             })}
+
+            {/* New Arrivals Section */}
+            {(() => {
+                const newArrivals = [...products].sort((a, b) => b.id - a.id).slice(0, 10);
+                if (newArrivals.length === 0) return null;
+
+                return (
+                    <section style={{ width: '100%', padding: '20px 24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 className="section-heading-homepage">
+                                New Arrivals
+                            </h2>
+                            <Link href="/products" className="category-view-all">
+                                View All <span>&gt;</span>
+                            </Link>
+                        </div>
+                        <div className="product-row-single-line">
+                            {newArrivals.map((p) => (
+                                <div key={p.id} className="product-row-item">
+                                    <ProductCard product={p} />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            })()}
+
+            {/* View by Category Section */}
+            <section style={{ width: '100%', padding: '20px 24px 50px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '24px', fontFamily: 'var(--font-poppins)' }}>
+                    View by Category
+                </h2>
+
+                {parents.map(parent => {
+                    const subcategories = categories.filter(c => c.parent_id === parent.id);
+                    if (subcategories.length === 0) return null;
+
+                    return (
+                        <div key={parent.id} style={{ marginBottom: '32px' }}>
+                            {/* Sub Heading with Left Title and Right View All Link */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-main)', margin: 0, fontFamily: 'var(--font-poppins)' }}>
+                                    {parent.name}
+                                </h3>
+                                <Link 
+                                    href={`/products?category=${encodeURIComponent(parent.name)}`} 
+                                    className="category-view-all"
+                                >
+                                    View All <span>&gt;</span>
+                                </Link>
+                            </div>
+
+                            {/* Subcategories Horizontal Scroll Row */}
+                            <div className="product-row-single-line" style={{ gap: '20px' }}>
+                                {subcategories.map(sub => {
+                                    // Resolves subcategory image dynamically
+                                    const getSubcategoryImage = (subcategory) => {
+                                        if (subcategory.image_url && subcategory.image_url.trim()) {
+                                            return subcategory.image_url.trim();
+                                        }
+                                        const fallbacks = {
+                                            'hairbows': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700729/tivaa-products/dstpoqprasvcizdlox8n.jpg',
+                                            'meenakaari bangles': 'https://res.cloudinary.com/dft1i2ozo/image/upload/v1779700873/tivaa-products/dr1hiyiwgdfhphf4f8cz.jpg',
+                                            'general': '/placeholder.png'
+                                        };
+                                        const catNameLower = subcategory.name.trim().toLowerCase();
+                                        const matchedProd = products.find(p => p.category_id === subcategory.id && p.image_url);
+                                        if (matchedProd && matchedProd.image_url) {
+                                            return matchedProd.image_url.split(",")[0].trim();
+                                        }
+                                        return fallbacks[catNameLower] || fallbacks['general'];
+                                    };
+
+                                    return (
+                                        <Link 
+                                            key={sub.id} 
+                                            href={`/products?category=${encodeURIComponent(sub.name)}`} 
+                                            className="category-card-container"
+                                        >
+                                            <div className="category-card-img-wrapper">
+                                                <img 
+                                                    src={getSubcategoryImage(sub)} 
+                                                    alt={sub.name} 
+                                                    className="category-card-img"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                                                <span 
+                                                    style={{ 
+                                                        fontSize: '0.85rem', 
+                                                        fontWeight: 600, 
+                                                        color: 'var(--text-main)', 
+                                                        fontFamily: 'var(--font-poppins)',
+                                                        textTransform: 'capitalize' 
+                                                    }}
+                                                >
+                                                    {sub.name}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </section>
         </div>
     );
 }

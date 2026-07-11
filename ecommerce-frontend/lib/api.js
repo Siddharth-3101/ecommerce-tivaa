@@ -7,15 +7,9 @@ const getBaseURL = () => {
         return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     }
     
-    // If running in browser:
-    // If the site is accessed via HTTPS (deployed), always use relative '/api' 
-    // to force Next.js API proxy rewrites and completely avoid Mixed Content browser blocks.
-    if (window.location.protocol === "https:") {
-        return "/api";
-    }
-    
-    // Default fallback for local dev
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    // In browser: always use relative path '/api' to let Next.js proxy rewrite the requests.
+    // This avoids CORS, Mixed Content, and localhost resolution issues on mobile/external devices.
+    return "/api";
 };
 
 const api = axios.create({

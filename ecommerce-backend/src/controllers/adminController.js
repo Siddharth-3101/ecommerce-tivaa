@@ -7,7 +7,7 @@ import { sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 
 // Add Category
 export const addCategory = (req, res) => {
-    const { name, description, image_url, parent_id } = req.body;
+    const { name, description, image_url, parent_id, show_in_homepage } = req.body;
 
     if (!name)
         return res.status(400).json({ message: "Category name required" });
@@ -15,9 +15,9 @@ export const addCategory = (req, res) => {
     const targetParentId = parent_id ? Number(parent_id) : null;
 
     const performInsert = () => {
-        const sql = "INSERT INTO categories (name, description, image_url, parent_id) VALUES (?, ?, ?, ?)";
+        const sql = "INSERT INTO categories (name, description, image_url, parent_id, show_in_homepage) VALUES (?, ?, ?, ?, ?)";
 
-        db.query(sql, [name, description || null, image_url || null, targetParentId], (err) => {
+        db.query(sql, [name, description || null, image_url || null, targetParentId, show_in_homepage ? 1 : 0], (err) => {
             if (err) {
                 console.error("DB error:", err);
                 return res.status(500).json({ message: "DB error" });
@@ -96,7 +96,7 @@ export const deleteCategory = (req, res) => {
 // Update Category
 export const updateCategory = (req, res) => {
     const { id } = req.params;
-    const { name, description, image_url, parent_id } = req.body;
+    const { name, description, image_url, parent_id, show_in_homepage } = req.body;
 
     const targetParentId = parent_id ? Number(parent_id) : null;
 
@@ -106,9 +106,9 @@ export const updateCategory = (req, res) => {
 
     const performUpdate = () => {
         const sql =
-            "UPDATE categories SET name = ?, description = ?, image_url = ?, parent_id = ? WHERE id = ?";
+            "UPDATE categories SET name = ?, description = ?, image_url = ?, parent_id = ?, show_in_homepage = ? WHERE id = ?";
 
-        db.query(sql, [name, description, image_url || null, targetParentId, id], (err, result) => {
+        db.query(sql, [name, description, image_url || null, targetParentId, show_in_homepage ? 1 : 0, id], (err, result) => {
             if (err) {
                 console.error("DB error:", err);
                 return res.status(500).json({ message: "DB error" });

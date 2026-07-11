@@ -90,6 +90,12 @@ export default function Navbar() {
     // Mobile Menu
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    const handleTopMenuClick = () => {
+        if (typeof window !== "undefined" && window.innerWidth >= 900) {
+            setMobileMenuOpen(true);
+        }
+    };
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -216,33 +222,35 @@ export default function Navbar() {
             }}
         >
             {/* Header Main Bar */}
-            <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "72px", padding: "0 24px" }}>
+            <div className="navbar-inner-container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "72px" }}>
 
-                {/* LEFT: Hamburger Menu Toggle & Brand Logo */}
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                {/* LEFT: Hamburger Menu Toggle & Brand Logo with text */}
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, justifyContent: "flex-start" }}>
                     <button
-                        onClick={() => setMobileMenuOpen(true)}
+                        onClick={handleTopMenuClick}
+                        className="desktop-only"
                         style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center' }}
                         aria-label="Open menu"
                     >
                         <Menu size={24} />
                     </button>
-                    <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+                    <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                         <img 
                             src="/logo.png" 
                             alt="Tivaa Elegance" 
                             style={{ 
-                                height: '56px', 
+                                height: '58px', 
                                 width: 'auto', 
                                 objectFit: 'contain',
                                 mixBlendMode: 'multiply'
                             }} 
                         />
+                        <span className="logo-text" style={{ fontWeight: 700, color: 'var(--text-main)', fontFamily: 'var(--font-poppins)', letterSpacing: '0.5px' }}>TIVAA Elegance</span>
                     </Link>
                 </div>
 
                 {/* CENTER: Persistent Search Bar (Desktop Only) */}
-                <div className="desktop-only" style={{ flex: 1, maxWidth: "500px", margin: "0 32px" }}>
+                <div className="desktop-only" style={{ flex: 1.2, display: "flex", justifyContent: "center" }}>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -252,7 +260,7 @@ export default function Navbar() {
                                 setSearchResults([]);
                             }
                         }}
-                        style={{ display: "flex", alignItems: "center", position: "relative" }}
+                        style={{ display: "flex", alignItems: "center", position: "relative", width: "100%", maxWidth: "450px" }}
                     >
                         <input
                             value={searchQuery}
@@ -295,7 +303,7 @@ export default function Navbar() {
                 </div>
 
                 {/* RIGHT: Utility Icons (Wishlist, Orders, Profile) */}
-                <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "flex-end" }}>
+                <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "flex-end", flex: 1 }}>
 
                     {/* Wishlist Link */}
                     <Link 
@@ -459,11 +467,11 @@ export default function Navbar() {
                     
                     {/* Drawer Content */}
                     <div className="animate-slide-right" style={{ position: 'relative', width: '300px', height: '100dvh', minHeight: '100vh', background: '#ffffff', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', zIndex: 2001, boxShadow: '4px 0 24px rgba(0,0,0,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <img src="/logo.png" style={{ height: '54px', objectFit: 'contain' }} alt="Tivaa Logo" />
-                                <span style={{ color: 'var(--text-main)', fontWeight: 600, fontSize: '1.1rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>Tivaa Elegance</span>
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                                <img src="/logo.png" style={{ height: '40px', objectFit: 'contain' }} alt="Tivaa Logo" />
+                                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-poppins)', letterSpacing: '0.5px' }}>TIVAA Elegance</span>
+                            </Link>
                             <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>
                         </div>
 
@@ -515,7 +523,7 @@ export default function Navbar() {
                 </div>
             )}
 
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
                 .nav-badge {
                     position: absolute;
                     top: -6px;
@@ -569,7 +577,25 @@ export default function Navbar() {
                 @media (max-width: 899px) {
                     .desktop-only { display: none !important; }
                 }
-            `}</style>
+                
+                .navbar-inner-container {
+                    width: 100%;
+                    max-width: 100%;
+                    margin: 0 auto;
+                    padding: 0 40px;
+                }
+                .logo-text {
+                    font-size: 1.35rem;
+                }
+                @media (max-width: 768px) {
+                    .navbar-inner-container {
+                        padding: 0 16px;
+                    }
+                    .logo-text {
+                        font-size: 0.9rem;
+                    }
+                }
+            `}} />
         </header>
 
         {/* Mobile Bottom Navigation Bar (Rendered outside the header container to avoid backdrop-filter limitations!) */}

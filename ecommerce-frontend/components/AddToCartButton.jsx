@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-export default function AddToCartButton({ productId, disabled, selectedVariation, stock, quantity }) {
+export default function AddToCartButton({ productId, disabled, selectedVariation, stock, quantity, style = {}, className = "" }) {
     const [loading, setLoading] = useState(false);
     const [added, setAdded] = useState(false);
     const [cartQty, setCartQty] = useState(0);
@@ -118,7 +118,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
 
     if (cartQty > 0) {
         return (
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-btn, 10px)', height: '54px', overflow: 'hidden', width: '100%', background: '#ffffff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-btn, 4px)', height: style.height || '54px', overflow: 'hidden', width: style.width || '100%', background: '#ffffff', ...style }}>
                 <button 
                     onClick={handleDecrement}
                     disabled={loading}
@@ -157,7 +157,7 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
     return (
         <button
             onClick={handleAdd}
-            className={`btn btn-primary ${added ? 'btn-success' : ''}`}
+            className={`btn btn-primary ${added ? 'btn-success' : ''} ${className}`}
             disabled={loading || disabled || added}
             style={{ 
                 width: "100%", 
@@ -168,7 +168,9 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
                 justifyContent: "center", 
                 gap: "8px",
                 background: added ? "var(--success)" : undefined,
-                height: '54px'
+                height: '54px',
+                fontFamily: "var(--font-poppins), sans-serif",
+                ...style
             }}
         >
             {loading ? (

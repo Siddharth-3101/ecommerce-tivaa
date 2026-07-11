@@ -5,7 +5,7 @@ import api from "@/lib/api";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
+  const [form, setForm] = useState({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
   const [loading, setLoading] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -56,7 +56,8 @@ export default function CategoriesPage() {
                 name: form.name,
                 description: form.description,
                 image_url: form.image_url,
-                parent_id: form.type === "subcategory" && form.parent_id !== "" ? Number(form.parent_id) : null
+                parent_id: form.type === "subcategory" && form.parent_id !== "" ? Number(form.parent_id) : null,
+                show_in_homepage: form.show_in_homepage ? 1 : 0
             };
 
             if (editingCategory) {
@@ -65,7 +66,7 @@ export default function CategoriesPage() {
             } else {
                 await api.post("/admin/category", payload);
             }
-            setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
+            setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
             await fetchCategories();
         } catch (err) {
             alert(err.response?.data?.message || `Failed to ${editingCategory ? 'update' : 'add'} category`);
@@ -81,14 +82,15 @@ export default function CategoriesPage() {
             description: category.description || "",
             image_url: category.image_url || "",
             parent_id: category.parent_id !== null && category.parent_id !== undefined ? String(category.parent_id) : "",
-            type: category.parent_id ? "subcategory" : "category"
+            type: category.parent_id ? "subcategory" : "category",
+            show_in_homepage: category.show_in_homepage === 1 || category.show_in_homepage === true
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleCancelEdit = () => {
         setEditingCategory(null);
-        setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category" });
+        setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
     };
 
     const handleDelete = async (id) => {
@@ -298,6 +300,21 @@ export default function CategoriesPage() {
                             />
                         </div>
                     </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "12px" }}>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "0.95rem", fontWeight: 500, color: "var(--text-main)" }}>
+                            <input 
+                                type="checkbox"
+                                checked={form.show_in_homepage || false}
+                                onChange={(e) => setForm({ ...form, show_in_homepage: e.target.checked })}
+                                style={{ accentColor: "var(--accent)", width: "18px", height: "18px", cursor: "pointer" }}
+                            />
+                            Show in Home Page
+                        </label>
+                        <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                            (If checked, this category will have its own product slider row on the home page)
+                        </span>
+                    </div>
                     
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: "1px solid var(--border)", paddingTop: "24px" }}>
                         {editingCategory && (
@@ -329,6 +346,7 @@ export default function CategoriesPage() {
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Image</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Name</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Type</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Show in Home</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Description</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "right" }}>Actions</th>
                                     </tr>
@@ -355,6 +373,15 @@ export default function CategoriesPage() {
                                                     <span style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.08)", padding: "4px 8px", borderRadius: "12px", fontWeight: 500 }}>
                                                         Main Category
                                                     </span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: "16px 24px" }}>
+                                                {c.show_in_homepage === 1 || c.show_in_homepage === true ? (
+                                                    <span style={{ color: "var(--accent)", background: "rgba(139, 61, 255, 0.08)", padding: "4px 8px", borderRadius: "12px", fontWeight: 500, fontSize: "0.85rem" }}>
+                                                        Yes
+                                                     </span>
+                                                ) : (
+                                                    <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>No</span>
                                                 )}
                                             </td>
                                             <td style={{ padding: "16px 24px", color: "var(--text-muted)", fontSize: "0.95rem" }}>{c.description || "-"}</td>
