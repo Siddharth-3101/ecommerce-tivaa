@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,9 +11,7 @@ const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function EditProductPage({ params }) {
-    // Next.js 15+ resolution trick if it's a promise, else fast fallback
-    const resolvedParams = React.use ? React.use(params) : params;
-    const { id } = resolvedParams;
+    const { id } = use(params);
     const router = useRouter();
     const [product, setProduct] = useState(null);
     const [variationGroups, setVariationGroups] = useState([]);
@@ -123,11 +121,14 @@ export default function EditProductPage({ params }) {
         setLoading(true);
         try {
             let parsedVariations = null;
-            const validGroups = variationGroups.filter(g => g.name.trim() !== "" && g.options.some(o => o.value.trim() !== ""));
+            const validGroups = variationGroups.filter(g => 
+                g && g.name !== undefined && g.name !== null && String(g.name).trim() !== "" && 
+                g.options && g.options.some(o => o && o.value !== undefined && o.value !== null && String(o.value).trim() !== "")
+            );
             if (validGroups.length > 0) {
                 const cleanGroups = validGroups.map(g => ({
                     ...g,
-                    options: g.options.filter(o => o.value.trim() !== "")
+                    options: g.options.filter(o => o && o.value !== undefined && o.value !== null && String(o.value).trim() !== "")
                 }));
                 parsedVariations = JSON.stringify(cleanGroups);
             }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Heading from './Heading';
@@ -8,12 +9,17 @@ export default function Footer() {
     const pathname = usePathname();
     const isLoginPage = pathname === '/login';
 
+    const [isLocal, setIsLocal] = useState(false);
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setIsLocal(window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1"));
+        }
+    }, []);
+
     if (isLoginPage) {
         return null;
     }
 
-
-    const isLocal = typeof window !== 'undefined' && (window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1"));
     const schoolId = isLocal ? 4 : 3;
     const jewelleryId = isLocal ? 3 : 1;
 

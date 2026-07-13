@@ -31,15 +31,15 @@ const resolveProductImages = (product) => {
 // GET PRODUCTS WITH PAGINATION
 // ===========================================================
 export const getProducts = async (req, res) => {
-  let { page = 1, limit = 12, admin, category, stock, visibility } = req.query;
+  let { page = 1, limit = 12, admin, category, stock, visibility, query } = req.query;
 
   page = parseInt(page) || 1;
   limit = parseInt(limit) || 12;
 
   const offset = (page - 1) * limit;
   
-  // Cache key: bypass cache for admin/filtered requests to see real-time updates instantly.
-  const isPlainPublic = admin !== "true" && !category && !stock && !visibility;
+  // Cache key: bypass cache for admin/filtered/searched requests to see real-time updates instantly.
+  const isPlainPublic = admin !== "true" && !category && !stock && !visibility && !query;
   const cacheKey = isPlainPublic ? `products_${page}_${limit}` : null;
 
   if (cacheKey) {
@@ -83,6 +83,13 @@ export const getProducts = async (req, res) => {
     }
   }
 
+  // 4. Search Query Filter
+  if (query && query.trim() !== "") {
+    const searchTerm = `%${query.trim()}%`;
+    countSql += " AND (p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)";
+    countParams.push(searchTerm, searchTerm, searchTerm);
+  }
+
   db.query(countSql, countParams, (countErr, countRows) => {
     if (countErr) {
       console.error("DB Error:", countErr);
@@ -123,6 +130,12 @@ export const getProducts = async (req, res) => {
       } else if (visibility === "hidden") {
         sql += " AND p.is_visible = false";
       }
+    }
+
+    if (query && query.trim() !== "") {
+      const searchTerm = `%${query.trim()}%`;
+      sql += " AND (p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)";
+      selectParams.push(searchTerm, searchTerm, searchTerm);
     }
 
     sql += " ORDER BY (p.stock > 0) DESC, p.id DESC LIMIT ? OFFSET ?";

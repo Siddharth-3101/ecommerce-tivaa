@@ -106,12 +106,15 @@ export default function AddProductPage() {
         try {
             // Parse variations from the visual builder
             let parsedVariations = null;
-            const validGroups = variationGroups.filter(g => g.name.trim() !== "" && g.options.some(o => o.value.trim() !== ""));
+            const validGroups = variationGroups.filter(g => 
+                g && g.name !== undefined && g.name !== null && String(g.name).trim() !== "" && 
+                g.options && g.options.some(o => o && o.value !== undefined && o.value !== null && String(o.value).trim() !== "")
+            );
             if (validGroups.length > 0) {
                 // Filter out empty options inside valid groups
                 const cleanGroups = validGroups.map(g => ({
                     ...g,
-                    options: g.options.filter(o => o.value.trim() !== "")
+                    options: g.options.filter(o => o && o.value !== undefined && o.value !== null && String(o.value).trim() !== "")
                 }));
                 parsedVariations = JSON.stringify(cleanGroups);
             }

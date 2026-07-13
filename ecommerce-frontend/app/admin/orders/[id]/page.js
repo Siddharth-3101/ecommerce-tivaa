@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/auth";
@@ -8,9 +8,7 @@ import Link from "next/link";
 import React from "react";
 
 export default function AdminOrderDetails({ params }) {
-    // Next.js 15+ resolution trick if it's a promise, else fast fallback
-    const resolvedParams = React.use ? React.use(params) : params;
-    const { id } = resolvedParams;
+    const { id } = use(params);
     const router = useRouter();
     const [user, setUser] = useState(null);
 

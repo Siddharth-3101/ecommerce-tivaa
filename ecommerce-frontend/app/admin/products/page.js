@@ -13,11 +13,43 @@ export default function AdminProductsPage() {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [selectedProductIds, setSelectedProductIds] = useState([]);
     const [importing, setImporting] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     // Filter states
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [selectedStock, setSelectedStock] = useState("All");
     const [selectedVisibility, setSelectedVisibility] = useState("All");
+
+    // Search states
+    const [searchTerm, setSearchTerm] = useState("");
+    const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
+
+    // Initial load from sessionStorage on client mount
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const cat = sessionStorage.getItem("admin_products_category");
+            if (cat) setSelectedCategory(cat);
+
+            const stock = sessionStorage.getItem("admin_products_stock");
+            if (stock) setSelectedStock(stock);
+
+            const vis = sessionStorage.getItem("admin_products_visibility");
+            if (vis) setSelectedVisibility(vis);
+
+            const p = sessionStorage.getItem("admin_products_page");
+            if (p) setPage(parseInt(p));
+
+            const search = sessionStorage.getItem("admin_products_searchTerm");
+            if (search) setSearchTerm(search);
+
+            const appSearch = sessionStorage.getItem("admin_products_appliedSearchTerm");
+            if (appSearch) setAppliedSearchTerm(appSearch);
+
+            setMounted(true);
+        } else {
+            setMounted(true);
+        }
+    }, []);
 
     // Fetch categories on load
     useEffect(() => {
@@ -34,6 +66,8 @@ export default function AdminProductsPage() {
 
     // Fetch products whenever filters or page change
     useEffect(() => {
+        if (!mounted) return;
+
         async function fetchProducts() {
             setLoading(true);
             try {
@@ -47,6 +81,9 @@ export default function AdminProductsPage() {
                 if (selectedVisibility !== "All") {
                     url += `&visibility=${selectedVisibility}`;
                 }
+                if (appliedSearchTerm) {
+                    url += `&query=${encodeURIComponent(appliedSearchTerm)}`;
+                }
                 const res = await api.get(url);
                 setProducts(res.data?.products || []);
                 setTotalPages(res.data?.totalPages || 1);
@@ -58,21 +95,80 @@ export default function AdminProductsPage() {
             }
         }
         fetchProducts();
-    }, [page, refreshTrigger, selectedCategory, selectedStock, selectedVisibility]);
+    }, [page, refreshTrigger, selectedCategory, selectedStock, selectedVisibility, appliedSearchTerm, mounted]);
+
+    const changePage = (p) => {
+        setPage(p);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_page", String(p));
+        }
+    };
 
     const handleCategoryChange = (val) => {
         setSelectedCategory(val);
-        setPage(1);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_category", val);
+        }
+        changePage(1);
     };
 
     const handleStockChange = (val) => {
         setSelectedStock(val);
-        setPage(1);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_stock", val);
+        }
+        changePage(1);
     };
 
     const handleVisibilityChange = (val) => {
         setSelectedVisibility(val);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_visibility", val);
+        }
+        changePage(1);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_searchTerm", e.target.value);
+        }
+    };
+
+    const handleSearchSubmit = (e) => {
+        if (e) e.preventDefault();
+        setAppliedSearchTerm(searchTerm);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_appliedSearchTerm", searchTerm);
+        }
+        changePage(1);
+    };
+
+    const handleSearchClear = () => {
+        setSearchTerm("");
+        setAppliedSearchTerm("");
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_searchTerm", "");
+            sessionStorage.setItem("admin_products_appliedSearchTerm", "");
+        }
+        changePage(1);
+    };
+
+    const handleClearAllFilters = () => {
+        setSearchTerm("");
+        setAppliedSearchTerm("");
+        setSelectedCategory("All");
+        setSelectedStock("All");
+        setSelectedVisibility("All");
         setPage(1);
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("admin_products_searchTerm", "");
+            sessionStorage.setItem("admin_products_appliedSearchTerm", "");
+            sessionStorage.setItem("admin_products_category", "All");
+            sessionStorage.setItem("admin_products_stock", "All");
+            sessionStorage.setItem("admin_products_visibility", "All");
+            sessionStorage.setItem("admin_products_page", "1");
+        }
     };
 
     const handleDelete = async (id) => {
@@ -280,6 +376,61 @@ export default function AdminProductsPage() {
                 border: "1px solid var(--border)",
                 borderRadius: "12px"
             }}>
+                {/* Search Bar Input and Button */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexGrow: 1, minWidth: "260px" }}>
+                    <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Search Products</label>
+                    <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ position: "relative", flexGrow: 1 }}>
+                            <input 
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                placeholder="Search by name..."
+                                style={{
+                                    width: "100%",
+                                    background: "#ffffff",
+                                    color: "var(--text-main)",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: "8px",
+                                    padding: "10px 36px 10px 16px",
+                                    fontSize: "0.9rem",
+                                    outline: "none",
+                                    transition: "border-color 0.2s"
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = "var(--text-main)"}
+                                onBlur={(e) => e.target.style.borderColor = "var(--border)"}
+                            />
+                            {searchTerm && (
+                                <button 
+                                    type="button"
+                                    onClick={handleSearchClear}
+                                    style={{
+                                        position: "absolute",
+                                        right: "10px",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        background: "transparent",
+                                        border: "none",
+                                        color: "var(--text-muted)",
+                                        cursor: "pointer",
+                                        fontSize: "1.1rem",
+                                        padding: 0
+                                    }}
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                        <button 
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ padding: "10px 20px", borderRadius: "8px", fontSize: "0.9rem" }}
+                        >
+                            Search
+                        </button>
+                    </form>
+                </div>
+
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Category</label>
                     <select 
@@ -375,6 +526,28 @@ export default function AdminProductsPage() {
                         <option value="visible">Visible Only</option>
                         <option value="hidden">Hidden Only</option>
                     </select>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignSelf: "flex-end" }}>
+                    <button 
+                        onClick={handleClearAllFilters}
+                        className="btn btn-secondary"
+                        style={{ 
+                            padding: "10px 20px", 
+                            borderRadius: "8px", 
+                            fontSize: "0.85rem", 
+                            fontWeight: 600, 
+                            height: "41px", 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            gap: "8px",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><polyline points="16 3 21 8 16 13"></polyline><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><polyline points="8 21 3 16 8 11"></polyline></svg>
+                        Clear Filters
+                    </button>
                 </div>
             </div>
 
@@ -476,7 +649,7 @@ export default function AdminProductsPage() {
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '32px' }}>
                             {page > 1 && (
                                 <button
-                                    onClick={() => setPage(page - 1)}
+                                    onClick={() => changePage(page - 1)}
                                     className="btn btn-secondary"
                                     style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                                 >
@@ -489,7 +662,7 @@ export default function AdminProductsPage() {
                                 return (
                                     <button
                                         key={p}
-                                        onClick={() => setPage(p)}
+                                        onClick={() => changePage(p)}
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -513,7 +686,7 @@ export default function AdminProductsPage() {
                             
                             {page < totalPages && (
                                 <button
-                                    onClick={() => setPage(page + 1)}
+                                    onClick={() => changePage(page + 1)}
                                     className="btn btn-secondary"
                                     style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
                                 >
