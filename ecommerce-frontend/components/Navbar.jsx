@@ -50,6 +50,7 @@ export default function Navbar() {
 
     const profileTimeoutRef = useRef(null);
     const categoriesTimeoutRef = useRef(null);
+    const profileRef = useRef(null);
 
     const handleProfileMouseEnter = () => {
         if (profileTimeoutRef.current) clearTimeout(profileTimeoutRef.current);
@@ -60,6 +61,11 @@ export default function Navbar() {
         profileTimeoutRef.current = setTimeout(() => {
             setProfileOpen(false);
         }, 300); // 300ms grace period
+    };
+
+    const handleProfileClick = (e) => {
+        e.stopPropagation();
+        setProfileOpen(prev => !prev);
     };
 
     const handleCategoriesMouseEnter = () => {
@@ -147,6 +153,9 @@ export default function Navbar() {
         const handleClickOutside = (e) => {
             if (searchRef.current && !searchRef.current.contains(e.target)) {
                 setSearchResults([]);
+            }
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false);
             }
         };
 
@@ -291,9 +300,11 @@ export default function Navbar() {
                     <div style={{ position: 'relative' }}>
                         {user ? (
                             <div
+                                ref={profileRef}
                                 onMouseEnter={handleProfileMouseEnter}
                                 onMouseLeave={handleProfileMouseLeave}
-                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer' }}
+                                onClick={handleProfileClick}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', cursor: 'pointer', userSelect: 'none', WebkitUserSelect: 'none' }}
                             >
                                 <div style={{ 
                                     width: '24px', 
@@ -305,11 +316,13 @@ export default function Navbar() {
                                     alignItems: 'center', 
                                     justifyContent: 'center', 
                                     fontWeight: 700, 
-                                    fontSize: '0.65rem'
+                                    fontSize: '0.65rem',
+                                    userSelect: 'none',
+                                    WebkitUserSelect: 'none'
                                 }}>
                                     {getInitials(user.name)}
                                 </div>
-                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Profile</span>
+                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)', userSelect: 'none', WebkitUserSelect: 'none' }}>Profile</span>
 
                                 {profileOpen && (
                                     <div style={{ position: 'absolute', top: '38px', right: 0, width: '220px', zIndex: 1100 }}>
@@ -318,14 +331,14 @@ export default function Navbar() {
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
                                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
                                             </div>
-                                            <Link href="/orders" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
+                                            <Link href="/orders" onClick={() => setProfileOpen(false)} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
                                                 My Orders
                                             </Link>
-                                            <Link href="/wishlist" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
+                                            <Link href="/wishlist" onClick={() => setProfileOpen(false)} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
                                                 My Wishlist
                                             </Link>
                                             {user.role === 'admin' && (
-                                                <Link href="/admin" className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)', borderRadius: '6px' }}>
+                                                <Link href="/admin" onClick={() => setProfileOpen(false)} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)', borderRadius: '6px' }}>
                                                     Admin Panel
                                                 </Link>
                                             )}
@@ -344,10 +357,10 @@ export default function Navbar() {
                         ) : (
                             <Link 
                                 href="/login" 
-                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
+                                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)', userSelect: 'none', WebkitUserSelect: 'none' }}
                             >
                                 <User size={22} />
-                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Profile</span>
+                                <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)', userSelect: 'none', WebkitUserSelect: 'none' }}>Profile</span>
                             </Link>
                         )}
                     </div>
