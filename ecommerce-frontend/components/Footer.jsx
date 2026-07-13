@@ -83,7 +83,7 @@ export default function Footer() {
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <li><Link href="/products" className="footer-link-navy">All Products</Link></li>
                             <li><Link href="/categories?parent=Jewellery" className="footer-link-navy">Fashion & Jewellery</Link></li>
-                            <li><Link href="/categories?parent=School Supplies" className="footer-link-navy">School Supplies</Link></li>
+                            <li><Link href="/categories?parent=School%20Supplies" className="footer-link-navy">School Supplies</Link></li>
                         </ul>
                     </div>
  

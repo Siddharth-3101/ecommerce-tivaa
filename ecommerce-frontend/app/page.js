@@ -75,7 +75,7 @@ export default async function Home() {
             <section style={{ width: '100%', padding: '0 24px 10px' }}>
                 <div className="promo-banners-grid">
                     {/* Banner 1: School Supplies */}
-                    <Link href="/products?category=School Supplies" style={{ textDecoration: 'none' }}>
+                    <Link href="/products?category=School%20Supplies" style={{ textDecoration: 'none' }}>
                         <div className="promo-banner-card" style={{ background: '#E5F1FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '198px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <Heading as="h2" variant="HomeHeader2" style={{ fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</Heading>
