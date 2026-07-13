@@ -248,8 +248,45 @@ export default function OrderDetailsPage({ params }) {
         }
     };
 
-    const handleBuyAgain = () => {
-        router.push("/");
+    const handleBuyAgain = async () => {
+        try {
+            setSubmitting(true);
+            let successCount = 0;
+            let failedItems = [];
+
+            for (const item of items) {
+                try {
+                    await api.post("/cart", {
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        selected_variation: item.selected_variation || null
+                    });
+                    successCount++;
+                } catch (err) {
+                    console.error(`Failed to add item ${item.name} to cart:`, err);
+                    failedItems.push(item.name);
+                }
+            }
+
+            // Dispatch event to update navbar/cart indicators
+            window.dispatchEvent(new Event('cart-updated'));
+
+            if (failedItems.length > 0) {
+                if (successCount > 0) {
+                    alert(`Some items were added to your cart. However, the following item(s) could not be added (possibly out of stock): ${failedItems.join(", ")}`);
+                    router.push("/cart");
+                } else {
+                    alert(`Could not add items to cart. They might be out of stock: ${failedItems.join(", ")}`);
+                }
+            } else {
+                router.push("/cart");
+            }
+        } catch (err) {
+            console.error("❌ Buy Again Error:", err);
+            alert("Failed to add items to cart. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const hasSuccessParam = searchParams.has("success");
