@@ -49,8 +49,8 @@ export default function ContactPage() {
             {/* Header section */}
             <div className="container" style={{ marginBottom: '48px' }}>
                 <div style={{ marginBottom: '24px' }}>
-                    <Link href="/products" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <ArrowLeft size={16} /> Continue Shopping
+                    <Link href="/" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <ArrowLeft size={16} /> Back
                     </Link>
                 </div>
                 <h1 className="contact-title" style={{ marginBottom: '12px', background: 'var(--gradient-logo)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'block' }}>

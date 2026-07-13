@@ -7,6 +7,8 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Heading from "./Heading";
+import Button from "./Button";
 
 export default function ProductDetailsInfo({ product }) {
     // Parse variations JSON safely
@@ -37,13 +39,25 @@ export default function ProductDetailsInfo({ product }) {
     // Initialize with first option of each variation group
     useEffect(() => {
         const initial = {};
-        parsedVariations.forEach((group) => {
+        let firstImageUrl = null;
+        
+        parsedVariations.forEach((group, idx) => {
             if (group.options && group.options.length > 0) {
                 initial[group.name] = group.options[0].value;
+                if (idx === 0 && group.options[0].image_url) {
+                    firstImageUrl = group.options[0].image_url;
+                }
             }
         });
+        
         setSelectedOptions(initial);
         setQuantity(1); // reset to 1 when product changes
+
+        if (firstImageUrl) {
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('variationImageSelected', { detail: firstImageUrl }));
+            }, 50);
+        }
     }, [product.variations]);
 
     const [buyLoading, setBuyLoading] = useState(false);
@@ -130,9 +144,16 @@ export default function ProductDetailsInfo({ product }) {
                 const matchedOption = group.options.find(opt => opt.value === selectedVal);
                 if (matchedOption) {
                     if (matchedOption.price !== undefined && matchedOption.price !== null && matchedOption.price !== "" && Number(matchedOption.price) > 0) {
-                        price = Number(matchedOption.price);
-                        originalPrice = Number(matchedOption.price);
-                        isDiscounted = false; // Override price resets main product discount
+                        const optPrice = Number(matchedOption.price);
+                        if (product.discounted_price && Number(product.discounted_price) > 0 && Number(product.price) > Number(product.discounted_price)) {
+                            price = optPrice;
+                            originalPrice = Math.round(optPrice * (Number(product.price) / Number(product.discounted_price)));
+                            isDiscounted = true;
+                        } else {
+                            price = optPrice;
+                            originalPrice = optPrice;
+                            isDiscounted = false;
+                        }
                     }
                     if (matchedOption.stock !== undefined && matchedOption.stock !== null && matchedOption.stock !== "") {
                         stock = Number(matchedOption.stock);
@@ -150,29 +171,29 @@ export default function ProductDetailsInfo({ product }) {
         <div style={{ display: "flex", flexDirection: "column", gap: "12px", minWidth: 0, paddingRight: '16px', fontFamily: 'var(--font-poppins), sans-serif', height: '100%' }}>
             
             {/* Title */}
-            <h1 style={{ fontSize: '20px', margin: '0', lineHeight: 1.2, fontWeight: 500, color: 'var(--text-main)', letterSpacing: '-0.5px' }} className="product-title-text">
+            <Heading as="h3" variant="HomeHeader2" style={{ margin: '0', lineHeight: 1.2, fontWeight: 500, color: 'var(--text-main)', letterSpacing: '-0.5px' }} className="product-title-text">
                 {product.name}
-            </h1>
+            </Heading>
 
             {/* Price section */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     {displayIsDiscounted ? (
                         <>
-                            <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }} className="product-price-text">
+                            <span style={{ fontSize: '19.2px', fontWeight: 700, color: 'var(--accent)' }} className="product-price-text">
                                 ₹{displayPrice}
                             </span>
-                            <span style={{ fontSize: '18px', fontWeight: 400, textDecoration: 'line-through', color: 'var(--text-muted)' }} className="product-original-price">
+                            <span style={{ fontSize: '14.4px', fontWeight: 400, textDecoration: 'line-through', color: 'var(--text-muted)' }} className="product-original-price">
                                 ₹{displayOriginalPrice}
                             </span>
                         </>
                     ) : (
-                        <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }} className="product-price-text">
+                        <span style={{ fontSize: '19.2px', fontWeight: 700, color: 'var(--accent)' }} className="product-price-text">
                             ₹{displayPrice}
                         </span>
                     )}
                 </div>
-                <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 400 }}>Inclusive of all taxes</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>Inclusive of all taxes</span>
             </div>
 
             {/* Note: product.description removed from here as per user request to move to description tab only */}
@@ -249,71 +270,68 @@ export default function ProductDetailsInfo({ product }) {
             )}
 
             {/* Stock Status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', marginTop: '0px' }}>
-                {displayStock > 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
-                        <span style={{ fontSize: '16px', fontWeight: 500 }}>In Stock</span>
-                    </div>
-                ) : (
+            {displayStock <= 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', marginTop: '0px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--danger)' }}></div>
                         <span style={{ fontSize: '16px', fontWeight: 500 }}>Out of Stock</span>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
-            {/* Action Buttons (Stacked, Full Width) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '0px' }}>
+            {/* Action Buttons (Side by Side) */}
+            <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '0px' }}>
                 {displayStock > 0 ? (
                     <>
-                        <AddToCartButton 
-                            productId={product.id} 
-                            disabled={displayStock <= 0} 
-                            selectedVariation={selectedVariationString}
-                            stock={displayStock}
-                            quantity={quantity}
-                            className="product-details-btn"
-                            style={{ width: '100%', height: '46px', borderRadius: '4px' }}
-                            showIcon={true}
-                        />
-                        <button
-                            onClick={handleBuyNow}
-                            disabled={displayStock <= 0 || buyLoading}
-                            className="btn btn-outline product-details-btn"
-                            style={{
-                                width: "100%",
-                                height: "46px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "8px",
-                                cursor: "pointer",
-                                borderRadius: "4px",
-                                border: "1.5px solid var(--accent)",
-                                color: "var(--accent)",
-                                background: "transparent",
-                                transition: "all 0.2s"
-                            }}
-                        >
-                            {buyLoading ? (
-                                <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(15, 157, 148, 0.3)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'spin 1s ease-in-out infinite' }}></span>
-                            ) : (
-                                <>
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                                    Buy Now
-                                </>
-                            )}
-                        </button>
+                        <div style={{ flex: 1 }}>
+                            <AddToCartButton
+                                productId={product.id}
+                                disabled={displayStock <= 0}
+                                selectedVariation={selectedVariationString}
+                                stock={displayStock}
+                                quantity={quantity}
+                                variant="primary"
+                                style={{ height: '48px', fontSize: '15px' }}
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <Button 
+                                variant="brand-solid"
+                                onClick={handleBuyNow}
+                                style={{ 
+                                    width: "100%", 
+                                    padding: "0 16px", 
+                                    fontSize: "15px", 
+                                    display: "flex", 
+                                    alignItems: "center", 
+                                    justifyContent: "center", 
+                                    gap: "8px", 
+                                    height: '48px',
+                                    fontFamily: "var(--font-poppins), sans-serif",
+                                    textTransform: 'none',
+                                    letterSpacing: '0'
+                                }}
+                                className="product-details-btn"
+                                disabled={displayStock <= 0 || buyLoading}
+                            >
+                                {buyLoading ? (
+                                    <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(255, 255, 255, 0.3)', borderRadius: '50%', borderTopColor: '#ffffff', animation: 'spin 1s ease-in-out infinite' }}></span>
+                                ) : (
+                                    <>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                        Buy Now
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </>
                 ) : null}
-                
+            </div>          
                 <WishlistButton 
                     productId={product.id} 
                     variant="textOutline"
                     className="product-details-btn"
                 />
-            </div>
 
             {/* Stock Availability Banner */}
             {displayStock > 0 && (
@@ -331,7 +349,7 @@ export default function ProductDetailsInfo({ product }) {
                 height: '85px', // Set fixed height to align with image tiles
                 background: '#f5f9f8', 
                 borderRadius: '8px', 
-                marginTop: 'auto',
+                marginTop: '20px',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
@@ -371,9 +389,30 @@ export default function ProductDetailsInfo({ product }) {
                     color: white !important;
                 }
                 
+                /* Product Typography Overrides */
+                .product-title-text {
+                    font-size: 0.85rem !important;
+                    font-weight: 600 !important;
+                    font-family: var(--font-poppins), sans-serif !important;
+                    color: var(--text-main) !important;
+                }
+                .product-price-text {
+                    font-size: 19.2px !important;
+                    font-weight: 700 !important;
+                    font-family: var(--font-poppins), sans-serif !important;
+                    color: var(--accent) !important;
+                }
+                .product-original-price {
+                    font-size: 14.4px !important;
+                    font-weight: 400 !important;
+                    font-family: var(--font-poppins), sans-serif !important;
+                    color: var(--text-muted) !important;
+                    text-decoration: line-through !important;
+                }
+                
                 /* Actions buttons fonts */
                 .product-details-btn {
-                    font-size: 20px !important;
+                    font-size: 15px !important;
                     font-weight: 600 !important;
                     font-family: var(--font-poppins), sans-serif !important;
                 }
@@ -381,16 +420,16 @@ export default function ProductDetailsInfo({ product }) {
                 /* Mobile typography overrides */
                 @media (max-width: 768px) {
                     .product-title-text {
-                        font-size: 16px !important;
+                        font-size: 0.85rem !important;
                     }
                     .product-price-text {
-                        font-size: 20px !important;
+                        font-size: 16px !important;
                     }
                     .product-original-price {
-                        font-size: 14px !important;
+                        font-size: 12px !important;
                     }
                     .product-details-btn {
-                        font-size: 16px !important;
+                        font-size: 14px !important;
                     }
                 }
             `}</style>

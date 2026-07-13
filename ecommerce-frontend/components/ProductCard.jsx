@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import WishlistButton from "./WishlistButton";
+import Button from "./Button";
 
 export default function ProductCard({ product, variant = "default", onRemoveFromWishlist }) {
     const [loading, setLoading] = useState(false);
@@ -137,11 +138,6 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                     boxShadow: 'var(--shadow-sm)'
                 }}
             >
-                <Link 
-                    href={`/product/${product.id}`} 
-                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} 
-                    aria-label={product.name}
-                />
                 <div style={{ position: 'relative', width: '100%', padding: '16px 16px 0', aspectRatio: '1/1', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img
                         src={product.image_url ? product.image_url.split(",")[0].trim() : "/placeholder.png"}
@@ -164,9 +160,14 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                         </div>
                     </div>
                 </div>
+                <Link 
+                    href={`/product/${product.id}`} 
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }} 
+                    aria-label={product.name}
+                />
                 <style dangerouslySetInnerHTML={{ __html: `
                     .product-card-title { font-size: 12px; font-weight: 500; font-family: var(--font-poppins); }
-                    .product-card-price { font-size: 14px; font-weight: 700; font-family: var(--font-poppins); }
+                    .product-card-price { font-size: 12.6px; font-weight: 600; font-family: var(--font-poppins); }
                     .product-card-rating { font-size: 10px; font-weight: 500; font-family: var(--font-poppins); }
                 `}} />
             </div>
@@ -192,12 +193,6 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                 boxShadow: 'var(--shadow-sm)'
             }}
         >
-            <Link 
-                href={`/product/${product.id}`} 
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} 
-                aria-label={product.name}
-            />
-            
             <div 
                 className="product-image-container" 
                 style={{ 
@@ -210,7 +205,8 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
             >
                 <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
                     {onRemoveFromWishlist ? (
-                        <button 
+                        <Button 
+                            variant="ghost"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -234,7 +230,7 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                             }}
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
+                        </Button>
                     ) : (
                         <WishlistButton productId={product.id} variant="small" />
                     )}
@@ -311,24 +307,27 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                         {product.stock > 0 && (
                             cartQty > 0 ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', borderRadius: '20px', padding: '2px 6px' }}>
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={handleDecrement}
                                         disabled={loading}
                                         style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 'bold', padding: '0 2px', display: 'flex', alignItems: 'center' }}
                                         aria-label="Decrease quantity"
-                                    >-</button>
+                                    >-</Button>
                                     <span style={{ fontSize: '0.8rem', fontWeight: 700, minWidth: '10px', textAlign: 'center', color: 'var(--text-main)' }}>
                                         {cartQty}
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={handleIncrement}
                                         disabled={loading || cartQty >= (product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0)}
                                         style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 'bold', padding: '0 2px', display: 'flex', alignItems: 'center' }}
                                         aria-label="Increase quantity"
-                                    >+</button>
+                                    >+</Button>
                                 </div>
                             ) : (
-                                <button
+                                <Button
+                                    variant="primary"
                                     onClick={handleAddToCart}
                                     disabled={loading || added}
                                     style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', transition: 'all 0.2s ease', border: 'none', cursor: 'pointer', padding: 0, outline: 'none', boxShadow: 'var(--shadow-sm)' }}
@@ -343,12 +342,17 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                                     ) : (
                                         <span style={{ fontSize: '1.1rem', fontWeight: 600, lineHeight: 1 }}>+</span>
                                     )}
-                                </button>
+                                </Button>
                             )
                         )}
                     </div>
                 </div>
             </div>
+            <Link 
+                href={`/product/${product.id}`} 
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }} 
+                aria-label={product.name}
+            />
             <style dangerouslySetInnerHTML={{ __html: `
                 .cart-btn-spinner { width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; border-top-color: #ffffff; animation: spin 0.8s linear infinite; }
                 @keyframes spin { to { transform: rotate(360deg); } }
@@ -356,8 +360,8 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                 .product-price-wrapper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
                 
                 .product-card-title { font-size: 12px; font-weight: 500; font-family: var(--font-poppins); }
-                .product-card-price { font-size: 14px; font-weight: 700; font-family: var(--font-poppins); }
-                .product-card-original-price { font-size: 11px; font-weight: 400; font-family: var(--font-poppins); }
+                .product-card-price { font-size: 12.6px; font-weight: 600; font-family: var(--font-poppins); }
+                .product-card-original-price { font-size: 9.9px; font-weight: 400; font-family: var(--font-poppins); }
             `}} />
         </div>
     );

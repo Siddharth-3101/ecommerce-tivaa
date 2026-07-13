@@ -8,8 +8,9 @@ def main():
         "backend-v5-update.zip", "test-insert.js", "scratch",
         "get_categories.js"
     ]
-    backend_dir = r"C:\Ecommerce\ecommerce-backend"
-    zip_path = r"C:\Ecommerce\backend-deploy.zip"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.join(script_dir, "ecommerce-backend")
+    zip_path = os.path.join(script_dir, "backend-deploy.zip")
 
     if os.path.exists(zip_path):
         try:

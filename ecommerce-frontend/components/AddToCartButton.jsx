@@ -4,8 +4,9 @@ import api from "@/lib/api";
 import { useState, useEffect } from "react";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import Button from "./Button";
 
-export default function AddToCartButton({ productId, disabled, selectedVariation, stock, quantity, style = {}, className = "" }) {
+export default function AddToCartButton({ productId, disabled, selectedVariation, stock, quantity, style = {}, className = "", variant = "primary" }) {
     const [loading, setLoading] = useState(false);
     const [added, setAdded] = useState(false);
     const [cartQty, setCartQty] = useState(0);
@@ -119,28 +120,30 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
     if (cartQty > 0) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-btn, 4px)', height: style.height || '54px', overflow: 'hidden', width: style.width || '100%', background: '#ffffff', ...style }}>
-                <button 
+                <Button 
+                    variant="ghost"
                     onClick={handleDecrement}
                     disabled={loading}
                     className="qty-btn"
-                    style={{ flex: 1, height: '100%', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-main)', fontSize: '1.2rem', fontWeight: 600, padding: 0 }}
+                    style={{ flex: 1, height: '100%', fontSize: '1.2rem', fontWeight: 600, padding: 0 }}
                     aria-label="Decrease quantity"
                 >
                     -
-                </button>
+                </Button>
                 <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-glass)', height: '100%', borderLeft: '1.5px solid var(--border)', borderRight: '1.5px solid var(--border)' }}>
                     <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.1 }}>{cartQty}</span>
                     <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '2px', fontWeight: 600 }}>In Cart</span>
                 </div>
-                <button 
+                <Button 
+                    variant="ghost"
                     onClick={handleIncrement}
                     disabled={loading || cartQty >= maxStock}
                     className="qty-btn"
-                    style={{ flex: 1, height: '100%', border: 'none', background: 'transparent', cursor: cartQty >= maxStock ? 'not-allowed' : 'pointer', color: cartQty >= maxStock ? 'var(--text-light)' : 'var(--text-main)', fontSize: '1.2rem', fontWeight: 600, padding: 0 }}
+                    style={{ flex: 1, height: '100%', cursor: cartQty >= maxStock ? 'not-allowed' : 'pointer', color: cartQty >= maxStock ? 'var(--text-light)' : 'var(--text-main)', fontSize: '1.2rem', fontWeight: 600, padding: 0 }}
                     aria-label="Increase quantity"
                 >
                     +
-                </button>
+                </Button>
                 
                 <style jsx>{`
                     .qty-btn {
@@ -155,9 +158,10 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
     }
 
     return (
-        <button
+        <Button
             onClick={handleAdd}
-            className={`btn btn-primary ${added ? 'btn-success' : ''} ${className}`}
+            variant={variant}
+            className={`${added ? 'btn-success' : ''} ${className}`}
             disabled={loading || disabled || added}
             style={{ 
                 width: "100%", 
@@ -201,6 +205,6 @@ export default function AddToCartButton({ productId, disabled, selectedVariation
                     to { transform: rotate(360deg); }
                 }
             `}</style>
-        </button>
+        </Button>
     );
 }

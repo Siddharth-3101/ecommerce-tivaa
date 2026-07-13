@@ -188,7 +188,7 @@ export default function AdminOrderDetails({ params }) {
                                 textTransform: "capitalize",
                                 display: "inline-block"
                             }}>
-                                {order.order_status || "Pending"}
+                                {order.order_status?.toLowerCase() === "processing" ? "Confirmed" : (order.order_status || "Pending")}
                             </span>
                         </div>
 
@@ -203,7 +203,7 @@ export default function AdminOrderDetails({ params }) {
                                 >
                                     <option value="pending">Pending</option>
                                     <option value="paid">Paid</option>
-                                    <option value="processing">Processing</option>
+                                    <option value="processing">Confirmed</option>
                                     <option value="shipped">Shipped</option>
                                     <option value="delivered">Delivered</option>
                                     <option value="cancelled">Cancelled</option>

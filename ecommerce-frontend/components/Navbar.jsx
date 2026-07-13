@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut, Package, Home } from "lucide-react";
+import Button from "./Button";
 
 // Recreated premium line-art vector icons from the theme assets
 const CustomSearchIcon = ({ size = 20, ...props }) => (
@@ -174,25 +175,6 @@ export default function Navbar() {
         });
     }, [pathname]);
 
-    // Live search effect
-    useEffect(() => {
-        const timer = setTimeout(async () => {
-            if (searchQuery.trim().length > 1) {
-                setIsSearching(true);
-                try {
-                    const res = await api.get(`/products/search?q=${encodeURIComponent(searchQuery)}`);
-                    const data = res.data;
-                    setSearchResults(Array.isArray(data) ? data.slice(0, 5) : []);
-                } catch (err) {
-                    setSearchResults([]);
-                }
-                setIsSearching(false);
-            } else {
-                setSearchResults([]);
-            }
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
 
     const handleLogout = () => {
         logout();
@@ -226,14 +208,15 @@ export default function Navbar() {
 
                 {/* LEFT: Hamburger Menu Toggle & Brand Logo with text */}
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, justifyContent: "flex-start" }}>
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={handleTopMenuClick}
                         className="desktop-only"
                         style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center' }}
                         aria-label="Open menu"
                     >
                         <Menu size={24} />
-                    </button>
+                    </Button>
                     <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
                         <img 
                             src="/logo.png" 
@@ -258,6 +241,7 @@ export default function Navbar() {
                                 router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
                                 setSearchOpen(false);
                                 setSearchResults([]);
+                                setSearchQuery("");
                             }
                         }}
                         style={{ display: "flex", alignItems: "center", position: "relative", width: "100%", maxWidth: "450px" }}
@@ -279,47 +263,13 @@ export default function Navbar() {
                         <Search size={18} style={{ position: 'absolute', left: '16px', color: 'var(--text-muted)' }} />
                         {isSearching && <span className="search-loader"></span>}
 
-                        {/* Live Search dropdown overlay */}
-                        {searchResults.length > 0 && (
-                            <div className="card" style={{ position: 'absolute', top: '54px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
-                                {searchResults.map(item => (
-                                    <Link 
-                                        key={item.id} 
-                                        href={`/product/${item.id}`} 
-                                        onClick={() => { setSearchResults([]); setSearchQuery(""); }} 
-                                        className="dropdown-item" 
-                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
-                                    >
-                                        <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
-                                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
+
                     </form>
                 </div>
 
                 {/* RIGHT: Utility Icons (Wishlist, Orders, Profile) */}
                 <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "flex-end", flex: 1 }}>
 
-                    {/* Wishlist Link */}
-                    <Link 
-                        href="/wishlist" 
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', textDecoration: 'none', color: 'var(--text-main)' }}
-                    >
-                        <div style={{ position: 'relative', display: 'inline-flex' }}>
-                            <Heart size={22} />
-                            {wishlistCount > 0 && (
-                                <span className="nav-badge">
-                                    {wishlistCount}
-                                </span>
-                            )}
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)' }}>Wishlist</span>
-                    </Link>
 
                     {/* Cart Link */}
                     <Link 
@@ -380,12 +330,13 @@ export default function Navbar() {
                                                 </Link>
                                             )}
                                             <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }}></div>
-                                            <button 
+                                            <Button 
+                                                variant="ghost"
                                                 onClick={handleLogout} 
                                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#ff4d4d', background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
                                             >
                                                 Logout
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
@@ -411,6 +362,7 @@ export default function Navbar() {
                         if (searchQuery.trim()) {
                             router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
                             setSearchResults([]);
+                            setSearchQuery("");
                         }
                     }}
                     style={{ display: "flex", alignItems: "center", position: "relative" }}
@@ -433,26 +385,7 @@ export default function Navbar() {
                     <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)' }} />
                     {isSearching && <span className="search-loader" style={{ right: '12px', top: '11px' }}></span>}
 
-                    {/* Live Search dropdown overlay */}
-                    {searchResults.length > 0 && (
-                        <div className="card" style={{ position: 'absolute', top: '42px', left: 0, width: '100%', padding: '8px', zIndex: 1200, background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)' }}>
-                            {searchResults.map(item => (
-                                <Link 
-                                    key={item.id} 
-                                    href={`/product/${item.id}`} 
-                                    onClick={() => { setSearchResults([]); setSearchQuery(""); }} 
-                                    className="dropdown-item" 
-                                    style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '8px' }}
-                                >
-                                    <img src={item.image_url ? item.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '4px' }} />
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
-                                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{item.price}</p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
+
                 </form>
             </div>
 
@@ -470,20 +403,20 @@ export default function Navbar() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                             <Link href="/" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
                                 <img src="/logo.png" style={{ height: '40px', objectFit: 'contain' }} alt="Tivaa Logo" />
-                                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '1.25rem', fontFamily: 'var(--font-poppins)', letterSpacing: '0.5px' }}>TIVAA Elegance</span>
+                                <span style={{ color: 'var(--text-main)', fontWeight: 700, fontSize: '0.88rem', fontFamily: 'var(--font-poppins)', letterSpacing: '0.5px' }}>TIVAA Elegance</span>
                             </Link>
-                            <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></button>
+                            <Button variant="ghost" onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', padding: '8px', cursor: 'pointer', color: 'var(--text-main)' }}><X size={24} /></Button>
                         </div>
 
                         {/* Search in Drawer */}
                         <form onSubmit={(e) => { e.preventDefault(); router.push(`/products?q=${encodeURIComponent(searchQuery)}`); setMobileMenuOpen(false); setSearchQuery(""); }}>
-                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: 'var(--radius-input, 12px)', borderColor: 'var(--border)', height: '38px', padding: '8px 12px', fontSize: '0.85rem' }} />
+                            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="input-field" style={{ width: '100%', borderRadius: 'var(--radius-input, 12px)', borderColor: 'var(--border)', height: '38px', padding: '8px 12px', fontSize: '0.6rem' }} />
                         </form>
 
                         {/* Navigation links inside Mobile Drawer */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflowY: 'auto' }}>
-                            <Link href="/" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                            <Link href="/products" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '12px 8px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>All Products</Link>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto' }}>
+                            <Link href="/" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '6px 8px', fontSize: '0.63rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>Home</Link>
+                            <Link href="/categories" className="btn" style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '6px 8px', fontSize: '0.63rem', textTransform: 'uppercase', letterSpacing: '1px' }} onClick={() => setMobileMenuOpen(false)}>View Categories</Link>
                             
                             {(() => {
                                 const parents = categories.filter(c => !c.parent_id);
@@ -495,9 +428,9 @@ export default function Navbar() {
                                     return (
                                         <div key={parent.id} style={{ display: 'flex', flexDirection: 'column' }}>
                                             <Link 
-                                                href={`/products?category=${encodeURIComponent(parent.name)}`} 
+                                                href={`/categories?parent=${encodeURIComponent(parent.name)}`} 
                                                 className="btn" 
-                                                style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '10px 8px', fontSize: '0.88rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }} 
+                                                style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-main)', borderBottom: '1px solid #f5f5f5', borderRadius: 0, padding: '5px 8px', fontSize: '0.62rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }} 
                                                 onClick={() => setMobileMenuOpen(false)}
                                             >
                                                 {parent.name}
@@ -508,7 +441,7 @@ export default function Navbar() {
                                                     key={child.id} 
                                                     href={`/products?category=${encodeURIComponent(child.name)}`} 
                                                     className="btn" 
-                                                    style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '6px 12px 6px 24px', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} 
+                                                    style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '3px 12px 3px 24px', fontSize: '0.57rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} 
                                                     onClick={() => setMobileMenuOpen(false)}
                                                 >
                                                     ↳ {child.name}
@@ -585,7 +518,7 @@ export default function Navbar() {
                     padding: 0 40px;
                 }
                 .logo-text {
-                    font-size: 1.35rem;
+                    font-size: 1.01rem;
                 }
                 @media (max-width: 768px) {
                     .navbar-inner-container {
@@ -599,30 +532,25 @@ export default function Navbar() {
         </header>
 
         {/* Mobile Bottom Navigation Bar (Rendered outside the header container to avoid backdrop-filter limitations!) */}
-        <div className="mobile-bottom-nav">
-            <Link href="/" className={`mobile-bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
-                <Home size={20} />
-                <span>Home</span>
-            </Link>
-            <button onClick={() => setMobileMenuOpen(true)} className="mobile-bottom-nav-item" style={{ cursor: 'pointer' }}>
-                <Menu size={20} />
-                <span>Categories</span>
-            </button>
-            <Link href="/wishlist" className={`mobile-bottom-nav-item ${pathname === '/wishlist' ? 'active' : ''}`}>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={20} />
-                    {wishlistCount > 0 && <span className="nav-badge-mobile">{wishlistCount}</span>}
-                </div>
-                <span>Wishlist</span>
-            </Link>
-            <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ShoppingCart size={20} />
-                    {count > 0 && <span className="nav-badge-mobile">{count}</span>}
-                </div>
-                <span>Cart</span>
-            </Link>
-        </div>
+        {pathname !== '/login' && (
+            <div className="mobile-bottom-nav">
+                <Link href="/" className={`mobile-bottom-nav-item ${pathname === '/' ? 'active' : ''}`}>
+                    <Home size={20} />
+                    <span>Home</span>
+                </Link>
+                <Link href="/categories" className={`mobile-bottom-nav-item ${pathname === '/categories' ? 'active' : ''}`}>
+                    <Menu size={20} />
+                    <span>Categories</span>
+                </Link>
+                <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ShoppingCart size={20} />
+                        {count > 0 && <span className="nav-badge-mobile">{count}</span>}
+                    </div>
+                    <span>Cart</span>
+                </Link>
+            </div>
+        )}
         </>
     );
 }

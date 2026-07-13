@@ -12,8 +12,8 @@ export default function PrivacyPolicyPage() {
             <div className="container animate-fade-in" style={{ maxWidth: '850px' }}>
                 
                 {/* Back button */}
-                <Link href="/products" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-                    <ArrowLeft size={16} /> Continue Shopping
+                <Link href="/" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+                    <ArrowLeft size={16} /> Back
                 </Link>
 
                 {/* Header section */}

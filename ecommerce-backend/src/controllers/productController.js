@@ -1,5 +1,31 @@
 import db from "../config/db.js";
 import { getCache, setCache, clearCache } from "../utils/cache.js";
+ 
+const resolveProductImages = (product) => {
+  if (!product) return product;
+  
+  // If product.image_url is empty, null, or undefined, let's try to extract the first variation image
+  if ((!product.image_url || !product.image_url.trim()) && product.variations) {
+    try {
+      const parsedObj = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
+      if (Array.isArray(parsedObj)) {
+        for (const group of parsedObj) {
+          if (group.options) {
+            for (const opt of group.options) {
+              if (opt.image_url && opt.image_url.trim()) {
+                product.image_url = opt.image_url.trim();
+                return product;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse variations for fallback image", e);
+    }
+  }
+  return product;
+};
 
 // ===========================================================
 // GET PRODUCTS WITH PAGINATION
@@ -113,7 +139,7 @@ export const getProducts = async (req, res) => {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-        products: rows,
+        products: rows.map(resolveProductImages),
       };
 
       if (cacheKey) {
@@ -148,7 +174,7 @@ export const getProductById = (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    return res.json(rows[0]);
+    return res.json(resolveProductImages(rows[0]));
   });
 };
 
@@ -269,17 +295,18 @@ export const searchProducts = (req, res) => {
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.is_active = true AND p.is_visible = true AND (p.name LIKE ? 
         OR p.description LIKE ?
+        OR p.features LIKE ?
         OR c.name LIKE ?)
         ORDER BY (p.stock > 0) DESC, p.id DESC
     `;
 
-  db.query(sql, [searchTerm, searchTerm, searchTerm], (err, rows) => {
+  db.query(sql, [searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
     if (err) {
       console.error("DB Error:", err);
       return res.status(500).json({ message: "Database error: " + err.message });
     }
 
-    return res.json(rows);
+    return res.json(rows.map(resolveProductImages));
   });
 };
 
@@ -325,7 +352,7 @@ export const filterProducts = (req, res) => {
       return res.status(500).json({ message: "Database error: " + err.message });
     }
 
-    return res.json(rows);
+    return res.json(rows.map(resolveProductImages));
   });
 };
 

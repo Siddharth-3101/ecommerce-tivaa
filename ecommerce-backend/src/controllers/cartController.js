@@ -30,9 +30,16 @@ export const getEffectiveProductPriceAndStock = (product, selectedVariationStrin
             const matchedOption = group.options.find(opt => opt.value.trim().toLowerCase() === selectedVal);
             if (matchedOption) {
               if (matchedOption.price !== undefined && matchedOption.price !== null && matchedOption.price !== "" && Number(matchedOption.price) > 0) {
-                price = Number(matchedOption.price);
-                originalPrice = Number(matchedOption.price);
-                isDiscounted = false;
+                const optPrice = Number(matchedOption.price);
+                if (product.discounted_price && Number(product.discounted_price) > 0 && Number(product.price) > Number(product.discounted_price)) {
+                  price = optPrice;
+                  originalPrice = Math.round(optPrice * (Number(product.price) / Number(product.discounted_price)));
+                  isDiscounted = true;
+                } else {
+                  price = optPrice;
+                  originalPrice = optPrice;
+                  isDiscounted = false;
+                }
               }
               if (matchedOption.stock !== undefined && matchedOption.stock !== null && matchedOption.stock !== "") {
                 stock = Number(matchedOption.stock);
@@ -149,12 +156,43 @@ export const getCart = (req, res) => {
 
     const formattedRows = rows.map(row => {
       const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(row, row.selected_variation);
+      
+      let imageUrl = row.image_url;
+      if (row.variations && row.selected_variation) {
+        try {
+          const parsedGroups = typeof row.variations === 'string' ? JSON.parse(row.variations) : row.variations;
+          if (Array.isArray(parsedGroups)) {
+            const selections = row.selected_variation.split(",").reduce((acc, part) => {
+              const splitIdx = part.indexOf(":");
+              if (splitIdx > -1) {
+                acc[part.substring(0, splitIdx).trim().toLowerCase()] = part.substring(splitIdx + 1).trim().toLowerCase();
+              }
+              return acc;
+            }, {});
+
+            for (const group of parsedGroups) {
+              const groupKey = group.name.trim().toLowerCase();
+              const selectedVal = selections[groupKey];
+              if (selectedVal && group.options) {
+                const matchedOption = group.options.find(opt => opt.value.trim().toLowerCase() === selectedVal);
+                if (matchedOption && matchedOption.image_url && matchedOption.image_url.trim()) {
+                  imageUrl = matchedOption.image_url.trim() + (row.image_url ? "," + row.image_url : "");
+                  break;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse variations for cart image resolution", e);
+        }
+      }
+
       return {
         id: row.id,
         product_id: row.product_id,
         name: row.name,
         price: effectivePrice,
-        image_url: row.image_url,
+        image_url: imageUrl,
         quantity: row.quantity,
         selected_variation: row.selected_variation,
         stock: effectiveStock,

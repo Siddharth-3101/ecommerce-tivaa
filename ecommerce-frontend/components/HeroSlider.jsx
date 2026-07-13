@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import HerobannerTextWB from "./hero/HerobannerTextWB";
+import HerobannerTextMB from "./hero/HerobannerTextMB";
+import Button from "./Button";
 
 export default function HeroSlider({ slides = [] }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -54,25 +57,25 @@ export default function HeroSlider({ slides = [] }) {
     const handleTouchEnd = () => {
         if (touchStart.current - touchEnd.current > 50) {
             // Swipe Left -> Next
-            handleNext({ preventDefault: () => {}, stopPropagation: () => {} });
+            handleNext({ preventDefault: () => { }, stopPropagation: () => { } });
         }
         if (touchStart.current - touchEnd.current < -50) {
             // Swipe Right -> Prev
-            handlePrev({ preventDefault: () => {}, stopPropagation: () => {} });
+            handlePrev({ preventDefault: () => { }, stopPropagation: () => { } });
         }
     };
 
     return (
-        <section 
+        <section
             className="hero-slider-section"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            style={{ 
-                position: 'relative', 
-                width: '100%', 
+            style={{
+                position: 'relative',
+                width: '100%',
                 overflow: 'hidden',
                 borderRadius: 'var(--radius-hero, 24px)',
                 background: '#f8fafc',
@@ -80,69 +83,53 @@ export default function HeroSlider({ slides = [] }) {
             }}
         >
             {/* Slides container */}
-            <div 
-                style={{ 
-                    display: 'flex', 
+            <div
+                style={{
+                    display: 'flex',
                     width: '100%',
-                    transform: `translateX(-${currentIndex * 100}%)`, 
-                    transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)' 
+                    transform: `translateX(-${currentIndex * 100}%)`,
+                    transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
             >
                 {slides.map((slide, idx) => (
-                    <div 
-                        key={slide.id || idx} 
-                        style={{ 
-                            position: 'relative', 
-                            minWidth: '100%', 
-                            width: '100%', 
-                            aspectRatio: '1920/412' 
+                    <div
+                        key={slide.id || idx}
+                        style={{
+                            position: 'relative',
+                            minWidth: '100%',
+                            width: '100%',
+                            aspectRatio: '1920/412'
                         }}
                         className="hero-slide-item"
                     >
                         <Link href={slide.link || "/products"} style={{ display: 'block', width: '100%', height: '100%' }}>
-                            <img 
-                                src={isMobile ? (slide.mobile_url || slide.desktop_url) : slide.desktop_url} 
-                                alt={slide.title || "Tivaa Elegance Banner"} 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                            <img
+                                src={isMobile ? (slide.mobile_url || slide.desktop_url) : slide.desktop_url}
+                                alt={slide.title || "Tivaa Elegance Banner"}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 draggable={false}
                             />
 
                             {/* Render overlay ONLY if title or subtitle is explicitly typed by the user (prevents overlapping fallback text on custom upload banners!) */}
                             {(slide.title || slide.subtitle) && (
                                 <div className="hero-slide-overlay">
-                                    <div className="hero-slide-content">
-                                        {slide.title && (
-                                            <h1 className="hero-slide-title">
-                                                {slide.title.toLowerCase().includes("essentials") ? (
-                                                    <>
-                                                        {slide.title.replace(/Essentials/gi, "").trim()}
-                                                        <br />
-                                                        <span className="hero-slide-highlight">Essentials</span>
-                                                    </>
-                                                ) : (
-                                                    slide.title
-                                                )}
-                                            </h1>
-                                        )}
-                                        {slide.subtitle && (
-                                            <p className="hero-slide-subtitle">
-                                                {isMobile && (slide.subtitle.toLowerCase().includes("& more") || slide.subtitle.toLowerCase().includes("&more")) ? (
-                                                    <>
-                                                        {slide.subtitle.split(/& More/i)[0].trim()}
-                                                        <br />
-                                                        & More {slide.subtitle.split(/& More/i)[1]?.trim()}
-                                                    </>
-                                                ) : (
-                                                    slide.subtitle
-                                                )}
-                                            </p>
-                                        )}
-                                        {slide.button_text && (
-                                            <div className="hero-slide-btn">
-                                                {slide.button_text}
-                                            </div>
-                                        )}
-                                    </div>
+                                    {isMobile ? (
+                                        <HerobannerTextMB title={slide.title} subtitle={slide.subtitle}>
+                                            {slide.button_text && (
+                                                <div className="hero-slide-btn">
+                                                    {slide.button_text}
+                                                </div>
+                                            )}
+                                        </HerobannerTextMB>
+                                    ) : (
+                                        <HerobannerTextWB title={slide.title} subtitle={slide.subtitle}>
+                                            {slide.button_text && (
+                                                <div className="hero-slide-btn">
+                                                    {slide.button_text}
+                                                </div>
+                                            )}
+                                        </HerobannerTextWB>
+                                    )}
                                 </div>
                             )}
                         </Link>
@@ -153,20 +140,24 @@ export default function HeroSlider({ slides = [] }) {
             {/* Navigation Arrows */}
             {slides.length > 1 && (
                 <>
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={handlePrev}
                         className="hero-arrow hero-arrow-left"
+                        style={{ padding: 0 }}
                         aria-label="Previous Slide"
                     >
                         <ChevronLeft size={24} />
-                    </button>
-                    <button 
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={handleNext}
                         className="hero-arrow hero-arrow-right"
+                        style={{ padding: 0 }}
                         aria-label="Next Slide"
                     >
                         <ChevronRight size={24} />
-                    </button>
+                    </Button>
                 </>
             )}
 
@@ -174,17 +165,20 @@ export default function HeroSlider({ slides = [] }) {
             {slides.length > 1 && (
                 <div className="hero-dots">
                     {slides.map((_, idx) => (
-                        <button
+                        <Button
+                            variant="ghost"
                             key={idx}
                             onClick={() => setCurrentIndex(idx)}
                             className={`hero-dot ${idx === currentIndex ? 'active' : ''}`}
+                            style={{ padding: 0 }}
                             aria-label={`Go to slide ${idx + 1}`}
                         />
                     ))}
                 </div>
             )}
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .hero-slider-section {
                     aspect-ratio: 1920/412;
                 }

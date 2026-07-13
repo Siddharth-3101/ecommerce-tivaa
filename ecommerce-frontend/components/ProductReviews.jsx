@@ -5,6 +5,8 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import Link from "next/link";
 import { Star, MessageSquare, Calendar, User } from "lucide-react";
+import Heading from "./Heading";
+import Button from "./Button";
 
 export default function ProductReviews({ productId }) {
     const [reviews, setReviews] = useState([]);
@@ -119,7 +121,7 @@ export default function ProductReviews({ productId }) {
                 {/* LEFT COLUMN: RATING AGGREGATION & SUBMISSION */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                     <div className="card" style={{ padding: '32px', background: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center' }}>
-                        <h3 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Customer Reviews</h3>
+                        <Heading as="h3" variant="h3" style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Customer Reviews</Heading>
                         <div style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1 }}>
                             {avgRating}
                         </div>
@@ -133,9 +135,9 @@ export default function ProductReviews({ productId }) {
 
                     {/* WRITE REVIEW FORM */}
                     <div className="card" style={{ padding: '32px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                        <h4 style={{ fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Heading as="h4" variant="h3" style={{ fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <MessageSquare size={18} color="var(--accent)" /> Leave a Review
-                        </h4>
+                        </Heading>
 
                         {!user ? (
                             <div style={{ textAlign: 'center', padding: '12px 0', fontSize: '0.95rem' }}>
@@ -180,11 +182,11 @@ export default function ProductReviews({ productId }) {
                                     />
                                 </div>
 
-                                <button type="submit" className="btn btn-primary" disabled={submitting} style={{ width: '100%', padding: '12px' }}>
+                                <Button type="submit" variant="primary" disabled={submitting} style={{ width: '100%', padding: '12px' }}>
                                     {submitting ? (
                                         <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 1s ease-in-out infinite' }}></span>
                                     ) : "Submit Review"}
-                                </button>
+                                </Button>
                             </form>
                         )}
                     </div>
@@ -192,14 +194,14 @@ export default function ProductReviews({ productId }) {
 
                 {/* RIGHT COLUMN: REVIEWS FEED */}
                 <div>
-                    <h3 style={{ fontSize: '1.4rem', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Heading as="h3" variant="h3" style={{ fontSize: '1.4rem', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         Customer Experiences ({reviews.length})
-                    </h3>
+                    </Heading>
 
                     {reviews.length === 0 ? (
                         <div className="card" style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', borderStyle: 'dashed' }}>
                             <MessageSquare size={36} color="var(--border)" style={{ margin: '0 auto 16px' }} />
-                            <h4 style={{ color: 'var(--text-main)', marginBottom: '8px' }}>No reviews yet</h4>
+                            <Heading as="h4" variant="h3" style={{ color: 'var(--text-main)', marginBottom: '8px' }}>No reviews yet</Heading>
                             <p style={{ fontSize: '0.95rem' }}>Be the first to review this product and share your elegant experience!</p>
                         </div>
                     ) : (
@@ -212,7 +214,7 @@ export default function ProductReviews({ productId }) {
                                                 {r.user_name?.charAt(0).toUpperCase() || <User size={16} />}
                                             </div>
                                             <div>
-                                                <h5 style={{ fontSize: '0.95rem', margin: 0, fontWeight: 600 }}>{r.user_name}</h5>
+                                                <Heading as="h5" variant="h3" style={{ fontSize: '0.95rem', margin: 0, fontWeight: 600 }}>{r.user_name}</Heading>
                                                 <div style={{ marginTop: '2px' }}>
                                                     {renderStars(r.rating, 14)}
                                                 </div>

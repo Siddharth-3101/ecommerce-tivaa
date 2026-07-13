@@ -218,14 +218,85 @@ export const getUserOrders = (req, res) => {
         ORDER BY created_at DESC
     `;
 
-  db.query(sql, [userId], (err, rows) => {
+  db.query(sql, [userId], (err, orders) => {
     if (err) {
       console.error("DB error:", err);
       return res.status(500).json({ message: "Database error" });
     }
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    return res.json(rows);
+    if (orders.length === 0) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      return res.json([]);
+    }
+
+    const orderIds = orders.map(o => o.id);
+    const sqlItems = `
+      SELECT oi.*, p.name, p.image_url, p.variations
+      FROM order_items oi
+      JOIN products p ON p.id = oi.product_id
+      WHERE oi.order_id IN (${orderIds.map(() => "?").join(",")})
+    `;
+
+    db.query(sqlItems, orderIds, (errItems, items) => {
+      if (errItems) {
+        console.error("DB error fetching order items:", errItems);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      const formattedItems = items.map(item => {
+        let imageUrl = item.image_url;
+        if (item.variations && item.selected_variation) {
+          try {
+            const parsedGroups = typeof item.variations === 'string' ? JSON.parse(item.variations) : item.variations;
+            if (Array.isArray(parsedGroups)) {
+              const selections = item.selected_variation.split(",").reduce((acc, part) => {
+                const splitIdx = part.indexOf(":");
+                if (splitIdx > -1) {
+                  acc[part.substring(0, splitIdx).trim().toLowerCase()] = part.substring(splitIdx + 1).trim().toLowerCase();
+                }
+                return acc;
+              }, {});
+
+              for (const group of parsedGroups) {
+                if (group.options && Array.isArray(group.options)) {
+                  const groupName = (group.name || "").trim().toLowerCase();
+                  const selectedVal = selections[groupName];
+                  if (selectedVal) {
+                    const matchedOpt = group.options.find(opt => (opt.value || "").trim().toLowerCase() === selectedVal);
+                    if (matchedOpt && matchedOpt.image_url) {
+                      imageUrl = matchedOpt.image_url;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Error parsing variations in getUserOrders:", e);
+          }
+        }
+        return {
+          ...item,
+          image_url: imageUrl
+        };
+      });
+
+      const itemsByOrderId = {};
+      formattedItems.forEach(item => {
+        if (!itemsByOrderId[item.order_id]) {
+          itemsByOrderId[item.order_id] = [];
+        }
+        itemsByOrderId[item.order_id].push(item);
+      });
+
+      const ordersWithItems = orders.map(order => ({
+        ...order,
+        items: itemsByOrderId[order.id] || []
+      }));
+
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      return res.json(ordersWithItems);
+    });
   });
 };
 
@@ -261,7 +332,8 @@ export const getOrderDetails = (req, res) => {
             SELECT 
                 oi.*, 
                 p.name, 
-                p.image_url
+                p.image_url,
+                p.variations
             FROM order_items oi
             JOIN products p ON p.id = oi.product_id
             WHERE oi.order_id = ?
@@ -273,10 +345,52 @@ export const getOrderDetails = (req, res) => {
         return res.status(500).json({ message: "Database error" });
       }
 
+      const formattedItems = items.map(item => {
+        let imageUrl = item.image_url;
+        if (item.variations && item.selected_variation) {
+          try {
+            const parsedGroups = typeof item.variations === 'string' ? JSON.parse(item.variations) : item.variations;
+            if (Array.isArray(parsedGroups)) {
+              const selections = item.selected_variation.split(",").reduce((acc, part) => {
+                const splitIdx = part.indexOf(":");
+                if (splitIdx > -1) {
+                  acc[part.substring(0, splitIdx).trim().toLowerCase()] = part.substring(splitIdx + 1).trim().toLowerCase();
+                }
+                return acc;
+              }, {});
+
+              for (const group of parsedGroups) {
+                const groupKey = group.name.trim().toLowerCase();
+                const selectedVal = selections[groupKey];
+                if (selectedVal && group.options) {
+                  const matchedOption = group.options.find(opt => opt.value.trim().toLowerCase() === selectedVal);
+                  if (matchedOption && matchedOption.image_url && matchedOption.image_url.trim()) {
+                    imageUrl = matchedOption.image_url.trim() + (item.image_url ? "," + item.image_url : "");
+                    break;
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse variations for order items image resolution", e);
+          }
+        }
+        return {
+          id: item.id,
+          order_id: item.order_id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+          selected_variation: item.selected_variation,
+          name: item.name,
+          image_url: imageUrl
+        };
+      });
+
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       return res.json({
         order: orders[0],
-        items,
+        items: formattedItems,
       });
     });
   });

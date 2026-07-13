@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import Button from "./Button";
 
 export default function WishlistButton({ productId, variant = "large", className = "" }) {
     const [liked, setLiked] = useState(false);
@@ -59,38 +60,40 @@ export default function WishlistButton({ productId, variant = "large", className
 
     if (variant === "textOutline") {
         return (
-            <button
+            <Button
                 onClick={handleToggle}
                 disabled={loading}
+                variant="outline"
                 className={`btn-wishlist-text ${liked ? "active" : ""} ${className}`}
                 style={{
                     width: "100%",
                     height: "46px",
                     borderRadius: "4px",
-                    border: "1px solid var(--border)",
-                    background: liked ? "rgba(15, 157, 148, 0.08)" : "#ffffff",
+                    border: liked ? "1px solid var(--accent)" : "1px solid var(--border)",
+                    background: liked ? "var(--accent)" : "#ffffff",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
                     cursor: "pointer",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    color: liked ? "var(--accent)" : "var(--text-main)",
-                    fontSize: "20px",
+                    color: liked ? "#ffffff" : "var(--text-main)",
+                    fontSize: "14px",
                     fontWeight: 600,
-                    fontFamily: "var(--font-poppins), sans-serif"
+                    fontFamily: "var(--font-poppins), sans-serif",
+                    textTransform: "none"
                 }}
             >
                 <Heart
-                    size={22}
-                    fill={liked ? "var(--accent)" : "none"}
-                    color={liked ? "var(--accent)" : "var(--text-main)"}
+                    size={18}
+                    fill={liked ? "#ffffff" : "none"}
+                    color={liked ? "#ffffff" : "var(--text-main)"}
                     style={{
                         transition: "transform 0.3s ease",
                         transform: loading ? "scale(0.8)" : "scale(1)",
                     }}
                 />
-                {liked ? "Added to Wishlist" : "Add to Wishlist"}
+                {liked ? "Added to wishlist" : "Add to wishlist"}
                 
                 <style dangerouslySetInnerHTML={{ __html: `
                     .btn-wishlist-text:hover {
@@ -103,14 +106,15 @@ export default function WishlistButton({ productId, variant = "large", className
                         transform: scale(0.98);
                     }
                 `}} />
-            </button>
+            </Button>
         );
     }
 
     return (
-        <button
+        <Button
             onClick={handleToggle}
             disabled={loading}
+            variant="ghost"
             className={`btn-wishlist-toggle ${liked ? "active" : ""}`}
             title={liked ? "Remove from Wishlist" : "Add to Wishlist"}
             style={{
@@ -126,6 +130,7 @@ export default function WishlistButton({ productId, variant = "large", className
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 color: liked ? "var(--accent)" : "var(--text-muted)",
                 boxShadow: liked ? (variant === "small" ? "0 2px 8px var(--accent-glow)" : "0 4px 14px var(--accent-glow)") : "var(--shadow-sm)",
+                padding: 0
             }}
         >
             <Heart
@@ -148,6 +153,6 @@ export default function WishlistButton({ productId, variant = "large", className
                     transform: scale(0.95);
                 }
             `}} />
-        </button>
+        </Button>
     );
 }

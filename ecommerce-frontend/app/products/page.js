@@ -2,6 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
 import CategorySelect from "@/components/CategorySelect";
+import Heading from "@/components/Heading";
 
 export const dynamic = "force-dynamic";
 
@@ -129,14 +130,49 @@ export default async function ProductsPage({ searchParams }) {
     ]);
     const totalPages = data.totalPages || 1;
 
+    const showInHomeCats = Array.isArray(categories) 
+        ? categories.filter(c => c.show_in_homepage === 1 || c.show_in_homepage === true)
+        : [];
+    let recommendedProducts = [];
+    if (showInHomeCats.length > 0) {
+        const candidates = category 
+            ? showInHomeCats.filter(c => c.name.toLowerCase() !== category.toLowerCase())
+            : showInHomeCats;
+        const chosenCat = candidates.length > 0 
+            ? candidates[Math.floor(Math.random() * candidates.length)]
+            : showInHomeCats[Math.floor(Math.random() * showInHomeCats.length)];
+        
+        if (chosenCat) {
+            const recData = await fetchProducts(chosenCat.name, null, null, 1);
+            recommendedProducts = (recData.products || []).slice(0, 4);
+        }
+    }
+ 
+    let displayName = category || "Our Collections";
+    if (category && Array.isArray(categories)) {
+        const selectedCat = categories.find(
+            c => c.name.trim().toLowerCase() === category.trim().toLowerCase()
+        );
+        if (selectedCat) {
+            if (selectedCat.parent_id) {
+                const parentCat = categories.find(c => c.id === selectedCat.parent_id);
+                if (parentCat) {
+                    displayName = `${parentCat.name} -> ${selectedCat.name}`;
+                }
+            } else {
+                displayName = selectedCat.name;
+            }
+        }
+    }
+ 
     return (
-        <div className="animate-fade-in" style={{ padding: '40px 0 80px' }}>
-            <div className="container" style={{ marginBottom: '24px' }}>
-                <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', marginBottom: '12px', fontWeight: 300, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-main)' }}>
-                    {query ? `Search results` : category ? `${category}` : "Our Collections"}
-                </h1>
+        <div className="animate-fade-in" style={{ padding: '20px 0 60px' }}>
+            <div className="container" style={{ marginBottom: '12px' }}>
+                <Heading as="h2" variant="HomeHeader2" style={{ marginBottom: '12px', textTransform: 'none', letterSpacing: 'normal' }}>
+                    {query ? `Search results` : displayName}
+                </Heading>
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
-                    {query ? `${data.total || 0} items found matching your search.` : ""}
+                    {query ? `${data.total || 0} items found matching your search "${query}"` : ""}
                 </p>
 
 
@@ -147,7 +183,7 @@ export default async function ProductsPage({ searchParams }) {
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     gap: '16px',
-                    marginTop: '24px',
+                    marginTop: '12px',
                     paddingBottom: '16px',
                     borderBottom: '1px solid var(--border)'
                 }}>
@@ -174,7 +210,7 @@ export default async function ProductsPage({ searchParams }) {
                             <div style={{ width: '80px', height: '80px', margin: '0 auto 20px', borderRadius: '50%', background: 'rgba(54, 46, 42, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             </div>
-                            <h3 style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text-main)' }}>No products found</h3>
+                            <Heading as="h3" variant="h3" style={{ fontSize: '1.5rem', marginBottom: '8px', color: 'var(--text-main)' }}>No products found</Heading>
                             <p>Try adjusting your search or filter criteria.</p>
                             <Link href="/products" className="btn btn-secondary" style={{ marginTop: '24px' }}>Clear Filters</Link>
                         </div>
@@ -233,6 +269,19 @@ export default async function ProductsPage({ searchParams }) {
                     </div>
                 )}
             </section>
+
+            {recommendedProducts.length > 0 && (
+                <section className="container" style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid var(--border)', marginBottom: '40px' }}>
+                    <Heading as="h2" variant="HomeHeader2" style={{ marginBottom: '20px' }}>
+                        You May Also Like
+                    </Heading>
+                    <div className="product-grid-boutique">
+                        {recommendedProducts.map((p) => (
+                            <ProductCard key={p.id} product={p} />
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }

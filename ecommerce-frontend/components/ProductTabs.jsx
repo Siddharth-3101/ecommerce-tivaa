@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Button from "./Button";
 
 export default function ProductTabs({ description, features }) {
     const hasDesc = description && description.trim() && description.trim() !== "<p><br></p>" && description.trim() !== "<p></p>";
@@ -29,11 +30,15 @@ export default function ProductTabs({ description, features }) {
             {/* Tab Headers */}
             {showHeaders && (
                 <div style={{ borderBottom: '1px solid var(--border)', display: 'flex', gap: '32px', marginBottom: '32px' }}>
-                    <button 
+                    <Button 
+                        variant="ghost"
                         onClick={() => setActiveTab("description")}
                         style={{ 
-                            fontSize: '18px', 
+                            fontSize: '14px', 
                             paddingBottom: '12px', 
+                            paddingTop: '8px',
+                            paddingLeft: '8px',
+                            paddingRight: '8px',
                             border: 'none',
                             borderBottom: activeTab === "description" ? '2px solid var(--accent)' : '2px solid transparent', 
                             color: activeTab === "description" ? 'var(--accent)' : 'var(--text-muted)', 
@@ -41,16 +46,21 @@ export default function ProductTabs({ description, features }) {
                             cursor: 'pointer',
                             background: 'transparent',
                             outline: 'none',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            borderRadius: 0
                         }}
                     >
                         Description
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
+                        variant="ghost"
                         onClick={() => setActiveTab("features")}
                         style={{ 
-                            fontSize: '18px', 
+                            fontSize: '14px', 
                             paddingBottom: '12px', 
+                            paddingTop: '8px',
+                            paddingLeft: '8px',
+                            paddingRight: '8px',
                             border: 'none',
                             borderBottom: activeTab === "features" ? '2px solid var(--accent)' : '2px solid transparent', 
                             color: activeTab === "features" ? 'var(--accent)' : 'var(--text-muted)', 
@@ -58,11 +68,12 @@ export default function ProductTabs({ description, features }) {
                             cursor: 'pointer',
                             background: 'transparent',
                             outline: 'none',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            borderRadius: 0
                         }}
                     >
                         Product Features
-                    </button>
+                    </Button>
                 </div>
             )}
             
@@ -71,7 +82,7 @@ export default function ProductTabs({ description, features }) {
                 {((!showHeaders && hasDesc) || (showHeaders && activeTab === "description")) && (
                     <div 
                         className="quill-content"
-                        style={{ color: 'var(--text-main)', fontSize: '16px', lineHeight: 1.6, fontWeight: 400 }}
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
                         dangerouslySetInnerHTML={{ __html: description }}
                     />
                 )}
@@ -79,8 +90,8 @@ export default function ProductTabs({ description, features }) {
                 {((!showHeaders && hasFeatures) || (showHeaders && activeTab === "features")) && (
                     <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {features.split('\n').filter(f => f.trim()).map((feature, idx) => (
-                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: 'var(--text-main)', fontSize: '16px' }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: 'var(--text-main)', fontSize: '13px' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '3px' }}><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 <span>{feature}</span>
                             </li>
                         ))}

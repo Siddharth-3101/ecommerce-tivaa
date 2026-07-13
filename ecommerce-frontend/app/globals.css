@@ -446,6 +446,21 @@ a:hover {
     color: #1a1a1a;
 }
 
+.btn-brand-solid {
+    background-color: var(--text-main);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(23, 59, 99, 0.2);
+    transition: all 0.25s ease;
+}
+
+.btn-brand-solid:hover {
+    background-color: var(--accent);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 157, 148, 0.3);
+}
+
 .btn-outline-white {
     background-color: transparent;
     color: #ffffff;
@@ -680,7 +695,7 @@ a:hover {
 /* Global Boutique Responsive Product Grid */
 .product-grid-boutique {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 32px 24px;
 }
 
@@ -927,7 +942,7 @@ a:hover {
 }
 
 .section-heading-homepage {
-    font-size: 22px;
+    font-size: 16.5px;
     font-weight: 600;
     color: var(--text-main);
     margin: 0;
@@ -935,7 +950,7 @@ a:hover {
 }
 @media (max-width: 768px) {
     .section-heading-homepage {
-        font-size: 18px !important;
+        font-size: 13.5px !important;
     }
 }
 
@@ -1213,4 +1228,10 @@ a:hover {
 }
 .category-card-container:hover .category-card-img {
     transform: scale(1.05);
+}
+
+@media (max-width: 900px) {
+    main {
+        padding-bottom: 80px !important;
+    }
 }

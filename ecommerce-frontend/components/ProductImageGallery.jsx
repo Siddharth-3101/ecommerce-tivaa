@@ -10,10 +10,19 @@ export default function ProductImageGallery({ images = [], productName = "Produc
     const [isZoomed, setIsZoomed] = useState(false);
 
     useEffect(() => {
-        const handleEvent = (e) => setOverrideImage(e.detail);
+        const handleEvent = (e) => {
+            const imageUrl = e.detail;
+            setOverrideImage(imageUrl);
+            if (imageUrl) {
+                const idx = images.findIndex(img => img && img.trim() === imageUrl.trim());
+                if (idx !== -1) {
+                    setActiveIndex(idx);
+                }
+            }
+        };
         window.addEventListener('variationImageSelected', handleEvent);
         return () => window.removeEventListener('variationImageSelected', handleEvent);
-    }, []);
+    }, [images]);
 
     const handleMouseMove = (e) => {
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();

@@ -49,7 +49,31 @@ export default async function ProductPage({ params }) {
         );
     }
 
-    const images = product.image_url ? product.image_url.split(',') : [];
+    // Parse variations to extract images
+    let variationImages = [];
+    if (product.variations) {
+        try {
+            const parsedObj = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
+            if (Array.isArray(parsedObj)) {
+                parsedObj.forEach((group) => {
+                    if (group.options) {
+                        group.options.forEach((opt) => {
+                            if (opt.image_url && opt.image_url.trim() && !variationImages.includes(opt.image_url.trim())) {
+                                variationImages.push(opt.image_url.trim());
+                            }
+                        });
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Failed to parse variations for image extraction", e);
+        }
+    }
+
+    const baseImages = product.image_url ? product.image_url.split(',') : [];
+    const imagesSet = new Set([...baseImages, ...variationImages].map(img => img.trim()).filter(Boolean));
+    const images = Array.from(imagesSet);
+
     const relatedProducts = await fetchRelatedProducts(product.category_name, product.id);
 
     // Calculate a mock discount for demo purposes, or derive from price/discounted_price
@@ -64,7 +88,7 @@ export default async function ProductPage({ params }) {
             <div className="container" style={{ maxWidth: '1200px' }}>
                 
                 {/* Breadcrumbs */}
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                     <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'none' }}>Home</Link>
                     <span>&gt;</span>
                     {product.category_name ? (
@@ -80,7 +104,7 @@ export default async function ProductPage({ params }) {
 
                 <div className="product-details-grid" style={{ gap: '48px', alignItems: 'stretch' }}>
                     {/* LEFT SECTION (IMAGE GALLERY) */}
-                    <div className="sticky-gallery" style={{ top: '100px', height: '100%' }}>
+                    <div className="sticky-gallery" style={{ height: '100%' }}>
                         <ProductImageGallery key={`gallery-${product.id}`} images={images} productName={product.name} discount={discountBadge} />
                     </div>
 
