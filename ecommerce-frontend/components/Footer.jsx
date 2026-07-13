@@ -84,8 +84,6 @@ export default function Footer() {
                             <li><Link href="/products" className="footer-link-navy">All Products</Link></li>
                             <li><Link href="/categories?parent=Jewellery" className="footer-link-navy">Fashion & Jewellery</Link></li>
                             <li><Link href="/categories?parent=School Supplies" className="footer-link-navy">School Supplies</Link></li>
-                            <li><Link href="/products" className="footer-link-navy">New Arrivals</Link></li>
-                            <li><Link href="/categories" className="footer-link-navy">View Categories</Link></li>
                         </ul>
                     </div>
  
@@ -93,8 +91,6 @@ export default function Footer() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <Heading as="h4" variant="h3" style={{ color: '#ffffff', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Customer Service</Heading>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <li><Link href="/orders" className="footer-link-navy">My Orders</Link></li>
-                            <li><Link href="/wishlist" className="footer-link-navy">Wishlist</Link></li>
                             <li><Link href="/faq" className="footer-link-navy">Shipping & Delivery</Link></li>
                             <li><Link href="/refund-policy" className="footer-link-navy">Returns & Exchanges</Link></li>
                             <li><Link href="/faq" className="footer-link-navy">FAQs</Link></li>
