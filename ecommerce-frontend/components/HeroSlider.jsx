@@ -7,6 +7,21 @@ import HerobannerTextWB from "./hero/HerobannerTextWB";
 import HerobannerTextMB from "./hero/HerobannerTextMB";
 import Button from "./Button";
 
+const cleanAndEncodeLink = (link) => {
+    if (!link) return "/products";
+    let cleanLink = link.trim();
+    // Strip localhost:3001 domain if present to make it relative
+    if (cleanLink.includes("localhost:3001")) {
+        cleanLink = cleanLink.replace(/https?:\/\/localhost:3001/, "");
+    }
+    // URL-encode query string spaces/special characters
+    try {
+        return encodeURI(cleanLink);
+    } catch (e) {
+        return cleanLink;
+    }
+};
+
 export default function HeroSlider({ slides = [] }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
@@ -102,7 +117,7 @@ export default function HeroSlider({ slides = [] }) {
                         }}
                         className="hero-slide-item"
                     >
-                        <Link href={slide.link || "/products"} style={{ display: 'block', width: '100%', height: '100%' }}>
+                        <Link href={cleanAndEncodeLink(slide.link)} style={{ display: 'block', width: '100%', height: '100%' }}>
                             <img
                                 src={isMobile ? (slide.mobile_url || slide.desktop_url) : slide.desktop_url}
                                 alt={slide.title || "Tivaa Elegance Banner"}
