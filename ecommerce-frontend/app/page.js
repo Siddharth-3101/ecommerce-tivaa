@@ -11,7 +11,7 @@ export const revalidate = 10;
 
 async function fetchLandingData() {
     const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-    
+
     try {
         const [prodRes, catRes] = await Promise.all([
             fetch(`${backendUrl}/api/products?limit=1000`, { cache: 'no-store' }),
@@ -30,9 +30,9 @@ async function fetchLandingData() {
             categories = await catRes.json();
         }
 
-        return { 
-            products: products, 
-            categories 
+        return {
+            products: products,
+            categories
         };
     } catch (err) {
         console.error("Error fetching landing data concurrently:", err);
@@ -59,25 +59,30 @@ export default async function Home() {
 
     // Filter categories to show based on "Show in Home Page" flag, fallback to parent categories if empty
     const homepageCategories = categories.filter(c => c.show_in_homepage === 1 || c.show_in_homepage === true);
-    const displayCategories = homepageCategories.length > 0 
-        ? homepageCategories 
+    const displayCategories = homepageCategories.length > 0
+        ? homepageCategories
         : categories.filter(c => !c.parent_id);
 
     const parents = categories.filter(c => !c.parent_id);
 
-    // Look up parent categories dynamically to support ID-based routing
-    const schoolCat = categories.find(c => !c.parent_id && c.name.toLowerCase().includes("school"));
-    const schoolLink = schoolCat ? `/products?category=${schoolCat.id}` : "/products?category=School%20Supplies";
+    // Determine category IDs based on environment (Production vs Local)
+    const isProd = process.env.BACKEND_API_URL && process.env.BACKEND_API_URL.includes("tivaa.in");
+    const schoolId = isProd ? 3 : 1;
+    const jewelleryId = isProd ? 1 : 3;
 
-    const jewelleryCat = categories.find(c => !c.parent_id && c.name.toLowerCase().includes("jewel"));
-    const jewelleryLink = jewelleryCat ? `/products?category=${jewelleryCat.id}` : "/products?category=Jewellery";
+    // Look up category names dynamically by ID and build links
+    const schoolCat = categories.find(c => Number(c.id) === schoolId);
+    const schoolLink = schoolCat ? `/products?category=${encodeURIComponent(schoolCat.name)}` : "/products?category=School%20Supplies";
+
+    const jewelleryCat = categories.find(c => Number(c.id) === jewelleryId);
+    const jewelleryLink = jewelleryCat ? `/products?category=${encodeURIComponent(jewelleryCat.name)}` : "/products?category=Jewellery";
 
     return (
         <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-            
+
             {/* Redesigned Wide Hero Banner */}
             <Hero />
- 
+
             {/* Two Promo Banners */}
             <section style={{ width: '100%', padding: '0 24px 10px' }}>
                 <div className="promo-banners-grid">
@@ -95,16 +100,16 @@ export default async function Home() {
                                 </div>
                             </div>
                             <div className="promo-banner-img-container" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <img 
-                                    src="/school_supplies_bg.jpg" 
-                                    alt="School Supplies" 
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
-                                
+                                <img
+                                    src="/school_supplies_bg.jpg"
+                                    alt="School Supplies"
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }}
+
                                 />
                             </div>
                         </div>
                     </Link>
- 
+
                     {/* Banner 2: Fashion & Jewellery */}
                     <Link href={jewelleryLink} style={{ textDecoration: 'none' }}>
                         <div className="promo-banner-card" style={{ background: '#EEF8F7', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '198px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
@@ -119,10 +124,10 @@ export default async function Home() {
                                 </div>
                             </div>
                             <div className="promo-banner-img-container" style={{ width: '160px', height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <img 
-                                    src="/jewellery_bg.jpg" 
-                                    alt="Fashion & Jewellery" 
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }} 
+                                <img
+                                    src="/jewellery_bg.jpg"
+                                    alt="Fashion & Jewellery"
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px' }}
                                 />
                             </div>
                         </div>
@@ -142,8 +147,8 @@ export default async function Home() {
                             <Heading as="h2" variant="HomeHeader2">
                                 {cat.name}
                             </Heading>
-                            <Link 
-                                href={`/products?category=${encodeURIComponent(cat.name)}`} 
+                            <Link
+                                href={`/products?category=${encodeURIComponent(cat.name)}`}
                                 className="category-view-all"
                             >
                                 View All <span>&gt;</span>
@@ -205,8 +210,8 @@ export default async function Home() {
                                 <Heading as="h2" variant="HomeHeader2">
                                     {parent.name}
                                 </Heading>
-                                <Link 
-                                    href={`/categories?parent=${encodeURIComponent(parent.name)}`} 
+                                <Link
+                                    href={`/categories?parent=${encodeURIComponent(parent.name)}`}
                                     className="category-view-all"
                                 >
                                     View All <span>&gt;</span>
@@ -235,15 +240,15 @@ export default async function Home() {
                                     };
 
                                     return (
-                                        <Link 
-                                            key={sub.id} 
-                                            href={`/products?category=${encodeURIComponent(sub.name)}`} 
+                                        <Link
+                                            key={sub.id}
+                                            href={`/products?category=${encodeURIComponent(sub.name)}`}
                                             className="category-card-container"
                                         >
                                             <div className="category-card-img-wrapper">
-                                                <img 
-                                                    src={getSubcategoryImage(sub)} 
-                                                    alt={sub.name} 
+                                                <img
+                                                    src={getSubcategoryImage(sub)}
+                                                    alt={sub.name}
                                                     className="category-card-img"
                                                     loading="lazy"
                                                 />
@@ -331,7 +336,7 @@ export default async function Home() {
                     </div>
                     {/* Divider */}
                     <div className="feature-info-divider"></div>
-                    
+
                     {/* Item 2 */}
                     <div className="feature-info-item">
                         <div className="feature-info-icon">
@@ -371,7 +376,8 @@ export default async function Home() {
                 </div>
             </section>
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .request-arrow-btn:hover {
                     transform: scale(1.08);
                 }

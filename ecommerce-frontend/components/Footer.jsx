@@ -13,6 +13,10 @@ export default function Footer() {
     }
 
 
+    const isProd = typeof window !== 'undefined' && window.location.hostname.includes("tivaa.in");
+    const schoolId = isProd ? 3 : 4;
+    const jewelleryId = isProd ? 1 : 3;
+
     return (
         <footer style={{ background: '#173B63', color: '#e2e8f0', paddingTop: '24px', paddingBottom: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
             <div className="container" style={{ padding: '0 24px' }}>
@@ -82,8 +86,8 @@ export default function Footer() {
                         <Heading as="h4" variant="h3" style={{ color: '#ffffff', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Shop</Heading>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <li><Link href="/products" className="footer-link-navy">All Products</Link></li>
-                            <li><Link href="/categories?parent=Jewellery" className="footer-link-navy">Fashion & Jewellery</Link></li>
-                            <li><Link href="/categories?parent=School%20Supplies" className="footer-link-navy">School Supplies</Link></li>
+                            <li><Link href={`/categories?parent=${jewelleryId}`} className="footer-link-navy">Fashion & Jewellery</Link></li>
+                            <li><Link href={`/categories?parent=${schoolId}`} className="footer-link-navy">School Supplies</Link></li>
                         </ul>
                     </div>
  
