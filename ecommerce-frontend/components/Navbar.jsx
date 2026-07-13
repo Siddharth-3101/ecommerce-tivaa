@@ -325,7 +325,7 @@ export default function Navbar() {
                                 <span style={{ fontSize: '11px', fontWeight: 500, fontFamily: 'var(--font-poppins)', color: 'var(--text-muted)', userSelect: 'none', WebkitUserSelect: 'none' }}>Profile</span>
 
                                 {profileOpen && (
-                                    <div style={{ position: 'absolute', top: '38px', right: 0, width: '220px', zIndex: 1100 }}>
+                                    <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '38px', right: 0, width: '220px', zIndex: 1100 }}>
                                         <div className="card animate-slide-down" style={{ padding: '8px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card, 18px)', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', marginBottom: '4px' }}>
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
