@@ -67,9 +67,9 @@ export default async function Home() {
 
     // Determine category IDs based on environment (Production vs Local)
     const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-    const isProd = backendUrl.includes("tivaa.in");
-    const schoolId = isProd ? 3 : 4;
-    const jewelleryId = isProd ? 1 : 3;
+    const isLocal = backendUrl.includes("localhost") || backendUrl.includes("127.0.0.1");
+    const schoolId = isLocal ? 4 : 3;
+    const jewelleryId = isLocal ? 3 : 1;
 
     // Look up category names dynamically by ID and build links
     const schoolCat = categories.find(c => Number(c.id) === schoolId);

@@ -13,9 +13,9 @@ export default function Footer() {
     }
 
 
-    const isProd = typeof window !== 'undefined' && window.location.hostname.includes("tivaa.in");
-    const schoolId = isProd ? 3 : 4;
-    const jewelleryId = isProd ? 1 : 3;
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname.includes("localhost") || window.location.hostname.includes("127.0.0.1"));
+    const schoolId = isLocal ? 4 : 3;
+    const jewelleryId = isLocal ? 3 : 1;
 
     return (
         <footer style={{ background: '#173B63', color: '#e2e8f0', paddingTop: '24px', paddingBottom: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
