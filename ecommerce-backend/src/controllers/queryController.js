@@ -110,9 +110,9 @@ export const adminReplyQuery = (req, res) => {
               
               <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; text-align: center; margin-bottom: 24px;">If you have any further questions, feel free to reply directly to this email or visit our website.</p>
               
-              <!-- CTA Button to Store -->
+               <!-- CTA Button to Store -->
               <div style="text-align: center; margin-bottom: 32px;">
-                <a href="http://tivaajewelery.us-east-1.elasticbeanstalk.com/products" style="background: #7A38C2; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; display: inline-block; box-shadow: 0 4px 12px rgba(122, 56, 194, 0.25);">
+                <a href="https://www.tivaa.in" style="background: #7A38C2; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; display: inline-block; box-shadow: 0 4px 12px rgba(122, 56, 194, 0.25);">
                   Continue Shopping
                 </a>
               </div>

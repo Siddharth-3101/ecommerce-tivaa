@@ -133,7 +133,7 @@ export const sendOrderEmailToAdmins = async (orderId) => {
           </p>
 
           <div style="text-align: center; margin-top: 32px;">
-            <a href="http://tivaajewelery.us-east-1.elasticbeanstalk.com/admin/orders/${order.id}" 
+            <a href="https://www.tivaa.in/admin/orders/${order.id}" 
                style="background: #7A38C2; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 10px rgba(122, 56, 194, 0.35);">
               Manage Order in Admin Panel
             </a>
