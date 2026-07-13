@@ -65,17 +65,24 @@ export default async function Home() {
 
     const parents = categories.filter(c => !c.parent_id);
 
+    // Look up parent categories dynamically to support ID-based routing
+    const schoolCat = categories.find(c => !c.parent_id && c.name.toLowerCase().includes("school"));
+    const schoolLink = schoolCat ? `/products?category=${schoolCat.id}` : "/products?category=School%20Supplies";
+
+    const jewelleryCat = categories.find(c => !c.parent_id && c.name.toLowerCase().includes("jewel"));
+    const jewelleryLink = jewelleryCat ? `/products?category=${jewelleryCat.id}` : "/products?category=Jewellery";
+
     return (
         <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
             
             {/* Redesigned Wide Hero Banner */}
             <Hero />
-
+ 
             {/* Two Promo Banners */}
             <section style={{ width: '100%', padding: '0 24px 10px' }}>
                 <div className="promo-banners-grid">
                     {/* Banner 1: School Supplies */}
-                    <Link href="/products?category=School%20Supplies" style={{ textDecoration: 'none' }}>
+                    <Link href={schoolLink} style={{ textDecoration: 'none' }}>
                         <div className="promo-banner-card" style={{ background: '#E5F1FC', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '198px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <Heading as="h2" variant="HomeHeader2" style={{ fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>School Supplies</Heading>
@@ -97,9 +104,9 @@ export default async function Home() {
                             </div>
                         </div>
                     </Link>
-
+ 
                     {/* Banner 2: Fashion & Jewellery */}
-                    <Link href="/products?category=Jewellery" style={{ textDecoration: 'none' }}>
+                    <Link href={jewelleryLink} style={{ textDecoration: 'none' }}>
                         <div className="promo-banner-card" style={{ background: '#EEF8F7', borderRadius: '18px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '198px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             <div style={{ flex: 1, zIndex: 2, paddingRight: '12px' }}>
                                 <Heading as="h2" variant="HomeHeader2" style={{ fontWeight: 700, color: '#173B63', margin: '0 0 4px 0', fontFamily: 'var(--font-poppins)' }}>Fashion & Jewellery</Heading>

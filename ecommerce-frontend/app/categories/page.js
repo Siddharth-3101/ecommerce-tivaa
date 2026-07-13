@@ -28,7 +28,14 @@ function CategoriesContent() {
                     if (parents.length > 0) {
                         // Check if parent name is passed in URL query
                         const queryParent = searchParams.get("parent");
-                        const initialParent = parents.find(p => p.name.toLowerCase() === queryParent?.toLowerCase()) || parents[0];
+                        const initialParent = parents.find(p => 
+                            p.name.toLowerCase() === queryParent?.toLowerCase() ||
+                            Number(p.id) === Number(queryParent) ||
+                            (queryParent && (
+                                p.name.toLowerCase().includes(queryParent.toLowerCase()) ||
+                                queryParent.toLowerCase().includes(p.name.toLowerCase())
+                            ))
+                        ) || parents[0];
                         setSelectedParent(initialParent);
                     }
                 }
