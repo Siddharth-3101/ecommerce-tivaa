@@ -555,12 +555,9 @@ export default function Navbar() {
                     <Menu size={20} />
                     <span>Categories</span>
                 </Link>
-                <Link href="/cart" className={`mobile-bottom-nav-item ${pathname === '/cart' ? 'active' : ''}`}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <ShoppingCart size={20} />
-                        {count > 0 && <span className="nav-badge-mobile">{count}</span>}
-                    </div>
-                    <span>Cart</span>
+                <Link href="/orders" className={`mobile-bottom-nav-item ${pathname === '/orders' ? 'active' : ''}`}>
+                    <Package size={20} />
+                    <span>Orders</span>
                 </Link>
             </div>
         )}
