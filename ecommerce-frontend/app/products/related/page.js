@@ -5,6 +5,28 @@ import SortSelect from "@/components/SortSelect";
 export const dynamic = "force-dynamic";
 
 function partitionAndSortProducts(products, sort) {
+    const sortFn = (a, b) => {
+        const priceA = a.discounted_price && Number(a.discounted_price) > 0 ? Number(a.discounted_price) : Number(a.price || 0);
+        const priceB = b.discounted_price && Number(b.discounted_price) > 0 ? Number(b.discounted_price) : Number(b.price || 0);
+
+        if (sort === "price_low") {
+            return priceA - priceB;
+        } else if (sort === "price_high") {
+            return priceB - priceA;
+        } else if (sort === "name_asc") {
+            return (a.name || "").localeCompare(b.name || "");
+        } else if (sort === "name_desc") {
+            return (b.name || "").localeCompare(a.name || "");
+        }
+        return 0;
+    };
+    
+    if (sort) {
+        const sorted = [...products];
+        sorted.sort(sortFn);
+        return sorted;
+    }
+    
     const inStock = [];
     const outOfStock = [];
     
@@ -15,24 +37,6 @@ function partitionAndSortProducts(products, sort) {
         } else {
             outOfStock.push(p);
         }
-    }
-    
-    const sortFn = (a, b) => {
-        if (sort === "price_low") {
-            return Number(a.price) - Number(b.price);
-        } else if (sort === "price_high") {
-            return Number(b.price) - Number(a.price);
-        } else if (sort === "name_asc") {
-            return (a.name || "").localeCompare(b.name || "");
-        } else if (sort === "name_desc") {
-            return (b.name || "").localeCompare(a.name || "");
-        }
-        return 0;
-    };
-    
-    if (sort) {
-        inStock.sort(sortFn);
-        outOfStock.sort(sortFn);
     }
     
     return [...inStock, ...outOfStock];

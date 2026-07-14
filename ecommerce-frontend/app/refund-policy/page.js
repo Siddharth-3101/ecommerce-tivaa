@@ -120,15 +120,7 @@ export default function RefundPolicyPage() {
                         </p>
                     </section>
 
-                    {/* Section 5 */}
-                    <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border)', paddingBottom: '8px', color: 'var(--text-main)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Cancellation Policy
-                        </h2>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            Orders may be cancelled before they are dispatched. Once shipped, cancellation requests cannot be guaranteed.
-                        </p>
-                    </section>
+
                 </div>
             </div>
         </div>

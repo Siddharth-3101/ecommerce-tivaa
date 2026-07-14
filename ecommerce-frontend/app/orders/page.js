@@ -19,8 +19,10 @@ export default function MyOrdersPage() {
     
     // Filters state
     const [statusFilter, setStatusFilter] = useState("All Status");
-    const [dateFilter, setDateFilter] = useState("All Time");
+    const [dateFilter, setDateFilter] = useState("This Week");
     const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+    const [customStartDate, setCustomStartDate] = useState("");
+    const [customEndDate, setCustomEndDate] = useState("");
 
     const limit = 6;
     const user = getUser();
@@ -210,23 +212,81 @@ export default function MyOrdersPage() {
         if (dateFilter && dateFilter !== "All Time") {
             const orderDate = new Date(order.created_at);
             const now = new Date();
-            
-            const orderDateDay = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
-            const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            const diffTime = todayDay - orderDateDay;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
+            let range = null;
+
             if (dateFilter === "Today") {
-                if (diffDays !== 0) return false;
+                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+                const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                range = { start, end };
             } else if (dateFilter === "Yesterday") {
-                if (diffDays !== 1) return false;
+                const yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                const start = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0, 0);
+                const end = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999);
+                range = { start, end };
             } else if (dateFilter === "This Week") {
-                if (diffDays > 7) return false;
+                const ref = new Date(now);
+                const day = ref.getDay();
+                const diff = ref.getDate() - day + (day === 0 ? -6 : 1);
+                const start = new Date(ref.setDate(diff));
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                range = { start, end };
             } else if (dateFilter === "Last Week") {
-                if (diffDays < 7 || diffDays > 14) return false;
+                const ref = new Date(now);
+                const day = ref.getDay();
+                const diff = ref.getDate() - day + (day === 0 ? -6 : 1);
+                const thisWeekStart = new Date(ref.setDate(diff));
+                thisWeekStart.setHours(0, 0, 0, 0);
+                
+                const start = new Date(thisWeekStart);
+                start.setDate(thisWeekStart.getDate() - 7);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                range = { start, end };
             } else if (dateFilter === "This Month") {
-                if (diffDays > 30) return false;
+                const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+                const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                range = { start, end };
+            } else if (dateFilter === "Quarterly") {
+                const month = now.getMonth();
+                const quarterStartMonth = Math.floor(month / 3) * 3;
+                const start = new Date(now.getFullYear(), quarterStartMonth, 1, 0, 0, 0, 0);
+                const end = new Date(now.getFullYear(), quarterStartMonth + 3, 0, 23, 59, 59, 999);
+                range = { start, end };
+            } else if (dateFilter === "Half Yearly") {
+                const month = now.getMonth();
+                const halfStartMonth = month < 6 ? 0 : 6;
+                const start = new Date(now.getFullYear(), halfStartMonth, 1, 0, 0, 0, 0);
+                const end = new Date(now.getFullYear(), halfStartMonth + 6, 0, 23, 59, 59, 999);
+                range = { start, end };
+            } else if (dateFilter === "Yearly") {
+                const start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+                const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+                range = { start, end };
+            } else if (dateFilter === "Custom") {
+                let start = null;
+                let end = null;
+                if (customStartDate) {
+                    start = new Date(customStartDate);
+                    start.setHours(0, 0, 0, 0);
+                }
+                if (customEndDate) {
+                    end = new Date(customEndDate);
+                    end.setHours(23, 59, 59, 999);
+                }
+                if (start && orderDate < start) return false;
+                if (end && orderDate > end) return false;
+                return true;
+            }
+
+            if (range) {
+                if (orderDate < range.start || orderDate > range.end) {
+                    return false;
+                }
             }
         }
         return true;
@@ -234,7 +294,9 @@ export default function MyOrdersPage() {
 
     const handleClearFilters = () => {
         setStatusFilter("All Status");
-        setDateFilter("All Time");
+        setDateFilter("This Week");
+        setCustomStartDate("");
+        setCustomEndDate("");
         setPage(1);
     };
 
@@ -289,8 +351,8 @@ export default function MyOrdersPage() {
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </button>
                             {isDateDropdownOpen && (
-                                <div className="custom-dropdown-options">
-                                    {["Today", "Yesterday", "This Week", "Last Week", "This Month", "All Time"].map(option => (
+                                <div className="custom-dropdown-options" style={{ maxHeight: "240px", overflowY: "auto" }}>
+                                    {["Today", "Yesterday", "This Week", "Last Week", "This Month", "Quarterly", "Half Yearly", "Yearly", "Custom", "All Time"].map(option => (
                                         <button
                                             key={option}
                                             onClick={() => {
@@ -307,6 +369,29 @@ export default function MyOrdersPage() {
                                 </div>
                             )}
                         </div>
+
+                        {dateFilter === "Custom" && (
+                            <>
+                                <div className="filter-item animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label className="filter-label">Start Date</label>
+                                    <input 
+                                        type="date"
+                                        value={customStartDate}
+                                        onChange={(e) => { setCustomStartDate(e.target.value); setPage(1); }}
+                                        className="filter-date-input"
+                                    />
+                                </div>
+                                <div className="filter-item animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label className="filter-label">End Date</label>
+                                    <input 
+                                        type="date"
+                                        value={customEndDate}
+                                        onChange={(e) => { setCustomEndDate(e.target.value); setPage(1); }}
+                                        className="filter-date-input"
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <button 
@@ -607,6 +692,23 @@ export default function MyOrdersPage() {
                     background: #f0fdf4;
                     color: #10b981;
                 }
+                .filter-date-input {
+                    padding: 10px 14px;
+                    background: #ffffff;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 8px;
+                    font-size: 0.88rem;
+                    color: #1e293b;
+                    cursor: pointer;
+                    min-width: 150px;
+                    font-weight: 500;
+                    font-family: inherit;
+                    transition: border-color 0.2s;
+                    outline: none;
+                }
+                .filter-date-input:focus {
+                    border-color: var(--accent);
+                }
                 .clear-filters-btn {
                     display: flex;
                     align-items: center;
@@ -888,7 +990,7 @@ export default function MyOrdersPage() {
                         align-items: stretch;
                         width: 100%;
                     }
-                    .filter-select, .filter-dropdown-btn {
+                    .filter-select, .filter-dropdown-btn, .filter-date-input {
                         min-width: 100%;
                     }
                     .clear-filters-btn {

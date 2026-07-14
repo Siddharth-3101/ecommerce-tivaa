@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Heading from "@/components/Heading";
+import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 
 // Local payment logos and trust icons for a premium look
 function PaymentLogos() {
@@ -46,7 +47,53 @@ export default function CartPage() {
     const [shippingCost, setShippingCost] = useState(65); // default shipping
     const [isMobile, setIsMobile] = useState(false);
     const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
+    const [recommendedProducts, setRecommendedProducts] = useState([]);
     const router = useRouter();
+
+    const fetchRecommendations = async (cartItems) => {
+        try {
+            const res = await api.get("/products?limit=100");
+            const data = res.data;
+            const list = Array.isArray(data) ? data : (data.products || []);
+            if (list.length === 0) return;
+
+            let sameCatId = null;
+            if (cartItems && cartItems.length > 0 && cartItems[0].category_id) {
+                sameCatId = cartItems[0].category_id;
+            } else {
+                const uniqueCatIds = Array.from(new Set(list.map(p => p.category_id).filter(Boolean)));
+                if (uniqueCatIds.length > 0) {
+                    sameCatId = uniqueCatIds[Math.floor(Math.random() * uniqueCatIds.length)];
+                }
+            }
+
+            const sameList = list.filter(p => p.category_id === sameCatId);
+
+            const otherCatIds = Array.from(new Set(list.map(p => p.category_id).filter(id => id && id !== sameCatId)));
+            let otherList = [];
+            if (otherCatIds.length > 0) {
+                const randomOtherCatId = otherCatIds[Math.floor(Math.random() * otherCatIds.length)];
+                otherList = list.filter(p => p.category_id === randomOtherCatId);
+            } else {
+                otherList = list;
+            }
+
+            const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+            const chosenSame = shuffle(sameList).slice(0, 5);
+            const chosenOther = shuffle(otherList).slice(0, 5);
+
+            const mixed = shuffle([...chosenSame, ...chosenOther]).slice(0, 10);
+            setRecommendedProducts(mixed);
+        } catch (err) {
+            console.error("Failed to load cart recommendations:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (!loading) {
+            fetchRecommendations(items);
+        }
+    }, [loading]);
 
     const loadCart = async () => {
         try {
@@ -403,6 +450,12 @@ export default function CartPage() {
 
                     </div>
                 </>
+            )}
+
+            {recommendedProducts.length > 0 && (
+                <div style={{ marginTop: '48px' }}>
+                    <RelatedProductsSlider relatedProducts={recommendedProducts} />
+                </div>
             )}
 
             <style jsx global>{`

@@ -103,7 +103,6 @@ export default function Footer() {
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <li><Link href="/faq" className="footer-link-navy">Shipping & Delivery</Link></li>
                             <li><Link href="/refund-policy" className="footer-link-navy">Returns & Exchanges</Link></li>
-                            <li><Link href="/faq" className="footer-link-navy">FAQs</Link></li>
                             <li><Link href="/contact" className="footer-link-navy">Contact Us</Link></li>
                         </ul>
                     </div>

@@ -3,10 +3,33 @@ import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
 import CategorySelect from "@/components/CategorySelect";
 import Heading from "@/components/Heading";
+import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 
 export const dynamic = "force-dynamic";
 
 function partitionAndSortProducts(products, sort) {
+    const sortFn = (a, b) => {
+        const priceA = a.discounted_price && Number(a.discounted_price) > 0 ? Number(a.discounted_price) : Number(a.price || 0);
+        const priceB = b.discounted_price && Number(b.discounted_price) > 0 ? Number(b.discounted_price) : Number(b.price || 0);
+
+        if (sort === "price_low") {
+            return priceA - priceB;
+        } else if (sort === "price_high") {
+            return priceB - priceA;
+        } else if (sort === "name_asc") {
+            return (a.name || "").localeCompare(b.name || "");
+        } else if (sort === "name_desc") {
+            return (b.name || "").localeCompare(a.name || "");
+        }
+        return 0;
+    };
+
+    if (sort) {
+        const sorted = [...products];
+        sorted.sort(sortFn);
+        return sorted;
+    }
+
     const inStock = [];
     const outOfStock = [];
 
@@ -17,24 +40,6 @@ function partitionAndSortProducts(products, sort) {
         } else {
             outOfStock.push(p);
         }
-    }
-
-    const sortFn = (a, b) => {
-        if (sort === "price_low") {
-            return Number(a.price) - Number(b.price);
-        } else if (sort === "price_high") {
-            return Number(b.price) - Number(a.price);
-        } else if (sort === "name_asc") {
-            return (a.name || "").localeCompare(b.name || "");
-        } else if (sort === "name_desc") {
-            return (b.name || "").localeCompare(a.name || "");
-        }
-        return 0;
-    };
-
-    if (sort) {
-        inStock.sort(sortFn);
-        outOfStock.sort(sortFn);
     }
 
     return [...inStock, ...outOfStock];
@@ -135,17 +140,53 @@ export default async function ProductsPage({ searchParams }) {
         : [];
     let recommendedProducts = [];
     if (showInHomeCats.length > 0) {
-        const candidates = category 
-            ? showInHomeCats.filter(c => c.name.toLowerCase() !== category.toLowerCase())
-            : showInHomeCats;
-        const chosenCat = candidates.length > 0 
-            ? candidates[Math.floor(Math.random() * candidates.length)]
-            : showInHomeCats[Math.floor(Math.random() * showInHomeCats.length)];
+        const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
         
-        if (chosenCat) {
-            const recData = await fetchProducts(chosenCat.name, null, null, 1);
-            recommendedProducts = (recData.products || []).slice(0, 4);
+        let sameCatName = category;
+        if (!sameCatName && showInHomeCats.length > 0) {
+            sameCatName = showInHomeCats[Math.floor(Math.random() * showInHomeCats.length)].name;
         }
+
+        let sameList = [];
+        if (sameCatName) {
+            const sameData = await fetchProducts(sameCatName, null, null, 1);
+            sameList = sameData.products || [];
+        }
+
+        // Loop to find another category containing active products
+        let otherList = [];
+        const otherCats = showInHomeCats.filter(c => c.name.toLowerCase() !== sameCatName?.toLowerCase());
+        let attempts = 0;
+        while (otherCats.length > 0 && otherList.length === 0 && attempts < 5) {
+            attempts++;
+            const randomCat = otherCats[Math.floor(Math.random() * otherCats.length)];
+            const otherData = await fetchProducts(randomCat.name, null, null, 1);
+            if (otherData.products && otherData.products.length > 0) {
+                otherList = otherData.products;
+                break;
+            }
+        }
+
+        const shuffledSame = shuffle(sameList);
+        const shuffledOther = shuffle(otherList);
+
+        let chosenSame = shuffledSame.slice(0, 5);
+        let chosenOther = shuffledOther.slice(0, 5);
+
+        // Backfill if one list has fewer than 5 items
+        const totalCount = chosenSame.length + chosenOther.length;
+        if (totalCount < 10) {
+            const needed = 10 - totalCount;
+            if (chosenSame.length < 5 && shuffledOther.length > 5) {
+                const extraOther = shuffledOther.slice(5, 5 + needed);
+                chosenOther = [...chosenOther, ...extraOther];
+            } else if (chosenOther.length < 5 && shuffledSame.length > 5) {
+                const extraSame = shuffledSame.slice(5, 5 + needed);
+                chosenSame = [...chosenSame, ...extraSame];
+            }
+        }
+
+        recommendedProducts = shuffle([...chosenSame, ...chosenOther]).slice(0, 10);
     }
  
     let displayName = category || "Our Collections";
@@ -165,15 +206,61 @@ export default async function ProductsPage({ searchParams }) {
         }
     }
  
+    const lowerQuery = (query || "").toLowerCase();
+    const queryWords = lowerQuery.trim().split(/\s+/).filter(Boolean);
+    const matchingCats = queryWords.length > 0 && Array.isArray(categories)
+        ? categories.filter(c => {
+            const catName = c.name.toLowerCase();
+            return catName.includes(lowerQuery) || queryWords.some(word => catName.includes(word));
+        })
+        : [];
+
     return (
         <div className="animate-fade-in" style={{ padding: '20px 0 60px' }}>
             <div className="container" style={{ marginBottom: '12px' }}>
                 <Heading as="h2" variant="HomeHeader2" style={{ marginBottom: '12px', textTransform: 'none', letterSpacing: 'normal' }}>
                     {query ? `Search results` : displayName}
                 </Heading>
-                <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5 }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5, marginBottom: '20px' }}>
                     {query ? `${data.total || 0} items found matching your search "${query}"` : ""}
                 </p>
+
+                {/* Category Match Tiles */}
+                {matchingCats.length > 0 && (
+                    <div style={{ marginTop: '16px', marginBottom: '28px', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '12px', padding: '16px 20px' }}>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                            Related Categories
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                            {matchingCats.map(cat => (
+                                <Link 
+                                    key={cat.id} 
+                                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                                    style={{ 
+                                        display: 'inline-flex', 
+                                        alignItems: 'center', 
+                                        gap: '8px', 
+                                        background: '#ffffff', 
+                                        border: '1px solid #cbd5e1', 
+                                        borderRadius: '8px', 
+                                        padding: '8px 16px', 
+                                        textDecoration: 'none', 
+                                        color: 'var(--text-main)',
+                                        fontWeight: 500,
+                                        fontSize: '0.9rem',
+                                        transition: 'all 0.2s',
+                                        boxShadow: 'var(--shadow-sm)'
+                                    }}
+                                    className="category-tile-btn"
+                                >
+                                    <span>📁</span>
+                                    <span>{cat.name}</span>
+                                    <span style={{ color: '#0d9488', fontSize: '0.8rem', marginLeft: '4px' }}>→</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
 
                 {/* Categories and Sort Filter Bar */}
@@ -271,17 +358,18 @@ export default async function ProductsPage({ searchParams }) {
             </section>
 
             {recommendedProducts.length > 0 && (
-                <section className="container" style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid var(--border)', marginBottom: '40px' }}>
-                    <Heading as="h2" variant="HomeHeader2" style={{ marginBottom: '20px' }}>
-                        You May Also Like
-                    </Heading>
-                    <div className="product-grid-boutique">
-                        {recommendedProducts.map((p) => (
-                            <ProductCard key={p.id} product={p} />
-                        ))}
-                    </div>
+                <section className="container" style={{ marginTop: '20px', marginBottom: '20px' }}>
+                    <RelatedProductsSlider relatedProducts={recommendedProducts} />
                 </section>
             )}
+            <style dangerouslySetInnerHTML={{ __html: `
+                .category-tile-btn:hover {
+                    border-color: #0d9488 !important;
+                    background-color: #f0fdfa !important;
+                    transform: translateY(-1.5px);
+                    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.12) !important;
+                }
+            `}} />
         </div>
     );
 }

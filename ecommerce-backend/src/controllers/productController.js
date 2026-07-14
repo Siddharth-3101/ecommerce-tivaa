@@ -85,9 +85,15 @@ export const getProducts = async (req, res) => {
 
   // 4. Search Query Filter
   if (query && query.trim() !== "") {
-    const searchTerm = `%${query.trim()}%`;
-    countSql += " AND (p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)";
-    countParams.push(searchTerm, searchTerm, searchTerm);
+    const lowerQuery = query.toLowerCase();
+    const words = lowerQuery.trim().split(/\s+/).filter(Boolean);
+    if (words.length > 0) {
+      countSql += " AND (" + words.map(word => {
+        const term = `%${word}%`;
+        countParams.push(term, term, term);
+        return "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(c.name) LIKE ?)";
+      }).join(" AND ") + ")";
+    }
   }
 
   db.query(countSql, countParams, (countErr, countRows) => {
@@ -133,9 +139,15 @@ export const getProducts = async (req, res) => {
     }
 
     if (query && query.trim() !== "") {
-      const searchTerm = `%${query.trim()}%`;
-      sql += " AND (p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)";
-      selectParams.push(searchTerm, searchTerm, searchTerm);
+      const lowerQuery = query.toLowerCase();
+      const words = lowerQuery.trim().split(/\s+/).filter(Boolean);
+      if (words.length > 0) {
+        sql += " AND (" + words.map(word => {
+          const term = `%${word}%`;
+          selectParams.push(term, term, term);
+          return "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(c.name) LIKE ?)";
+        }).join(" AND ") + ")";
+      }
     }
 
     sql += " ORDER BY (p.stock > 0) DESC, p.id DESC LIMIT ? OFFSET ?";
@@ -300,20 +312,29 @@ export const searchProducts = (req, res) => {
 
   if (!q) return res.status(400).json({ message: "Search query missing" });
 
-  const searchTerm = `%${q}%`;
+  // Convert to small case and split by whitespace
+  const lowerQ = q.toLowerCase();
+  const words = lowerQ.trim().split(/\s+/).filter(Boolean);
 
-  const sql = `
+  let sql = `
         SELECT p.*, c.name AS category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
-        WHERE p.is_active = true AND p.is_visible = true AND (p.name LIKE ? 
-        OR p.description LIKE ?
-        OR p.features LIKE ?
-        OR c.name LIKE ?)
-        ORDER BY (p.stock > 0) DESC, p.id DESC
-    `;
+        WHERE p.is_active = true AND p.is_visible = true
+  `;
 
-  db.query(sql, [searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
+  const params = [];
+  if (words.length > 0) {
+    sql += " AND (" + words.map(word => {
+      const term = `%${word}%`;
+      params.push(term, term, term, term);
+      return "(LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(p.features) LIKE ? OR LOWER(c.name) LIKE ?)";
+    }).join(" AND ") + ")";
+  }
+
+  sql += " ORDER BY (p.stock > 0) DESC, p.id DESC";
+
+  db.query(sql, params, (err, rows) => {
     if (err) {
       console.error("DB Error:", err);
       return res.status(500).json({ message: "Database error: " + err.message });
@@ -344,19 +365,19 @@ export const filterProducts = (req, res) => {
   }
 
   if (min_price) {
-    sql += " AND p.price >= ?";
+    sql += " AND COALESCE(NULLIF(p.discounted_price, 0), p.price) >= ?";
     params.push(min_price);
   }
 
   if (max_price) {
-    sql += " AND p.price <= ?";
+    sql += " AND COALESCE(NULLIF(p.discounted_price, 0), p.price) <= ?";
     params.push(max_price);
   }
 
-  if (sort === "price_low") sql += " ORDER BY (p.stock > 0) DESC, p.price ASC";
-  else if (sort === "price_high") sql += " ORDER BY (p.stock > 0) DESC, p.price DESC";
-  else if (sort === "name_asc") sql += " ORDER BY (p.stock > 0) DESC, p.name ASC";
-  else if (sort === "name_desc") sql += " ORDER BY (p.stock > 0) DESC, p.name DESC";
+  if (sort === "price_low") sql += " ORDER BY COALESCE(NULLIF(p.discounted_price, 0), p.price) ASC";
+  else if (sort === "price_high") sql += " ORDER BY COALESCE(NULLIF(p.discounted_price, 0), p.price) DESC";
+  else if (sort === "name_asc") sql += " ORDER BY p.name ASC";
+  else if (sort === "name_desc") sql += " ORDER BY p.name DESC";
   else sql += " ORDER BY (p.stock > 0) DESC, p.id DESC";
 
   db.query(sql, params, (err, rows) => {

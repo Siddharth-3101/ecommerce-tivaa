@@ -18,11 +18,11 @@ export default function FAQPage() {
         },
         {
             question: "How can I track my order?",
-            answer: "Once your order is shipped, tracking details (including the courier service name and tracking ID) will be sent to you via email or SMS."
+            answer: "Once your order is shipped, the order status updates are available in My Orders"
         },
         {
-            question: "Can I cancel my order?",
-            answer: "Yes, orders can be cancelled before they are dispatched. Once shipped, cancellation requests cannot be guaranteed."
+            question: "How can I cancel the order",
+            answer: "Currently there is no order cancellation allowed in the website. Once placed ,orders cannot be cancelled unless approved by TIVAA admin which will be reviewed case to case basis."
         },
         {
             question: "What if I receive a damaged product?",

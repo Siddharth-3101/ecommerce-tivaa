@@ -21,16 +21,78 @@ async function fetchProduct(id) {
 
 async function fetchRelatedProducts(categoryName, currentProductId) {
     try {
-        if (!categoryName) return [];
         const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-        const res = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`, {
+        
+        // 1. Fetch products from the same category
+        let sameCatProducts = [];
+        if (categoryName) {
+            const sameRes = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(categoryName)}`, {
+                cache: "no-store",
+            });
+            if (sameRes.ok) {
+                const sameList = await sameRes.json();
+                sameCatProducts = sameList.filter((p) => p.id !== currentProductId);
+            }
+        }
+        
+        // 2. Fetch categories to select a different random category (ensuring it contains products)
+        let randomCatProducts = [];
+        const catRes = await fetch(`${backendUrl}/api/categories`, {
             cache: "no-store",
         });
-        if (!res.ok) return [];
-        const products = await res.json();
-        // Exclude the current product and take at most 10 items for scrolling
-        return products.filter((p) => p.id !== currentProductId).slice(0, 10);
+        if (catRes.ok) {
+            const categories = await catRes.json();
+            const homepageCats = Array.isArray(categories) 
+                ? categories.filter(c => c.show_in_homepage === 1 || c.show_in_homepage === true)
+                : [];
+            const pool = homepageCats.length > 0 ? homepageCats : (categories || []);
+            
+            // Exclude current category name
+            const otherCats = pool.filter(c => c.name.toLowerCase() !== categoryName?.toLowerCase());
+            
+            // Loop to find another category that actually has products
+            let attempts = 0;
+            while (otherCats.length > 0 && randomCatProducts.length === 0 && attempts < 5) {
+                attempts++;
+                const randomCat = otherCats[Math.floor(Math.random() * otherCats.length)];
+                const diffRes = await fetch(`${backendUrl}/api/products/filter?category=${encodeURIComponent(randomCat.name)}`, {
+                    cache: "no-store",
+                });
+                if (diffRes.ok) {
+                    const diffList = await diffRes.json();
+                    const filteredDiff = diffList.filter((p) => p.id !== currentProductId);
+                    if (filteredDiff.length > 0) {
+                        randomCatProducts = filteredDiff;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+        const shuffledSame = shuffle(sameCatProducts);
+        const shuffledRandom = shuffle(randomCatProducts);
+        
+        let chosenSame = shuffledSame.slice(0, 5);
+        let chosenRandom = shuffledRandom.slice(0, 5);
+        
+        // Backfill if one category doesn't have enough products to reach 10 in total
+        const totalCount = chosenSame.length + chosenRandom.length;
+        if (totalCount < 10) {
+            const needed = 10 - totalCount;
+            if (chosenSame.length < 5 && shuffledRandom.length > 5) {
+                const extraRandom = shuffledRandom.slice(5, 5 + needed);
+                chosenRandom = [...chosenRandom, ...extraRandom];
+            } else if (chosenRandom.length < 5 && shuffledSame.length > 5) {
+                const extraSame = shuffledSame.slice(5, 5 + needed);
+                chosenSame = [...chosenSame, ...extraSame];
+            }
+        }
+        
+        const combined = shuffle([...chosenSame, ...chosenRandom]);
+        return combined.slice(0, 10);
     } catch (err) {
+        console.error("Error in fetchRelatedProducts:", err);
         return [];
     }
 }
