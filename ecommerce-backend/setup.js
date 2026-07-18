@@ -79,6 +79,7 @@ export const runSetup = async () => {
                 shipping_cost DECIMAL(10, 2) DEFAULT 0.00,
                 payment_method VARCHAR(100) NOT NULL,
                 order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending',
+                order_type ENUM('Online', 'Store') DEFAULT 'Online',
                 razorpay_order_id VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -261,6 +262,10 @@ export const runSetup = async () => {
         }
         if (!orderCols.includes("shipping_cost")) {
             await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN shipping_cost DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderCols.includes("order_type")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN order_type ENUM('Online', 'Store') DEFAULT 'Online'", (err) => err ? rej(err) : res()));
+            console.log("Migration: added order_type to orders");
         }
         
         await new Promise((res, rej) => db.query("ALTER TABLE orders MODIFY COLUMN order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending'", (err) => err ? rej(err) : res()));
