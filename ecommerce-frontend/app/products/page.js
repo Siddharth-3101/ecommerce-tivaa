@@ -315,7 +315,8 @@ export default async function ProductsPage({ searchParams }) {
                                 className="btn btn-secondary pagination-btn-prevnext"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                             >
-                                Prev
+                                <span className="pagination-text">Prev</span>
+                                <span className="pagination-arrow">←</span>
                             </Link>
                         )}
 
@@ -345,7 +346,8 @@ export default async function ProductsPage({ searchParams }) {
                                 className="btn btn-secondary pagination-btn-prevnext"
                                 style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                             >
-                                Next
+                                <span className="pagination-text">Next</span>
+                                <span className="pagination-arrow">→</span>
                             </Link>
                         )}
                     </div>
@@ -399,6 +401,9 @@ export default async function ProductsPage({ searchParams }) {
                     color: var(--text-muted);
                     flex-shrink: 0;
                 }
+                .pagination-arrow {
+                    display: none;
+                }
                 @media (max-width: 480px) {
                     .pagination-container {
                         gap: 4px !important;
@@ -414,10 +419,22 @@ export default async function ProductsPage({ searchParams }) {
                         height: 32px;
                         font-size: 0.75rem;
                     }
+                    .pagination-text {
+                        display: none !important;
+                    }
+                    .pagination-arrow {
+                        display: inline-block !important;
+                        font-size: 1rem !important;
+                        line-height: 1 !important;
+                    }
                     .pagination-btn-prevnext {
-                        padding: 6px 10px !important;
-                        font-size: 0.7rem !important;
-                        letter-spacing: 0px !important;
+                        width: 32px !important;
+                        height: 32px !important;
+                        padding: 0 !important;
+                        display: inline-flex !important;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 50% !important;
                     }
                 }
             `}} />

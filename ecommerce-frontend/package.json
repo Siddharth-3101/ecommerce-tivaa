@@ -27,6 +27,7 @@
     "baseline-browser-mapping": "^2.10.43",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
+    "localtunnel": "^2.0.2",
     "tailwindcss": "^4"
   }
 }
