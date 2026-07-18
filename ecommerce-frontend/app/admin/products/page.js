@@ -649,7 +649,7 @@ export default function AdminProductsPage() {
 
                     {/* Sleek circular boutique pagination selector */}
                     {totalPages > 1 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '32px' }}>
+                        <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '32px' }}>
                             {page > 1 && (
                                 <button
                                     onClick={() => changePage(page - 1)}
@@ -663,19 +663,7 @@ export default function AdminProductsPage() {
                             {paginationPages.map((p, index) => {
                                 if (p === '...') {
                                     return (
-                                        <span
-                                            key={`ellipsis-${index}`}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                width: '40px',
-                                                height: '40px',
-                                                fontSize: '0.9rem',
-                                                color: 'var(--text-muted)',
-                                                flexShrink: 0
-                                            }}
-                                        >
+                                        <span key={`ellipsis-${index}`} className="pagination-ellipsis">
                                             ...
                                         </span>
                                     );
@@ -685,22 +673,7 @@ export default function AdminProductsPage() {
                                     <button
                                         key={p}
                                         onClick={() => changePage(p)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            fontSize: '0.9rem',
-                                            fontWeight: isActive ? '600' : '400',
-                                            border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
-                                            background: isActive ? 'var(--text-main)' : 'transparent',
-                                            color: isActive ? '#ffffff' : 'var(--text-main)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s ease',
-                                            flexShrink: 0
-                                        }}
+                                        className={`pagination-number ${isActive ? 'active' : ''}`}
                                     >
                                         {p}
                                     </button>
@@ -721,7 +694,56 @@ export default function AdminProductsPage() {
                 </>
             )}
             <style dangerouslySetInnerHTML={{ __html: `
+                .pagination-number {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    font-size: 0.9rem;
+                    font-weight: 400;
+                    border: 1px solid #e0e0e0;
+                    background: transparent;
+                    color: var(--text-main);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    flex-shrink: 0;
+                }
+                .pagination-number:hover {
+                    border-color: var(--text-main);
+                }
+                .pagination-number.active {
+                    font-weight: 600;
+                    border: 1px solid var(--text-main);
+                    background: var(--text-main);
+                    color: #ffffff;
+                }
+                .pagination-ellipsis {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    font-size: 0.9rem;
+                    color: var(--text-muted);
+                    flex-shrink: 0;
+                }
                 @media (max-width: 480px) {
+                    .pagination-container {
+                        gap: 4px !important;
+                        margin-top: 24px !important;
+                    }
+                    .pagination-number {
+                        width: 32px;
+                        height: 32px;
+                        font-size: 0.75rem;
+                    }
+                    .pagination-ellipsis {
+                        width: 24px;
+                        height: 32px;
+                        font-size: 0.75rem;
+                    }
                     .pagination-btn-prevnext {
                         padding: 6px 10px !important;
                         font-size: 0.7rem !important;

@@ -308,7 +308,7 @@ export default async function ProductsPage({ searchParams }) {
 
                 {/* Sleek Boutique Pagination Selector */}
                 {totalPages > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '60px' }}>
+                    <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '60px' }}>
                         {page > 1 && (
                             <Link
                                 href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${page - 1}`}
@@ -322,19 +322,7 @@ export default async function ProductsPage({ searchParams }) {
                         {paginationPages.map((p, index) => {
                             if (p === '...') {
                                 return (
-                                    <span
-                                        key={`ellipsis-${index}`}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '40px',
-                                            height: '40px',
-                                            fontSize: '0.9rem',
-                                            color: 'var(--text-muted)',
-                                            flexShrink: 0
-                                        }}
-                                    >
+                                    <span key={`ellipsis-${index}`} className="pagination-ellipsis">
                                         ...
                                     </span>
                                 );
@@ -344,22 +332,7 @@ export default async function ProductsPage({ searchParams }) {
                                 <Link
                                     key={p}
                                     href={`/products?${category ? `category=${encodeURIComponent(category)}&` : ''}${query ? `q=${encodeURIComponent(query)}&` : ''}${sort ? `sort=${sort}&` : ''}page=${p}`}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        fontSize: '0.9rem',
-                                        fontWeight: isActive ? '600' : '400',
-                                        textDecoration: 'none',
-                                        transition: 'all 0.2s ease',
-                                        border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
-                                        background: isActive ? 'var(--text-main)' : 'transparent',
-                                        color: isActive ? '#ffffff' : 'var(--text-main)',
-                                        flexShrink: 0
-                                    }}
+                                    className={`pagination-number ${isActive ? 'active' : ''}`}
                                 >
                                     {p}
                                 </Link>
@@ -391,7 +364,56 @@ export default async function ProductsPage({ searchParams }) {
                     transform: translateY(-1.5px);
                     box-shadow: 0 4px 10px rgba(13, 148, 136, 0.12) !important;
                 }
+                .pagination-number {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    font-size: 0.9rem;
+                    font-weight: 400;
+                    text-decoration: none;
+                    transition: all 0.2s ease;
+                    border: 1px solid #e0e0e0;
+                    background: transparent;
+                    color: var(--text-main);
+                    flex-shrink: 0;
+                }
+                .pagination-number:hover {
+                    border-color: var(--text-main);
+                }
+                .pagination-number.active {
+                    font-weight: 600;
+                    border: 1px solid var(--text-main);
+                    background: var(--text-main);
+                    color: #ffffff;
+                }
+                .pagination-ellipsis {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    font-size: 0.9rem;
+                    color: var(--text-muted);
+                    flex-shrink: 0;
+                }
                 @media (max-width: 480px) {
+                    .pagination-container {
+                        gap: 4px !important;
+                        margin-top: 36px !important;
+                    }
+                    .pagination-number {
+                        width: 32px;
+                        height: 32px;
+                        font-size: 0.75rem;
+                    }
+                    .pagination-ellipsis {
+                        width: 24px;
+                        height: 32px;
+                        font-size: 0.75rem;
+                    }
                     .pagination-btn-prevnext {
                         padding: 6px 10px !important;
                         font-size: 0.7rem !important;
