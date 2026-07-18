@@ -472,6 +472,9 @@ export default function MyOrdersPage() {
                                             <span>{dateDetails.date} &bull; {dateDetails.time}</span>
                                         </div>
                                         <span className="items-count-badge">{itemCount} {itemCount === 1 ? 'Item' : 'Items'}</span>
+                                        <span className="items-count-badge" style={{ marginLeft: '8px', background: order.order_type === 'Store' ? 'rgba(13, 148, 136, 0.08)' : 'rgba(99, 102, 241, 0.08)', color: order.order_type === 'Store' ? '#0d9488' : '#6366f1' }}>
+                                            {order.order_type || 'Online'}
+                                        </span>
                                     </div>
 
                                     {/* Column 3: Amount Info */}

@@ -8,6 +8,9 @@ export default function AdminSettingsPage() {
     const [slides, setSlides] = useState([]);
     const [showHeroBanner, setShowHeroBanner] = useState(true);
     const [shippingCost, setShippingCost] = useState("0");
+    const [storeUpiName, setStoreUpiName] = useState("");
+    const [storeUpiId, setStoreUpiId] = useState("");
+    const [storeQrCode, setStoreQrCode] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [resetting, setResetting] = useState(false);
@@ -45,6 +48,9 @@ export default function AdminSettingsPage() {
                     setSlides(parsedSlides);
                     setShowHeroBanner(res.data.show_hero_banner !== "false");
                     setShippingCost(res.data.shipping_cost || "0");
+                    setStoreUpiName(res.data.store_upi_name || "");
+                    setStoreUpiId(res.data.store_upi_id || "");
+                    setStoreQrCode(res.data.store_qr_code || "");
                 }
             } catch (err) {
                 console.error("Failed to load settings:", err);
@@ -117,7 +123,10 @@ export default function AdminSettingsPage() {
                     desktop_banner: cleanedSlides[0]?.desktop_url || "",
                     mobile_banner: cleanedSlides[0]?.mobile_url || "",
                     show_hero_banner: showHeroBanner ? "true" : "false",
-                    shipping_cost: shippingCost
+                    shipping_cost: shippingCost,
+                    store_upi_name: storeUpiName,
+                    store_upi_id: storeUpiId,
+                    store_qr_code: storeQrCode
                 }
             });
             alert("Settings saved successfully!");
@@ -404,6 +413,80 @@ export default function AdminSettingsPage() {
                         </button>
                     </div>
                 )}
+
+                {/* 2.5. DIRECT STORE SALE UPI SETTINGS */}
+                <div className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 4px 0' }}>Direct Store Sale Settings</h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
+                            Configure the UPI merchant name, UPI ID, and QR code image shown on the counter sale screen.
+                        </p>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>UPI Merchant Name</label>
+                            <input 
+                                type="text" 
+                                className="input-field" 
+                                value={storeUpiName}
+                                onChange={(e) => setStoreUpiName(e.target.value)}
+                                placeholder="e.g. Rohini Nagaraj"
+                                style={{ width: '100%', height: '38px', fontSize: '0.85rem', padding: '0 12px' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>UPI ID (VPA)</label>
+                            <input 
+                                type="text" 
+                                className="input-field" 
+                                value={storeUpiId}
+                                onChange={(e) => setStoreUpiId(e.target.value)}
+                                placeholder="e.g. rohinitn-1@okicici"
+                                style={{ width: '100%', height: '38px', fontSize: '0.85rem', padding: '0 12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>UPI QR Code Image (Stored directly in database)</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ position: 'relative' }}>
+                                <button type="button" className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.78rem', height: '32px' }}>
+                                    Select QR Code Image
+                                </button>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                                setStoreQrCode(event.target.result);
+                                            };
+                                            reader.readAsDataURL(e.target.files[0]);
+                                        }
+                                    }}
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                />
+                            </div>
+                            {storeQrCode && (
+                                <button 
+                                    type="button" 
+                                    onClick={() => setStoreQrCode("")}
+                                    style={{ border: 'none', background: 'transparent', color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                                >
+                                    Clear QR Code
+                                </button>
+                            )}
+                        </div>
+                        {storeQrCode && (
+                            <div style={{ border: '1px solid var(--border)', borderRadius: '6px', overflow: 'hidden', width: '120px', height: '120px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+                                <img src={storeQrCode} alt="Store QR Code" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 {/* 3. SHIPPING COST */}
                 <div className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>

@@ -169,11 +169,12 @@ export const adminGetOrders = (req, res) => {
             o.payment_method,
             o.created_at,
             o.razorpay_order_id,
-            pay.payment_reference AS payment_id
+            pay.payment_reference AS payment_id,
+            o.order_type
         FROM orders o
         JOIN users u ON u.id = o.user_id
         LEFT JOIN payments pay ON pay.order_id = o.id
-        ORDER BY o.created_at DESC
+        ORDER BY o.id DESC
     `;
 
     db.query(sql, (err, rows) => {
@@ -399,6 +400,42 @@ export const bulkImportOrders = (req, res) => {
             return res.status(500).json({ message: "Database error during bulk order import: " + err.message });
         }
         res.json({ message: `${result.affectedRows} orders imported/updated successfully` });
+    });
+};
+
+// ===========================================================
+// ADMIN: SEARCH CUSTOMER BY EMAIL OR PHONE
+// ===========================================================
+export const searchCustomer = (req, res) => {
+    const { email, phone } = req.query;
+
+    if (!email && !phone) {
+        return res.status(400).json({ message: "Email or phone query parameter required" });
+    }
+
+    let sql = "SELECT name, email, phone FROM users WHERE 1=0";
+    const params = [];
+    if (email) {
+        sql += " OR email = ?";
+        params.push(email.trim());
+    }
+    if (phone) {
+        const cleanPhone = phone.replace(/\D/g, "");
+        sql += " OR REPLACE(REPLACE(phone, '+91', ''), ' ', '') = ?";
+        params.push(cleanPhone);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) {
+            console.error("DB error searching customer:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (rows && rows.length > 0) {
+            return res.json({ found: true, customer: rows[0] });
+        } else {
+            return res.json({ found: false });
+        }
     });
 };
 

@@ -3,7 +3,10 @@ import {
   createOrder,
   getUserOrders,
   getOrderDetails,
-  cancelOrder
+  cancelOrder,
+  initiateDirectSaleOrder,
+  confirmDirectSaleOrder,
+  cancelDirectSaleOrder
 } from "../controllers/orderController.js";
 
 import {
@@ -35,6 +38,15 @@ router.put("/my/:id/cancel", verifyToken, cancelOrder);
 // ======================================================
 // ADMIN ORDER ROUTES
 // ======================================================
+
+// Admin: Initiate direct store sale order (Phase 1)
+router.post("/direct-sale/initiate", verifyToken, verifyAdmin, initiateDirectSaleOrder);
+
+// Admin: Confirm direct store sale order (Phase 2)
+router.put("/direct-sale/:id/confirm", verifyToken, verifyAdmin, confirmDirectSaleOrder);
+
+// Admin: Cancel direct store sale order (Phase 2 Alternative)
+router.put("/direct-sale/:id/cancel", verifyToken, verifyAdmin, cancelDirectSaleOrder);
 
 // Admin: Get all orders
 router.get("/", verifyToken, verifyAdmin, adminGetOrders);

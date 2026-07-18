@@ -48,6 +48,8 @@ export default function CartPage() {
     const [isMobile, setIsMobile] = useState(false);
     const [isAccordionExpanded, setIsAccordionExpanded] = useState(false);
     const [recommendedProducts, setRecommendedProducts] = useState([]);
+    const [user, setUser] = useState(null);
+    const [initiatingSale, setInitiatingSale] = useState(false);
     const router = useRouter();
 
     const fetchRecommendations = async (cartItems) => {
@@ -147,6 +149,7 @@ export default function CartPage() {
             router.push("/login");
             return;
         }
+        setUser(user);
 
         const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
@@ -200,6 +203,22 @@ export default function CartPage() {
     const totalItemsCount = items.reduce((acc, curr) => acc + curr.quantity, 0);
 
     const shippingCharged = shippingCost;
+
+    const handleDirectStoreSaleInit = async () => {
+        setInitiatingSale(true);
+        try {
+            const res = await api.post("/orders/direct-sale/initiate");
+            if (res.data && res.data.orderId) {
+                window.dispatchEvent(new Event('cart-updated'));
+                router.push(`/direct-store-sale?orderId=${res.data.orderId}`);
+            }
+        } catch (err) {
+            console.error("Failed to initiate direct store sale:", err);
+            alert(err.response?.data?.message || "Failed to initiate direct store sale");
+        } finally {
+            setInitiatingSale(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -402,6 +421,27 @@ export default function CartPage() {
                                 </button>
                             )}
 
+                            {user && user.role === 'admin' && (
+                                <div style={{
+                                    marginTop: '16px',
+                                    padding: '16px',
+                                    background: '#eff6ff',
+                                    border: '1px solid #bfdbfe',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    color: '#1e40af',
+                                    fontSize: '0.85rem'
+                                }}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    <div>
+                                        <div style={{ fontWeight: 600 }}>You are logged in as Admin.</div>
+                                        <div style={{ fontSize: '0.78rem', color: '#1d4ed8', marginTop: '2px' }}>You have access to Direct Store Sale.</div>
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
 
                         {/* RIGHT COLUMN: ORDER SUMMARY */}
@@ -434,10 +474,42 @@ export default function CartPage() {
                                 </div>
 
                                 {/* Checkout Buttons */}
-                                <div className="summary-actions">
+                                <div className="summary-actions" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     <Link href="/checkout" className="checkout-btn">
                                         Proceed to Checkout
                                     </Link>
+                                    {user && user.role === 'admin' && (
+                                        <>
+                                            <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>OR</div>
+                                            <button 
+                                                type="button" 
+                                                onClick={handleDirectStoreSaleInit} 
+                                                disabled={initiatingSale}
+                                                className="direct-sale-btn"
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '12px',
+                                                    width: '100%',
+                                                    border: '1.5px solid #0d9488',
+                                                    borderRadius: 'var(--radius-btn, 10px)',
+                                                    padding: '12px 20px',
+                                                    background: '#fcfdfd',
+                                                    color: '#0d9488',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    textAlign: 'left'
+                                                }}
+                                            >
+                                                <span style={{ fontSize: '1.5rem' }}>🏪</span>
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{initiatingSale ? "Initiating..." : "Direct Store Sale (Admin)"}</span>
+                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Skip address & online payment</span>
+                                                </div>
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* We Accept block */}

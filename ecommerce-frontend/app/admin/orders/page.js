@@ -37,7 +37,7 @@ export default function AdminOrders() {
         }
 
         try {
-            const headers = ["id", "user_id", "customer", "email", "total", "order_status", "payment_method", "created_at", "payment_id"];
+            const headers = ["id", "user_id", "customer", "email", "total", "order_status", "payment_method", "created_at", "payment_id", "order_type"];
             const headerLine = headers.join(",");
             const rowLines = orders.map(o => 
                 headers.map(h => {
@@ -45,6 +45,7 @@ export default function AdminOrders() {
                     if (h === "customer") val = o.user_name || o.customer || "";
                     else if (h === "email") val = o.email || "";
                     else if (h === "payment_id") val = o.payment_id || "";
+                    else if (h === "order_type") val = o.order_type || "Online";
                     else val = o[h] === null || o[h] === undefined ? "" : String(o[h]);
                     return `"${val.replace(/"/g, '""')}"`;
                 }).join(",")
@@ -176,6 +177,7 @@ export default function AdminOrders() {
                                 <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid var(--border)", color: "var(--text-muted)", fontSize: "0.9rem" }}>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Order ID</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Customer</th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600 }}>Type</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Date</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Total</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Status</th>
@@ -195,6 +197,18 @@ export default function AdminOrders() {
                                             )}
                                         </td>
                                         <td style={{ padding: "16px 24px", fontWeight: 500, color: "var(--text-main)" }}>{o.user_name || o.customer || "User"}</td>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <span style={{ 
+                                                padding: "4px 8px", 
+                                                background: o.order_type === "Store" ? "rgba(13, 148, 136, 0.1)" : "rgba(99, 102, 241, 0.1)", 
+                                                color: o.order_type === "Store" ? "#0d9488" : "#818cf8", 
+                                                borderRadius: "12px", 
+                                                fontSize: "0.8rem", 
+                                                fontWeight: 600
+                                            }}>
+                                                {o.order_type || "Online"}
+                                            </span>
+                                        </td>
                                         <td style={{ padding: "16px 24px", color: "var(--text-muted)", fontSize: "0.9rem" }}>{new Date(o.created_at || new Date()).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                                         <td style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-main)" }}>₹{o.total_amount || o.total || "0"}</td>
                                         <td style={{ padding: "16px 24px" }}>

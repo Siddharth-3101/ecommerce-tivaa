@@ -9,6 +9,7 @@ import {
   adminUpdateOrderStatus,
   bulkImportProducts,
   bulkImportOrders,
+  searchCustomer,
 } from "../controllers/adminController.js";
 
 import {
@@ -27,6 +28,11 @@ import { verifyToken } from "../middleware/auth.js";
 import { verifyAdmin } from "../middleware/admin.js";
 
 const router = express.Router();
+
+// ======================================================
+// CUSTOMER SEARCH (ADMIN ONLY)
+// ======================================================
+router.get("/customers/search", verifyToken, verifyAdmin, searchCustomer);
 
 // ======================================================
 // PRODUCT MANAGEMENT (ADMIN ONLY)

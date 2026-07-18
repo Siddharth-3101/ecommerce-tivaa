@@ -67,4 +67,30 @@ db.query(`
   }
 });
 
+// Auto-migrate orders table schema to include order_type
+db.query(`
+  ALTER TABLE orders 
+  ADD COLUMN order_type ENUM('Online', 'Store') DEFAULT 'Online';
+`, (err) => {
+  if (err) {
+    if (!err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+      console.error("Auto-migration orders order_type note:", err.message);
+    }
+  } else {
+    console.log("Orders schema successfully updated for order_type.");
+  }
+});
+
+// Auto-migrate settings value column to LONGTEXT
+db.query(`
+  ALTER TABLE settings 
+  MODIFY COLUMN \`value\` LONGTEXT NOT NULL;
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration settings value modification note:", err.message);
+  } else {
+    console.log("Settings value column successfully modified to LONGTEXT.");
+  }
+});
+
 export default db;
