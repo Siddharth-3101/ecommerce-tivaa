@@ -349,7 +349,7 @@ export const bulkImportProducts = (req, res) => {
                 p.stock ? Number(p.stock) : 0,
                 safeCatId,
                 p.image_url || null,
-                p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || p.is_visible === 1 || p.is_visible === true) : true,
+                p.is_visible !== undefined && p.is_visible !== null ? (String(p.is_visible).toLowerCase() === "true" || String(p.is_visible) === "1" || p.is_visible === 1 || p.is_visible === true) : true,
                 p.purchase_price !== undefined && p.purchase_price !== null && p.purchase_price !== "" ? Number(p.purchase_price) : null,
                 p.discounted_price !== undefined && p.discounted_price !== null && p.discounted_price !== "" ? Number(p.discounted_price) : null,
                 p.purchased_from || null

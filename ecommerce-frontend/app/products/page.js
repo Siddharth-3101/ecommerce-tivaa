@@ -4,6 +4,7 @@ import SortSelect from "@/components/SortSelect";
 import CategorySelect from "@/components/CategorySelect";
 import Heading from "@/components/Heading";
 import RelatedProductsSlider from "@/components/RelatedProductsSlider";
+import { getPaginationRange } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +135,7 @@ export default async function ProductsPage({ searchParams }) {
         fetchCategories()
     ]);
     const totalPages = data.totalPages || 1;
+    const paginationPages = getPaginationRange(page, totalPages);
 
     const showInHomeCats = Array.isArray(categories) 
         ? categories.filter(c => c.show_in_homepage === 1 || c.show_in_homepage === true)
@@ -317,7 +319,25 @@ export default async function ProductsPage({ searchParams }) {
                             </Link>
                         )}
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                        {paginationPages.map((p, index) => {
+                            if (p === '...') {
+                                return (
+                                    <span
+                                        key={`ellipsis-${index}`}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '40px',
+                                            height: '40px',
+                                            fontSize: '0.9rem',
+                                            color: 'var(--text-muted)'
+                                        }}
+                                    >
+                                        ...
+                                    </span>
+                                );
+                            }
                             const isActive = p === page;
                             return (
                                 <Link

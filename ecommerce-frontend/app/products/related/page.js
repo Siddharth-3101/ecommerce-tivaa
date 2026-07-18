@@ -1,6 +1,7 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
+import { getPaginationRange } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,7 @@ export default async function RelatedProductsPage({ searchParams }) {
 
     const total = related.length;
     const totalPages = Math.ceil(total / limit) || 1;
+    const paginationPages = getPaginationRange(page, totalPages);
     const offset = (page - 1) * limit;
     const paginatedProducts = related.slice(offset, offset + limit);
 
@@ -191,7 +193,25 @@ export default async function RelatedProductsPage({ searchParams }) {
                             </Link>
                         )}
                         
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                        {paginationPages.map((p, index) => {
+                            if (p === '...') {
+                                return (
+                                    <span
+                                        key={`ellipsis-${index}`}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '40px',
+                                            height: '40px',
+                                            fontSize: '0.9rem',
+                                            color: 'var(--text-muted)'
+                                        }}
+                                    >
+                                        ...
+                                    </span>
+                                );
+                            }
                             const isActive = p === page;
                             return (
                                 <Link

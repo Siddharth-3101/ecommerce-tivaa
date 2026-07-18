@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import Link from "next/link";
+import { getPaginationRange } from "@/lib/pagination";
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState([]);
@@ -332,6 +333,8 @@ export default function AdminProductsPage() {
         e.target.value = "";
     };
 
+    const paginationPages = getPaginationRange(page, totalPages);
+
     return (
         <div className="animate-fade-in">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
@@ -657,7 +660,25 @@ export default function AdminProductsPage() {
                                 </button>
                             )}
                             
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                            {paginationPages.map((p, index) => {
+                                if (p === '...') {
+                                    return (
+                                        <span
+                                            key={`ellipsis-${index}`}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '40px',
+                                                height: '40px',
+                                                fontSize: '0.9rem',
+                                                color: 'var(--text-muted)'
+                                            }}
+                                        >
+                                            ...
+                                        </span>
+                                    );
+                                }
                                 const isActive = p === page;
                                 return (
                                     <button
