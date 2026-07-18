@@ -653,8 +653,8 @@ export default function AdminProductsPage() {
                             {page > 1 && (
                                 <button
                                     onClick={() => changePage(page - 1)}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                    className="btn btn-secondary pagination-btn-prevnext"
+                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                                 >
                                     Prev
                                 </button>
@@ -672,7 +672,8 @@ export default function AdminProductsPage() {
                                                 width: '40px',
                                                 height: '40px',
                                                 fontSize: '0.9rem',
-                                                color: 'var(--text-muted)'
+                                                color: 'var(--text-muted)',
+                                                flexShrink: 0
                                             }}
                                         >
                                             ...
@@ -698,6 +699,7 @@ export default function AdminProductsPage() {
                                             color: isActive ? '#ffffff' : 'var(--text-main)',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
+                                            flexShrink: 0
                                         }}
                                     >
                                         {p}
@@ -708,8 +710,8 @@ export default function AdminProductsPage() {
                             {page < totalPages && (
                                 <button
                                     onClick={() => changePage(page + 1)}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                    className="btn btn-secondary pagination-btn-prevnext"
+                                    style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                                 >
                                     Next
                                 </button>
@@ -718,6 +720,15 @@ export default function AdminProductsPage() {
                     )}
                 </>
             )}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media (max-width: 480px) {
+                    .pagination-btn-prevnext {
+                        padding: 6px 10px !important;
+                        font-size: 0.7rem !important;
+                        letter-spacing: 0px !important;
+                    }
+                }
+            `}} />
         </div>
     );
 }

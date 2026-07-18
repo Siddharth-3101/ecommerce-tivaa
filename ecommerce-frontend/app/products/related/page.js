@@ -186,8 +186,8 @@ export default async function RelatedProductsPage({ searchParams }) {
                         {page > 1 && (
                             <Link
                                 href={`/products/related?q=${encodeURIComponent(query)}&${sort ? `sort=${sort}&` : ''}page=${page - 1}`}
-                                className="btn btn-secondary"
-                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                className="btn btn-secondary pagination-btn-prevnext"
+                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                             >
                                 Prev
                             </Link>
@@ -205,7 +205,8 @@ export default async function RelatedProductsPage({ searchParams }) {
                                             width: '40px',
                                             height: '40px',
                                             fontSize: '0.9rem',
-                                            color: 'var(--text-muted)'
+                                            color: 'var(--text-muted)',
+                                            flexShrink: 0
                                         }}
                                     >
                                         ...
@@ -231,6 +232,7 @@ export default async function RelatedProductsPage({ searchParams }) {
                                         border: isActive ? '1px solid var(--text-main)' : '1px solid #e0e0e0',
                                         background: isActive ? 'var(--text-main)' : 'transparent',
                                         color: isActive ? '#ffffff' : 'var(--text-main)',
+                                        flexShrink: 0
                                     }}
                                 >
                                     {p}
@@ -241,8 +243,8 @@ export default async function RelatedProductsPage({ searchParams }) {
                         {page < totalPages && (
                             <Link
                                 href={`/products/related?q=${encodeURIComponent(query)}&${sort ? `sort=${sort}&` : ''}page=${page + 1}`}
-                                className="btn btn-secondary"
-                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}
+                                className="btn btn-secondary pagination-btn-prevnext"
+                                style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px', flexShrink: 0 }}
                             >
                                 Next
                             </Link>
@@ -250,6 +252,15 @@ export default async function RelatedProductsPage({ searchParams }) {
                     </div>
                 )}
             </section>
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media (max-width: 480px) {
+                    .pagination-btn-prevnext {
+                        padding: 6px 10px !important;
+                        font-size: 0.7rem !important;
+                        letter-spacing: 0px !important;
+                    }
+                }
+            `}} />
         </div>
     );
 }
