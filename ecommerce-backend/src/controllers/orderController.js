@@ -540,14 +540,6 @@ export const initiateDirectSaleOrder = (req, res) => {
       return res.status(400).json({ message: "Admin's cart is empty" });
     }
 
-    // Check stock availability
-    for (const item of cartItems) {
-      const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
-      if (item.quantity > stockVal) {
-        return res.status(400).json({ message: `Not enough stock for ${item.name}` });
-      }
-    }
-
     // Apply overrides to items in checkout (no shipping cost for store sales)
     const overriddenItems = cartItems.map(item => {
       const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(item, item.selected_variation);
@@ -557,6 +549,14 @@ export const initiateDirectSaleOrder = (req, res) => {
         stock: effectiveStock
       };
     });
+
+    // Check stock availability (using effective variant stock)
+    for (const item of overriddenItems) {
+      const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
+      if (item.quantity > stockVal) {
+        return res.status(400).json({ message: `Not enough stock for ${item.name}` });
+      }
+    }
 
     const subtotal = overriddenItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
