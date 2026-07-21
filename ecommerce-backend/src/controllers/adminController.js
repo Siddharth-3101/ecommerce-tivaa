@@ -603,28 +603,55 @@ export const deleteHsnCode = (req, res) => {
 // ADMIN: GST STATE MANAGEMENT (MASTERS)
 // ===========================================================
 
+const createGstStateTableIfMissing = (callback) => {
+    const createTableSql = `
+        CREATE TABLE IF NOT EXISTS gst_states (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            state_code VARCHAR(50) NOT NULL,
+            state_name VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+    db.query(createTableSql, callback);
+};
+
 export const getGstStates = (req, res) => {
     db.query("SELECT * FROM gst_states ORDER BY id DESC", (err, rows) => {
         if (err) {
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return createGstStateTableIfMissing((cErr) => {
+                    if (cErr) return res.status(500).json({ message: "Database error: " + cErr.message });
+                    return res.json([]);
+                });
+            }
             console.error("DB error fetching GST states:", err);
-            return res.status(500).json({ message: "Database error" });
+            return res.status(500).json({ message: "Database error: " + err.message });
         }
         res.json(rows || []);
     });
 };
 
 export const createGstState = (req, res) => {
-    const { state_code, state_name } = req.body;
-    const codeStr = String(state_code ?? "").trim();
-    const nameStr = String(state_name ?? "").trim();
+    const { state_code, state_name, code, name } = req.body;
+    const codeStr = String(state_code ?? code ?? "").trim();
+    const nameStr = String(state_name ?? name ?? "").trim();
 
     if (!codeStr || !nameStr) {
         return res.status(400).json({ message: "State Code and GST State name are required" });
     }
 
-    const sql = "INSERT INTO gst_states (state_code, state_name) VALUES (?, ?)";
-    db.query(sql, [codeStr, nameStr], (err, result) => {
+    const insertSql = "INSERT INTO gst_states (state_code, state_name) VALUES (?, ?)";
+    db.query(insertSql, [codeStr, nameStr], (err, result) => {
         if (err) {
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return createGstStateTableIfMissing((cErr) => {
+                    if (cErr) return res.status(500).json({ message: "Database error: " + cErr.message });
+                    db.query(insertSql, [codeStr, nameStr], (err2, result2) => {
+                        if (err2) return res.status(500).json({ message: "Database error: " + err2.message });
+                        return res.json({ message: "GST State created successfully", id: result2.insertId });
+                    });
+                });
+            }
             console.error("DB error creating GST state:", err);
             return res.status(500).json({ message: "Database error: " + err.message });
         }
@@ -634,9 +661,9 @@ export const createGstState = (req, res) => {
 
 export const updateGstState = (req, res) => {
     const { id } = req.params;
-    const { state_code, state_name } = req.body;
-    const codeStr = String(state_code ?? "").trim();
-    const nameStr = String(state_name ?? "").trim();
+    const { state_code, state_name, code, name } = req.body;
+    const codeStr = String(state_code ?? code ?? "").trim();
+    const nameStr = String(state_name ?? name ?? "").trim();
 
     if (!codeStr || !nameStr) {
         return res.status(400).json({ message: "State Code and GST State name are required" });
@@ -662,7 +689,7 @@ export const deleteGstState = (req, res) => {
     db.query(sql, [id], (err, result) => {
         if (err) {
             console.error("DB error deleting GST state:", err);
-            return res.status(500).json({ message: "Database error" });
+            return res.status(500).json({ message: "Database error: " + err.message });
         }
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: "GST State not found" });
