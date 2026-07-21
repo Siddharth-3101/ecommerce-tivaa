@@ -35,7 +35,7 @@ export default function GstStateMasterPage() {
 
     const handleOpenAddModal = () => {
         setEditingState(null);
-        setFormData({ state_code: "", state_name: "" });
+        setFormData({ state_code: "", gst_state: "", state_name: "" });
         setIsModalOpen(true);
     };
 
@@ -43,6 +43,7 @@ export default function GstStateMasterPage() {
         setEditingState(item);
         setFormData({
             state_code: item.state_code || "",
+            gst_state: item.gst_state || "",
             state_name: item.state_name || ""
         });
         setIsModalOpen(true);
@@ -51,27 +52,30 @@ export default function GstStateMasterPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingState(null);
-        setFormData({ state_code: "", state_name: "" });
+        setFormData({ state_code: "", gst_state: "", state_name: "" });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const codeStr = String(formData.state_code || "").trim();
         const nameStr = String(formData.state_name || "").trim();
+        const formattedCode = codeStr.padStart(2, '0');
+        const gstStateStr = String(formData.gst_state || "").trim() || `${formattedCode}-${nameStr}`;
 
         if (!codeStr) {
             alert("Please enter a valid State Code");
             return;
         }
         if (!nameStr) {
-            alert("Please enter a valid GST State name");
+            alert("Please enter a valid State Name");
             return;
         }
 
         setLoading(true);
         try {
             const payload = {
-                state_code: codeStr,
+                state_code: formattedCode,
+                gst_state: gstStateStr,
                 state_name: nameStr
             };
 
@@ -200,9 +204,10 @@ export default function GstStateMasterPage() {
                         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.95rem" }}>
                             <thead>
                                 <tr style={{ background: "rgba(255, 255, 255, 0.02)", borderBottom: "1px solid var(--border)" }}>
-                                    <th style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-muted)", width: "180px" }}>Code</th>
-                                    <th style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-muted)" }}>GST State</th>
-                                    <th style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-muted)", textAlign: "right", width: "140px" }}>Actions</th>
+                                    <th style={{ padding: "16px 20px", fontWeight: 600, color: "var(--text-muted)", width: "120px" }}>Code</th>
+                                    <th style={{ padding: "16px 20px", fontWeight: 600, color: "var(--text-muted)" }}>GST State</th>
+                                    <th style={{ padding: "16px 20px", fontWeight: 600, color: "var(--text-muted)" }}>State Name</th>
+                                    <th style={{ padding: "16px 20px", fontWeight: 600, color: "var(--text-muted)", textAlign: "right", width: "140px" }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -214,13 +219,16 @@ export default function GstStateMasterPage() {
                                             transition: "background 0.15s ease"
                                         }}
                                     >
-                                        <td style={{ padding: "16px 24px", fontWeight: 700, fontFamily: "monospace", fontSize: "1rem", color: "var(--accent)" }}>
-                                            {item.state_code}
+                                        <td style={{ padding: "16px 20px", fontWeight: 700, fontFamily: "monospace", fontSize: "1rem", color: "var(--accent)" }}>
+                                            {String(item.state_code).padStart(2, '0')}
                                         </td>
-                                        <td style={{ padding: "16px 24px", fontWeight: 500, color: "var(--text-main)" }}>
-                                            {item.state_name}
+                                        <td style={{ padding: "16px 20px", fontWeight: 600, color: "var(--text-main)" }}>
+                                            {item.gst_state || `${String(item.state_code).padStart(2, '0')}-${(item.state_name || '').replace(/^[0-9]+-/, '')}`}
                                         </td>
-                                        <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                        <td style={{ padding: "16px 20px", fontWeight: 500, color: "var(--text-muted)" }}>
+                                            {(item.state_name || '').replace(/^[0-9]+-/, '')}
+                                        </td>
+                                        <td style={{ padding: "16px 20px", textAlign: "right" }}>
                                             <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                                                 <button
                                                     onClick={() => handleOpenEditModal(item)}

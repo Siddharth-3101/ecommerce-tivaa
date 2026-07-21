@@ -163,6 +163,7 @@ export default function CheckoutPage() {
     const [showAllItems, setShowAllItems] = useState(false);
     const [currentCheckoutStep, setCurrentCheckoutStep] = useState(2);
     const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [gstStateList, setGstStateList] = useState([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -173,10 +174,26 @@ export default function CheckoutPage() {
         landmark: "",
         city: "",
         state: "",
+        state_code: "",
+        gst_state: "",
         pincode: "",
         payment_method: "Razorpay"
     });
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchGstStates = async () => {
+            try {
+                const res = await api.get("/gst-states");
+                if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                    setGstStateList(res.data);
+                }
+            } catch (err) {
+                console.log("Could not load dynamic GST states for checkout:", err);
+            }
+        };
+        fetchGstStates();
+    }, []);
 
     useEffect(() => {
         const loggedInUser = getUser();
@@ -337,6 +354,8 @@ export default function CheckoutPage() {
                 shipping_address: fullAddress,
                 city: formData.city,
                 state: formData.state,
+                state_code: formData.state_code,
+                gst_state: formData.gst_state,
                 pincode: formData.pincode,
                 phone: formData.phone,
                 payment_method: formData.payment_method
@@ -520,11 +539,20 @@ export default function CheckoutPage() {
                                                 className="input-field" 
                                                 required 
                                                 value={formData.state}
-                                                onChange={(e) => setFormData({...formData, state: e.target.value})}
+                                                onChange={(e) => {
+                                                    const selectedName = e.target.value;
+                                                    const matched = gstStateList.find(s => s.state_name === selectedName || s.gst_state === selectedName);
+                                                    setFormData({
+                                                        ...formData,
+                                                        state: matched ? matched.state_name : selectedName,
+                                                        state_code: matched ? matched.state_code : "",
+                                                        gst_state: matched ? (matched.gst_state || `${matched.state_code}-${matched.state_name}`) : ""
+                                                    });
+                                                }}
                                             >
                                                 <option value="">Select State</option>
-                                                {INDIAN_STATES.map(s => (
-                                                    <option key={s} value={s}>{s}</option>
+                                                {(gstStateList.length > 0 ? gstStateList.map(s => s.state_name) : INDIAN_STATES).map(sName => (
+                                                    <option key={sName} value={sName}>{sName}</option>
                                                 ))}
                                             </select>
                                         </div>

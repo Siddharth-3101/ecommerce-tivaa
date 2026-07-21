@@ -632,21 +632,23 @@ export const getGstStates = (req, res) => {
 };
 
 export const createGstState = (req, res) => {
-    const { state_code, state_name, code, name } = req.body;
+    const { state_code, gst_state, state_name, code, name } = req.body;
     const codeStr = String(state_code ?? code ?? "").trim();
     const nameStr = String(state_name ?? name ?? "").trim();
+    const formattedCode = codeStr.padStart(2, '0');
+    const gstStateStr = String(gst_state ?? "").trim() || `${formattedCode}-${nameStr}`;
 
     if (!codeStr || !nameStr) {
-        return res.status(400).json({ message: "State Code and GST State name are required" });
+        return res.status(400).json({ message: "State Code and State Name are required" });
     }
 
-    const insertSql = "INSERT INTO gst_states (state_code, state_name) VALUES (?, ?)";
-    db.query(insertSql, [codeStr, nameStr], (err, result) => {
+    const insertSql = "INSERT INTO gst_states (state_code, gst_state, state_name) VALUES (?, ?, ?)";
+    db.query(insertSql, [formattedCode, gstStateStr, nameStr], (err, result) => {
         if (err) {
             if (err.code === 'ER_NO_SUCH_TABLE') {
                 return createGstStateTableIfMissing((cErr) => {
                     if (cErr) return res.status(500).json({ message: "Database error: " + cErr.message });
-                    db.query(insertSql, [codeStr, nameStr], (err2, result2) => {
+                    db.query(insertSql, [formattedCode, gstStateStr, nameStr], (err2, result2) => {
                         if (err2) return res.status(500).json({ message: "Database error: " + err2.message });
                         return res.json({ message: "GST State created successfully", id: result2.insertId });
                     });
@@ -661,16 +663,18 @@ export const createGstState = (req, res) => {
 
 export const updateGstState = (req, res) => {
     const { id } = req.params;
-    const { state_code, state_name, code, name } = req.body;
+    const { state_code, gst_state, state_name, code, name } = req.body;
     const codeStr = String(state_code ?? code ?? "").trim();
     const nameStr = String(state_name ?? name ?? "").trim();
+    const formattedCode = codeStr.padStart(2, '0');
+    const gstStateStr = String(gst_state ?? "").trim() || `${formattedCode}-${nameStr}`;
 
     if (!codeStr || !nameStr) {
-        return res.status(400).json({ message: "State Code and GST State name are required" });
+        return res.status(400).json({ message: "State Code and State Name are required" });
     }
 
-    const sql = "UPDATE gst_states SET state_code = ?, state_name = ? WHERE id = ?";
-    db.query(sql, [codeStr, nameStr, id], (err, result) => {
+    const sql = "UPDATE gst_states SET state_code = ?, gst_state = ?, state_name = ? WHERE id = ?";
+    db.query(sql, [formattedCode, gstStateStr, nameStr, id], (err, result) => {
         if (err) {
             console.error("DB error updating GST state:", err);
             return res.status(500).json({ message: "Database error: " + err.message });

@@ -166,6 +166,7 @@ db.query(`
   CREATE TABLE IF NOT EXISTS gst_states (
     id INT AUTO_INCREMENT PRIMARY KEY,
     state_code VARCHAR(50) NOT NULL,
+    gst_state VARCHAR(255) NOT NULL,
     state_name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -174,8 +175,81 @@ db.query(`
     console.error("Auto-migration gst_states note:", err.message);
   } else {
     console.log("gst_states table successfully verified/created.");
+
+    // Ensure columns exist
+    db.query("ALTER TABLE gst_states ADD COLUMN gst_state VARCHAR(255) NULL", () => {});
+    db.query("ALTER TABLE gst_states ADD COLUMN state_name VARCHAR(255) NULL", () => {});
+
+    // Populate gst_state & state_name for any existing rows where null
+    db.query(`
+      UPDATE gst_states 
+      SET state_name = state_code
+      WHERE state_name IS NULL OR state_name = '';
+    `, () => {});
+
+    db.query(`
+      UPDATE gst_states 
+      SET gst_state = CONCAT(LPAD(TRIM(state_code), 2, '0'), '-', TRIM(state_name))
+      WHERE gst_state IS NULL OR gst_state = '';
+    `, () => {});
+
+    // Auto-seed default Indian states if empty or incomplete
+    db.query("SELECT COUNT(*) AS cnt FROM gst_states", (cntErr, cntRows) => {
+      if (!cntErr && (cntRows[0]?.cnt < 37)) {
+        db.query("DELETE FROM gst_states", () => {
+          const seedSql = "INSERT INTO gst_states (state_code, gst_state, state_name) VALUES ?";
+          const seedValues = [
+            ["01", "01-JAMMU AND KASHMIR", "JAMMU AND KASHMIR"],
+            ["02", "02-HIMACHAL PRADESH", "HIMACHAL PRADESH"],
+            ["03", "03-PUNJAB", "PUNJAB"],
+            ["04", "04-CHANDIGARH", "CHANDIGARH"],
+            ["05", "05-UTTARAKHAND", "UTTARAKHAND"],
+            ["06", "06-HARYANA", "HARYANA"],
+            ["07", "07-DELHI", "DELHI"],
+            ["08", "08-RAJASTHAN", "RAJASTHAN"],
+            ["09", "09-UTTAR PRADESH", "UTTAR PRADESH"],
+            ["10", "10-BIHAR", "BIHAR"],
+            ["11", "11-SIKKIM", "SIKKIM"],
+            ["12", "12-ARUNACHAL PRADESH", "ARUNACHAL PRADESH"],
+            ["13", "13-NAGALAND", "NAGALAND"],
+            ["14", "14-MANIPUR", "MANIPUR"],
+            ["15", "15-MIZORAM", "MIZORAM"],
+            ["16", "16-TRIPURA", "TRIPURA"],
+            ["17", "17-MEGHALAYA", "MEGHALAYA"],
+            ["18", "18-ASSAM", "ASSAM"],
+            ["19", "19-WEST BENGAL", "WEST BENGAL"],
+            ["20", "20-JHARKHAND", "JHARKHAND"],
+            ["21", "21-ODISHA", "ODISHA"],
+            ["22", "22-CHHATTISGARH", "CHHATTISGARH"],
+            ["23", "23-MADHYA PRADESH", "MADHYA PRADESH"],
+            ["24", "24-GUJARAT", "GUJARAT"],
+            ["26", "26-DADRA AND NAGAR HAVELI AND DAMAN AND DIU", "DADRA AND NAGAR HAVELI AND DAMAN AND DIU"],
+            ["27", "27-MAHARASHTRA", "MAHARASHTRA"],
+            ["29", "29-KARNATAKA", "KARNATAKA"],
+            ["30", "30-GOA", "GOA"],
+            ["31", "31-LAKSHADWEEP", "LAKSHADWEEP"],
+            ["32", "32-KERALA", "KERALA"],
+            ["33", "33-TAMIL NADU", "TAMIL NADU"],
+            ["34", "34-PUDUCHERRY", "PUDUCHERRY"],
+            ["35", "35-ANDAMAN AND NICOBAR ISLANDS", "ANDAMAN AND NICOBAR ISLANDS"],
+            ["36", "36-TELANGANA", "TELANGANA"],
+            ["37", "37-ANDHRA PRADESH", "ANDHRA PRADESH"],
+            ["38", "38-LADAKH", "LADAKH"],
+            ["97", "97-OTHER TERRITORY", "OTHER TERRITORY"]
+          ];
+          db.query(seedSql, [seedValues], (sErr) => {
+            if (sErr) console.error("Error seeding gst_states:", sErr);
+            else console.log("Successfully pre-seeded 37+ official Indian GST States.");
+          });
+        });
+      }
+    });
   }
 });
+
+// Auto-migrate shipping_details table schema to include state_code and gst_state
+db.query("ALTER TABLE shipping_details ADD COLUMN state_code VARCHAR(50) NULL", () => {});
+db.query("ALTER TABLE shipping_details ADD COLUMN gst_state VARCHAR(255) NULL", () => {});
 
 // Auto-update legacy direct store sale shipping states to configured Business State
 db.query(`

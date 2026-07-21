@@ -91,9 +91,9 @@ import {
 } from "../controllers/reportController.js";
 
 // ======================================================
-// GST STATE MASTERS (ADMIN ONLY)
+// GST STATE MASTERS (PUBLIC GET FOR CHECKOUT, ADMIN FOR MUTATION)
 // ======================================================
-router.get("/gst-states", verifyToken, verifyAdmin, getGstStates);
+router.get("/gst-states", getGstStates);
 router.post("/gst-states", verifyToken, verifyAdmin, createGstState);
 router.put("/gst-states/:id", verifyToken, verifyAdmin, updateGstState);
 router.delete("/gst-states/:id", verifyToken, verifyAdmin, deleteGstState);

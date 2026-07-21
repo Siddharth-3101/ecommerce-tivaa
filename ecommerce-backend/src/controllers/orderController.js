@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 // =============================================================
 export const createOrder = (req, res) => {
   const userId = req.user.id;
-  const { payment_method, shipping_address, city, state, pincode, phone, buy_now } = req.body;
+  const { payment_method, shipping_address, city, state, state_code, gst_state, pincode, phone, buy_now } = req.body;
 
   if (!payment_method) {
     return res.status(400).json({ message: "Payment method required" });
@@ -134,13 +134,13 @@ export const createOrder = (req, res) => {
           // Step 7 — Add shipping details
           const sqlShip = `
                       INSERT INTO shipping_details 
-                      (order_id, address, city, state, pincode, phone)
-                      VALUES (?, ?, ?, ?, ?, ?)
+                      (order_id, address, city, state, state_code, gst_state, pincode, phone)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                   `;
 
           db.query(
             sqlShip,
-            [orderId, shipping_address, city, state, pincode, phone || null],
+            [orderId, shipping_address, city, state, state_code || null, gst_state || null, pincode, phone || null],
             (err4) => {
               if (err4) console.warn("Shipping insert error:", err4);
             }
@@ -822,16 +822,24 @@ export const confirmDirectSaleOrder = (req, res) => {
       // 2. Insert/update shipping details with Business State, customer phone, and admin notes
       db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
         const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
-        const sqlUpdateShip = `
-          INSERT INTO shipping_details (order_id, address, city, state, pincode, phone)
-          VALUES (?, ?, 'Store', ?, '000000', ?)
-          ON DUPLICATE KEY UPDATE 
-            address = VALUES(address),
-            state = VALUES(state),
-            phone = VALUES(phone)
-        `;
-        db.query(sqlUpdateShip, [orderId, notes || "Direct Store Sale", bizState, customer_phone || null], (errShip) => {
-          if (errShip) console.warn("Error updating direct sale shipping details:", errShip);
+        db.query("SELECT state_code, gst_state, state_name FROM gst_states WHERE LOWER(state_name) = LOWER(?) LIMIT 1", [bizState], (errGst, gstRows) => {
+          const sCode = (gstRows && gstRows.length > 0 && gstRows[0].state_code) ? gstRows[0].state_code : "33";
+          const gState = (gstRows && gstRows.length > 0 && gstRows[0].gst_state) ? gstRows[0].gst_state : "33-Tamil Nadu";
+          const sName = (gstRows && gstRows.length > 0 && gstRows[0].state_name) ? gstRows[0].state_name : bizState;
+
+          const sqlUpdateShip = `
+            INSERT INTO shipping_details (order_id, address, city, state, state_code, gst_state, pincode, phone)
+            VALUES (?, ?, 'Store', ?, ?, ?, '000000', ?)
+            ON DUPLICATE KEY UPDATE 
+              address = VALUES(address),
+              state = VALUES(state),
+              state_code = VALUES(state_code),
+              gst_state = VALUES(gst_state),
+              phone = VALUES(phone)
+          `;
+          db.query(sqlUpdateShip, [orderId, notes || "Direct Store Sale", sName, sCode, gState, customer_phone || null], (errShip) => {
+            if (errShip) console.warn("Error updating direct sale shipping details:", errShip);
+          });
         });
       });
 

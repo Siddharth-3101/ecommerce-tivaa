@@ -48,29 +48,36 @@ export const downloadGstReadyReport = (req, res) => {
   const { periodType, financialYear, periodValue } = req.query;
   const { startDate, endDate } = calculateDateRange(periodType, financialYear, periodValue);
 
-  // Fetch Business State default
+  // Fetch Business State default and format as GST State (e.g. 33-TAMIL NADU)
   db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
     const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
 
-    // Query 1: B2CS Data
-    const sqlB2CS = `
-      SELECT 
-        'OE' AS type,
-        COALESCE(NULLIF(TRIM(s.state), ''), oi.gst_state_name, ?) AS place_of_supply,
-        oi.gst_rate,
-        ROUND(SUM(oi.taxable_amount), 2) AS total_taxable_value,
-        0.00 AS cess_amount,
-        '' AS ecommerce_gstin
-      FROM order_items oi
-      JOIN orders o ON o.id = oi.order_id
-      LEFT JOIN shipping_details s ON s.order_id = o.id
-      WHERE o.order_status IN ('paid', 'processing', 'shipped', 'delivered')
-        AND o.created_at >= ? AND o.created_at <= ?
-      GROUP BY place_of_supply, oi.gst_rate
-      ORDER BY place_of_supply, oi.gst_rate;
-    `;
+    db.query("SELECT gst_state FROM gst_states WHERE LOWER(state_name) = LOWER(?) OR LOWER(gst_state) = LOWER(?) LIMIT 1", [bizState, bizState], (errBizGst, bizGstRows) => {
+      const defaultGstState = (bizGstRows && bizGstRows.length > 0 && bizGstRows[0].gst_state) ? bizGstRows[0].gst_state : "33-TAMIL NADU";
 
-    db.query(sqlB2CS, [bizState, startDate, endDate], (errB2CS, b2csRows) => {
+      // Query 1: B2CS Data - Place of Supply is always GST State format (e.g. 30-GOA, 01-JAMMU AND KASHMIR)
+      const sqlB2CS = `
+        SELECT 
+          'OE' AS type,
+          COALESCE(
+            NULLIF(TRIM(s.gst_state), ''),
+            (SELECT gs.gst_state FROM gst_states gs WHERE LOWER(TRIM(gs.state_name)) = LOWER(TRIM(s.state)) OR LOWER(TRIM(gs.gst_state)) = LOWER(TRIM(s.state)) OR TRIM(gs.state_code) = TRIM(s.state_code) LIMIT 1),
+            ?
+          ) AS place_of_supply,
+          oi.gst_rate,
+          ROUND(SUM(oi.taxable_amount), 2) AS total_taxable_value,
+          0.00 AS cess_amount,
+          '' AS ecommerce_gstin
+        FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        LEFT JOIN shipping_details s ON s.order_id = o.id
+        WHERE o.order_status IN ('paid', 'processing', 'shipped', 'delivered')
+          AND o.created_at >= ? AND o.created_at <= ?
+        GROUP BY place_of_supply, oi.gst_rate
+        ORDER BY place_of_supply, oi.gst_rate;
+      `;
+
+      db.query(sqlB2CS, [defaultGstState, startDate, endDate], (errB2CS, b2csRows) => {
       if (errB2CS) {
         console.error("Error fetching B2CS report data:", errB2CS);
         return res.status(500).json({ message: "Database error" });
