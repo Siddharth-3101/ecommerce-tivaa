@@ -105,9 +105,17 @@ export const getProducts = async (req, res) => {
     const total = countRows[0]?.total || 0;
 
     let sql = `
-          SELECT p.*, c.name AS category_name
+          SELECT 
+            p.*, 
+            c.name AS category_name,
+            COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage,
+            COALESCE(h.hsn_code, ph.hsn_code) AS hsn_code,
+            COALESCE(h.hsn_name, ph.hsn_name) AS hsn_name
           FROM products p
           LEFT JOIN categories c ON p.category_id = c.id
+          LEFT JOIN hsn_codes h ON c.hsn_id = h.id
+          LEFT JOIN categories parent_c ON c.parent_id = parent_c.id
+          LEFT JOIN hsn_codes ph ON parent_c.hsn_id = ph.id
           WHERE p.is_active = true ${admin === "true" ? "" : "AND p.is_visible = true"}
       `;
 
@@ -183,9 +191,17 @@ export const getProductById = (req, res) => {
   const { id } = req.params;
 
   const sql = `
-        SELECT p.*, c.name AS category_name
+        SELECT 
+          p.*, 
+          c.name AS category_name,
+          COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage,
+          COALESCE(h.hsn_code, ph.hsn_code) AS hsn_code,
+          COALESCE(h.hsn_name, ph.hsn_name) AS hsn_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN hsn_codes h ON c.hsn_id = h.id
+        LEFT JOIN categories parent_c ON c.parent_id = parent_c.id
+        LEFT JOIN hsn_codes ph ON parent_c.hsn_id = ph.id
         WHERE p.id = ? AND p.is_active = true
     `;
 

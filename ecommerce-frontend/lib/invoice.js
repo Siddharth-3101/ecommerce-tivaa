@@ -1,6 +1,27 @@
 export function downloadInvoice(order, items) {
     if (typeof window === 'undefined') return;
 
+    let totalTaxablePrice = 0;
+    let totalGstAmount = 0;
+
+    items.forEach(item => {
+        const itemQty = Number(item.quantity || 1);
+        const itemUnitPrice = Number(item.price || 0);
+        const grossLineTotal = itemUnitPrice * itemQty;
+        const gstRate = Number(item.gst_percentage ?? item.tax_percentage ?? item.cat_tax ?? item.tax_rate ?? 0);
+
+        let taxableValue = grossLineTotal;
+        let taxAmount = 0;
+
+        if (gstRate > 0) {
+            taxableValue = (grossLineTotal * 100) / (100 + gstRate);
+            taxAmount = grossLineTotal - taxableValue;
+        }
+
+        totalTaxablePrice += taxableValue;
+        totalGstAmount += taxAmount;
+    });
+
     const subtotal = items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
     const shippingCost = Number(order.shipping_cost || 0);
     const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
@@ -21,17 +42,33 @@ export function downloadInvoice(order, items) {
         minute: '2-digit'
     }) : new Date().toLocaleDateString();
 
-    const itemsRows = items.map((item) => `
+    const itemsRows = items.map((item) => {
+        const itemQty = Number(item.quantity || 1);
+        const itemUnitPrice = Number(item.price || 0);
+        const grossLineTotal = itemUnitPrice * itemQty;
+        const gstRate = Number(item.gst_percentage ?? item.tax_percentage ?? item.cat_tax ?? item.tax_rate ?? 0);
+
+        let taxableValue = grossLineTotal;
+        let taxAmount = 0;
+
+        if (gstRate > 0) {
+            taxableValue = (grossLineTotal * 100) / (100 + gstRate);
+            taxAmount = grossLineTotal - taxableValue;
+        }
+
+        return `
         <tr style="border-bottom: 1px solid #EADCF8;">
             <td style="padding: 12px; font-size: 0.95rem; color: #2B1B35;">
                 <div style="font-weight: 500;">${item.name}</div>
-                ${item.selected_variation ? `<div style="font-size: 0.8rem; color: #6F5B7A; margin-top: 4px;">Variant: ${item.selected_variation}</div>` : ''}
+                ${item.selected_variation ? `<div style="font-size: 0.8rem; color: #6F5B7A; margin-top: 2px;">Variant: ${item.selected_variation}</div>` : ''}
+                ${gstRate > 0 ? `<div style="font-size: 0.78rem; color: #10B981; margin-top: 3px;">Taxable: ₹${taxableValue.toFixed(2)} | GST (${gstRate}%): ₹${taxAmount.toFixed(2)}</div>` : ''}
             </td>
             <td style="padding: 12px; text-align: center; font-size: 0.95rem; color: #6F5B7A;">${item.quantity}</td>
             <td style="padding: 12px; text-align: right; font-size: 0.95rem; color: #6F5B7A;">₹${Number(item.price).toFixed(2)}</td>
             <td style="padding: 12px; text-align: right; font-weight: 600; font-size: 0.95rem; color: #7A38C2;">₹${(Number(item.price) * Number(item.quantity)).toFixed(2)}</td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 
     const htmlContent = `
         <!DOCTYPE html>
@@ -221,8 +258,16 @@ export function downloadInvoice(order, items) {
 
                 <table class="totals-table">
                     <tr class="totals-row">
-                        <td class="totals-label">Subtotal</td>
-                        <td class="totals-value">₹${subtotal.toFixed(2)}</td>
+                        <td class="totals-label">Price</td>
+                        <td class="totals-value">₹${totalTaxablePrice.toFixed(2)}</td>
+                    </tr>
+                    <tr class="totals-row">
+                        <td class="totals-label">Tax</td>
+                        <td class="totals-value">₹${totalGstAmount.toFixed(2)}</td>
+                    </tr>
+                    <tr class="totals-row">
+                        <td class="totals-label" style="border-top: 1px solid #EADCF8; padding-top: 8px;">Subtotal</td>
+                        <td class="totals-value" style="border-top: 1px solid #EADCF8; padding-top: 8px;">₹${subtotal.toFixed(2)}</td>
                     </tr>
                     <tr class="totals-row">
                         <td class="totals-label">Shipping</td>

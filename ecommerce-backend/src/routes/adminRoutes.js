@@ -10,6 +10,10 @@ import {
   bulkImportProducts,
   bulkImportOrders,
   searchCustomer,
+  getHsnCodes,
+  createHsnCode,
+  updateHsnCode,
+  deleteHsnCode,
 } from "../controllers/adminController.js";
 
 import {
@@ -63,5 +67,12 @@ router.get("/orders/:id", verifyToken, verifyAdmin, adminOrderDetails);
 router.put("/orders/:id/status", verifyToken, verifyAdmin, adminUpdateOrderStatus);
 router.post("/orders/bulk", verifyToken, verifyAdmin, bulkImportOrders);
 
+// ======================================================
+// HSN CODE MASTERS (ADMIN ONLY)
+// ======================================================
+router.get("/hsn", verifyToken, verifyAdmin, getHsnCodes);
+router.post("/hsn", verifyToken, verifyAdmin, createHsnCode);
+router.put("/hsn/:id", verifyToken, verifyAdmin, updateHsnCode);
+router.delete("/hsn/:id", verifyToken, verifyAdmin, deleteHsnCode);
 
 export default router;

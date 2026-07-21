@@ -178,22 +178,36 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Reviews table verified/created");
 
-        // 11. Create contact_messages table
+        // 12. Create hsn_codes table
         await new Promise((res, rej) => db.query(`
-            CREATE TABLE IF NOT EXISTS contact_messages (
+            CREATE TABLE IF NOT EXISTS hsn_codes (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                subject VARCHAR(255) NOT NULL,
-                message TEXT NOT NULL,
-                reply TEXT NULL,
-                status ENUM('pending', 'replied') DEFAULT 'pending',
+                hsn_code VARCHAR(255) NOT NULL,
+                hsn_name VARCHAR(255) NOT NULL,
+                tax_percentage DECIMAL(5, 2) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `, (err) => err ? rej(err) : res()));
-        console.log("Contact messages table verified/created");
+        console.log("HSN codes table verified/created");
 
-        // 11. Safe Column ALTER Migrations
+        // Seed initial HSN codes if table is empty
+        await new Promise((res) => {
+            db.query("SELECT COUNT(*) AS count FROM hsn_codes", (errCount, rows) => {
+                if (!errCount && rows && rows[0].count === 0) {
+                    const initialHsn = [
+                        ['7323', 'SteelItems', 5.00],
+                        ['4202', 'SteelBags', 5.00],
+                        ['9615', 'SteelHairItems', 12.00],
+                        ['9615', 'SteelImiJewel', 3.00]
+                    ];
+                    db.query("INSERT INTO hsn_codes (hsn_code, hsn_name, tax_percentage) VALUES ?", [initialHsn], () => res());
+                } else {
+                    res();
+                }
+            });
+        });
+
+        // 13. Safe Column ALTER Migrations
         const productCols = await getExistingColumns("products");
         const userCols = await getExistingColumns("users");
         const orderCols = await getExistingColumns("orders");
@@ -276,17 +290,19 @@ export const runSetup = async () => {
 
         if (!categoryCols.includes("show_in_homepage")) {
             await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN show_in_homepage BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+            console.log("Migration: added show_in_homepage to categories");
         }
 
-        if (!categoryCols.includes("parent_id")) {
-            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN parent_id INT NULL", (err) => err ? rej(err) : res()));
-            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
-                if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
+        if (!categoryCols.includes("hsn_id")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD COLUMN hsn_id INT NULL", (err) => err ? rej(err) : res()));
+            await new Promise((res, rej) => db.query("ALTER TABLE categories ADD CONSTRAINT fk_categories_hsn FOREIGN KEY (hsn_id) REFERENCES hsn_codes(id) ON DELETE SET NULL", (err) => {
+                if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists")) {
                     rej(err);
                 } else {
                     res();
                 }
             }));
+            console.log("Migration: added hsn_id to categories");
         }
 
         if (!productCols.includes("variations")) {

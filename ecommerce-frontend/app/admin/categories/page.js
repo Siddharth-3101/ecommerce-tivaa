@@ -5,13 +5,15 @@ import api from "@/lib/api";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
+  const [hsnList, setHsnList] = useState([]);
+  const [form, setForm] = useState({ name: "", description: "", image_url: "", parent_id: "", hsn_id: "", type: "category", show_in_homepage: false });
   const [loading, setLoading] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
     fetchCategories();
+    fetchHsnCodes();
   }, []);
 
   const fetchCategories = async () => {
@@ -23,6 +25,15 @@ export default function CategoriesPage() {
       setCategories([]);
     } finally {
       setInitLoading(false);
+    }
+  };
+
+  const fetchHsnCodes = async () => {
+    try {
+      const res = await api.get("/admin/hsn");
+      setHsnList(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch HSN codes:", err);
     }
   };
 
@@ -57,6 +68,7 @@ export default function CategoriesPage() {
                 description: form.description,
                 image_url: form.image_url,
                 parent_id: form.type === "subcategory" && form.parent_id !== "" ? Number(form.parent_id) : null,
+                hsn_id: form.type === "subcategory" && form.hsn_id ? Number(form.hsn_id) : null,
                 show_in_homepage: form.show_in_homepage ? 1 : 0
             };
 
@@ -66,7 +78,7 @@ export default function CategoriesPage() {
             } else {
                 await api.post("/admin/category", payload);
             }
-            setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
+            setForm({ name: "", description: "", image_url: "", parent_id: "", hsn_id: "", type: "category", show_in_homepage: false });
             await fetchCategories();
         } catch (err) {
             alert(err.response?.data?.message || `Failed to ${editingCategory ? 'update' : 'add'} category`);
@@ -82,6 +94,7 @@ export default function CategoriesPage() {
             description: category.description || "",
             image_url: category.image_url || "",
             parent_id: category.parent_id !== null && category.parent_id !== undefined ? String(category.parent_id) : "",
+            hsn_id: category.hsn_id !== null && category.hsn_id !== undefined ? String(category.hsn_id) : "",
             type: category.parent_id ? "subcategory" : "category",
             show_in_homepage: category.show_in_homepage === 1 || category.show_in_homepage === true
         });
@@ -90,7 +103,7 @@ export default function CategoriesPage() {
 
     const handleCancelEdit = () => {
         setEditingCategory(null);
-        setForm({ name: "", description: "", image_url: "", parent_id: "", type: "category", show_in_homepage: false });
+        setForm({ name: "", description: "", image_url: "", parent_id: "", hsn_id: "", type: "category", show_in_homepage: false });
     };
 
     const handleDelete = async (id) => {
@@ -180,7 +193,7 @@ export default function CategoriesPage() {
                         </label>
                     </div>
 
-                    <div className="category-form-grid" style={{ display: "grid", gridTemplateColumns: form.type === "subcategory" ? "1fr 1fr 1fr" : "1fr 1fr", gap: "24px" }}>
+                    <div className="category-form-grid" style={{ display: "grid", gridTemplateColumns: form.type === "subcategory" ? "1fr 1fr 1fr 1fr" : "1fr 1fr", gap: "24px" }}>
                         <div>
                             <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Category Name *</label>
                             <input
@@ -208,6 +221,24 @@ export default function CategoriesPage() {
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))
                                     }
+                                </select>
+                            </div>
+                        )}
+                        {form.type === "subcategory" && (
+                            <div>
+                                <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>HSN Code</label>
+                                <select
+                                    className="input-field"
+                                    value={form.hsn_id}
+                                    onChange={(e) => setForm({ ...form, hsn_id: e.target.value })}
+                                    style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', cursor: 'pointer' }}
+                                >
+                                    <option value="">-- Select HSN Code --</option>
+                                    {hsnList.map(hsn => (
+                                        <option key={hsn.id} value={hsn.id}>
+                                            {hsn.hsn_code ? `${hsn.hsn_code} - ${hsn.hsn_name} (${hsn.tax_percentage}% GST)` : `${hsn.hsn_name} (${hsn.tax_percentage}% GST)`}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         )}
@@ -346,6 +377,7 @@ export default function CategoriesPage() {
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Image</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Name</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Type</th>
+                                        <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>HSN Code</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Show in Home</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "left" }}>Description</th>
                                         <th style={{ padding: "16px 24px", fontWeight: 600, textAlign: "right" }}>Actions</th>
@@ -373,6 +405,15 @@ export default function CategoriesPage() {
                                                     <span style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.08)", padding: "4px 8px", borderRadius: "12px", fontWeight: 500 }}>
                                                         Main Category
                                                     </span>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: "16px 24px", fontSize: "0.85rem" }}>
+                                                {c.hsn_code || c.hsn_name ? (
+                                                    <span style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)", padding: "4px 10px", borderRadius: "12px", fontWeight: 600 }}>
+                                                        {c.hsn_code ? `${c.hsn_code} - ${c.hsn_name}` : c.hsn_name} ({c.tax_percentage}%)
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: "var(--text-muted)" }}>-</span>
                                                 )}
                                             </td>
                                             <td style={{ padding: "16px 24px" }}>

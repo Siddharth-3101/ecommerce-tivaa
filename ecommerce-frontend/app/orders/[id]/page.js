@@ -637,15 +637,11 @@ export default function OrderDetailsPage({ params }) {
                                 </div>
                                 <div className="price-row">
                                     <span>Shipping</span>
-                                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>FREE</span>
-                                </div>
-                                <div className="price-row">
-                                    <span>Coupon Discount</span>
-                                    <span style={{ color: 'var(--success)' }}>- ₹0.00</span>
-                                </div>
-                                <div className="price-row">
-                                    <span>Taxes</span>
-                                    <span>₹{Number(order.shipping_cost || 0).toFixed(2)}</span>
+                                    {Number(order.shipping_cost || 0) > 0 ? (
+                                        <span>₹{Number(order.shipping_cost).toFixed(2)}</span>
+                                    ) : (
+                                        <span style={{ color: 'var(--success)', fontWeight: '600' }}>FREE</span>
+                                    )}
                                 </div>
                                 
                                 <div className="price-row total-row">

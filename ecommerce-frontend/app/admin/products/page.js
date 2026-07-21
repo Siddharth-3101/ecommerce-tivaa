@@ -20,6 +20,7 @@ export default function AdminProductsPage() {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [selectedStock, setSelectedStock] = useState("All");
     const [selectedVisibility, setSelectedVisibility] = useState("All");
+    const [detailModalProduct, setDetailModalProduct] = useState(null);
 
     // Search states
     const [searchTerm, setSearchTerm] = useState("");
@@ -627,6 +628,9 @@ export default function AdminProductsPage() {
                                         </td>
                                         <td style={{ padding: "16px 24px", textAlign: "right" }}>
                                             <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
+                                                <button onClick={() => setDetailModalProduct(p)} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.85rem", background: "rgba(16, 185, 129, 0.08)", color: "#10b981", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
+                                                    Details
+                                                </button>
                                                 <button onClick={() => handleToggleVisibility(p.id)} className="btn btn-secondary" style={{ padding: "6px 12px", fontSize: "0.85rem" }}>
                                                     {p.is_visible ? "Hide" : "Show"}
                                                 </button>
@@ -768,6 +772,141 @@ export default function AdminProductsPage() {
                     }
                 }
             `}} />
+
+            {/* Product Details Modal */}
+            {detailModalProduct && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(0, 0, 0, 0.6)",
+                    backdropFilter: "blur(4px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000,
+                    padding: "20px"
+                }}>
+                    <div style={{
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "16px",
+                        padding: "28px",
+                        width: "100%",
+                        maxWidth: "520px",
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)",
+                        maxHeight: "90vh",
+                        overflowY: "auto"
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+                            <div>
+                                <span style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 600, textTransform: "uppercase" }}>
+                                    {detailModalProduct.category_name || "Uncategorized"}
+                                </span>
+                                <h2 style={{ fontSize: "1.4rem", fontWeight: 700, margin: "4px 0 0 0", color: "var(--text-main)" }}>
+                                    {detailModalProduct.name}
+                                </h2>
+                                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Product ID: #{detailModalProduct.id}</span>
+                            </div>
+                            <button
+                                onClick={() => setDetailModalProduct(null)}
+                                style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "4px" }}
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Image Preview */}
+                        {detailModalProduct.image_url && (
+                            <div style={{ width: "100%", height: "180px", borderRadius: "12px", overflow: "hidden", marginBottom: "20px", background: "#f9f9f9", border: "1px solid var(--border)" }}>
+                                <img
+                                    src={detailModalProduct.image_url.split(",")[0].trim()}
+                                    alt={detailModalProduct.name}
+                                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Price & GST Breakup */}
+                        {(() => {
+                            const p = detailModalProduct;
+                            const gstRate = Number(p.gst_percentage || 0);
+                            const hasDiscounted = p.discounted_price !== undefined && p.discounted_price !== null && p.discounted_price !== "" && Number(p.discounted_price) > 0;
+                            const basePrice = hasDiscounted ? Number(p.discounted_price) : Number(p.price || 0);
+                            const taxableValue = basePrice > 0 ? (basePrice * 100) / (100 + gstRate) : 0;
+                            const taxAmount = basePrice > 0 ? basePrice - taxableValue : 0;
+
+                            return (
+                                <div style={{
+                                    background: "rgba(16, 185, 129, 0.04)",
+                                    border: "1px dashed rgba(16, 185, 129, 0.3)",
+                                    borderRadius: "12px",
+                                    padding: "20px",
+                                    marginBottom: "20px"
+                                }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                                        <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                                            📋 Price + GST Breakup
+                                        </h4>
+                                        <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", background: "rgba(0,0,0,0.05)", padding: "3px 8px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+                                            GST Rate: <strong>{gstRate}%</strong>
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.95rem" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--border)", paddingBottom: "8px" }}>
+                                            <span style={{ color: "var(--text-muted)" }}>{hasDiscounted ? "Discounted Price" : "Selling Price"} :</span>
+                                            <strong style={{ color: "var(--text-main)" }}>₹{basePrice.toFixed(2)} ({gstRate}%)</strong>
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--border)", paddingBottom: "8px" }}>
+                                            <span style={{ color: "var(--text-muted)" }}>Taxable Value :</span>
+                                            <strong style={{ color: "var(--text-main)" }}>₹{taxableValue.toFixed(2)}</strong>
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                            <span style={{ color: "var(--text-muted)" }}>GST @{gstRate}% :</span>
+                                            <strong style={{ color: "#10b981" }}>₹{taxAmount.toFixed(2)}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Other Product Attributes */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.9rem", color: "var(--text-main)", marginBottom: "20px" }}>
+                            <div style={{ background: "rgba(0,0,0,0.02)", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                                <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", display: "block" }}>Selling Price</span>
+                                <strong>₹{Number(detailModalProduct.price || 0).toFixed(2)}</strong>
+                            </div>
+                            <div style={{ background: "rgba(0,0,0,0.02)", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                                <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", display: "block" }}>Purchase Price</span>
+                                <strong>{detailModalProduct.purchase_price ? `₹${Number(detailModalProduct.purchase_price).toFixed(2)}` : "-"}</strong>
+                            </div>
+                            <div style={{ background: "rgba(0,0,0,0.02)", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                                <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", display: "block" }}>Purchased From</span>
+                                <strong>{detailModalProduct.purchased_from || "-"}</strong>
+                            </div>
+                            <div style={{ background: "rgba(0,0,0,0.02)", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                                <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", display: "block" }}>Stock Status</span>
+                                <strong>{detailModalProduct.stock > 0 ? `${detailModalProduct.stock} in stock` : "Out of stock"}</strong>
+                            </div>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                            <Link href={`/admin/products/${detailModalProduct.id}`} className="btn btn-primary" style={{ padding: "8px 16px", fontSize: "0.9rem" }}>
+                                Edit Product
+                            </Link>
+                            <button className="btn btn-secondary" onClick={() => setDetailModalProduct(null)} style={{ padding: "8px 16px", fontSize: "0.9rem" }}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

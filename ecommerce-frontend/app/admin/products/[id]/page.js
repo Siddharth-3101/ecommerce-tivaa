@@ -158,6 +158,30 @@ export default function EditProductPage({ params }) {
         );
     }
 
+    const getCategoryGstRate = () => {
+        if (!product || !product.category_id) return 0;
+        const cat = categories.find(c => Number(c.id) === Number(product.category_id));
+        if (cat) {
+            if (cat.tax_percentage !== undefined && cat.tax_percentage !== null) {
+                return Number(cat.tax_percentage);
+            }
+            if (cat.parent_id) {
+                const parentCat = categories.find(p => Number(p.id) === Number(cat.parent_id));
+                if (parentCat && parentCat.tax_percentage !== undefined && parentCat.tax_percentage !== null) {
+                    return Number(parentCat.tax_percentage);
+                }
+            }
+        }
+        return Number(product.gst_percentage || 0);
+    };
+
+    const gstRate = getCategoryGstRate();
+    const hasDiscounted = product?.discounted_price !== undefined && product?.discounted_price !== null && product?.discounted_price !== "" && Number(product?.discounted_price) > 0;
+    const basePrice = hasDiscounted ? Number(product.discounted_price) : Number(product?.price || 0);
+
+    const taxableValue = basePrice > 0 ? (basePrice * 100) / (100 + gstRate) : 0;
+    const taxAmount = basePrice > 0 ? basePrice - taxableValue : 0;
+
     return (
         <div className="animate-fade-in">
             <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "32px" }}>
@@ -242,6 +266,40 @@ export default function EditProductPage({ params }) {
                             />
                         </div>
                     </div>
+
+                    {/* Price + GST Breakup Section */}
+                    {basePrice > 0 && (
+                        <div style={{
+                            background: "rgba(16, 185, 129, 0.04)",
+                            border: "1px dashed rgba(16, 185, 129, 0.3)",
+                            borderRadius: "12px",
+                            padding: "20px",
+                            marginTop: "8px"
+                        }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                                <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#10b981", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+                                    🏷️ Price + GST Breakup
+                                </h4>
+                                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", background: "rgba(0,0,0,0.05)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--border)" }}>
+                                    Category GST Rate: <strong>{gstRate}%</strong>
+                                </span>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.95rem" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--border)", paddingBottom: "8px" }}>
+                                    <span style={{ color: "var(--text-muted)" }}>{hasDiscounted ? "Discounted Price" : "Selling Price"} :</span>
+                                    <strong style={{ color: "var(--text-main)" }}>₹{basePrice.toFixed(2)} ({gstRate}%)</strong>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--border)", paddingBottom: "8px" }}>
+                                    <span style={{ color: "var(--text-muted)" }}>Taxable Value :</span>
+                                    <strong style={{ color: "var(--text-main)" }}>₹{taxableValue.toFixed(2)}</strong>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <span style={{ color: "var(--text-muted)" }}>GST @{gstRate}% :</span>
+                                    <strong style={{ color: "#10b981" }}>₹{taxAmount.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="product-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px", marginTop: "20px" }}>
                         <div>

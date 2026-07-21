@@ -231,9 +231,18 @@ export const getUserOrders = (req, res) => {
 
     const orderIds = orders.map(o => o.id);
     const sqlItems = `
-      SELECT oi.*, p.name, p.image_url, p.variations
+      SELECT 
+        oi.*, 
+        p.name, 
+        p.image_url, 
+        p.variations,
+        COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
       FROM order_items oi
       JOIN products p ON p.id = oi.product_id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN hsn_codes h ON c.hsn_id = h.id
+      LEFT JOIN categories parent_c ON c.parent_id = parent_c.id
+      LEFT JOIN hsn_codes ph ON parent_c.hsn_id = ph.id
       WHERE oi.order_id IN (${orderIds.map(() => "?").join(",")})
     `;
 
@@ -333,9 +342,14 @@ export const getOrderDetails = (req, res) => {
                 oi.*, 
                 p.name, 
                 p.image_url,
-                p.variations
+                p.variations,
+                COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
             FROM order_items oi
             JOIN products p ON p.id = oi.product_id
+            LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN hsn_codes h ON c.hsn_id = h.id
+            LEFT JOIN categories parent_c ON c.parent_id = parent_c.id
+            LEFT JOIN hsn_codes ph ON parent_c.hsn_id = ph.id
             WHERE oi.order_id = ?
         `;
 
@@ -376,13 +390,7 @@ export const getOrderDetails = (req, res) => {
           }
         }
         return {
-          id: item.id,
-          order_id: item.order_id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          selected_variation: item.selected_variation,
-          name: item.name,
+          ...item,
           image_url: imageUrl
         };
       });

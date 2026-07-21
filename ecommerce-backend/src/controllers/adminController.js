@@ -7,17 +7,18 @@ import { sendOrderEmailToCustomer } from "../utils/orderEmail.js";
 
 // Add Category
 export const addCategory = (req, res) => {
-    const { name, description, image_url, parent_id, show_in_homepage } = req.body;
+    const { name, description, image_url, parent_id, show_in_homepage, hsn_id } = req.body;
 
     if (!name)
         return res.status(400).json({ message: "Category name required" });
 
     const targetParentId = parent_id ? Number(parent_id) : null;
+    const targetHsnId = hsn_id ? Number(hsn_id) : null;
 
     const performInsert = () => {
-        const sql = "INSERT INTO categories (name, description, image_url, parent_id, show_in_homepage) VALUES (?, ?, ?, ?, ?)";
+        const sql = "INSERT INTO categories (name, description, image_url, parent_id, show_in_homepage, hsn_id) VALUES (?, ?, ?, ?, ?, ?)";
 
-        db.query(sql, [name, description || null, image_url || null, targetParentId, show_in_homepage ? 1 : 0], (err) => {
+        db.query(sql, [name, description || null, image_url || null, targetParentId, show_in_homepage ? 1 : 0, targetHsnId], (err) => {
             if (err) {
                 console.error("DB error:", err);
                 return res.status(500).json({ message: "DB error" });
@@ -96,9 +97,10 @@ export const deleteCategory = (req, res) => {
 // Update Category
 export const updateCategory = (req, res) => {
     const { id } = req.params;
-    const { name, description, image_url, parent_id, show_in_homepage } = req.body;
+    const { name, description, image_url, parent_id, show_in_homepage, hsn_id } = req.body;
 
     const targetParentId = parent_id ? Number(parent_id) : null;
+    const targetHsnId = hsn_id ? Number(hsn_id) : null;
 
     if (targetParentId && targetParentId === Number(id)) {
         return res.status(400).json({ message: "A category cannot be its own parent." });
@@ -106,9 +108,9 @@ export const updateCategory = (req, res) => {
 
     const performUpdate = () => {
         const sql =
-            "UPDATE categories SET name = ?, description = ?, image_url = ?, parent_id = ?, show_in_homepage = ? WHERE id = ?";
+            "UPDATE categories SET name = ?, description = ?, image_url = ?, parent_id = ?, show_in_homepage = ?, hsn_id = ? WHERE id = ?";
 
-        db.query(sql, [name, description, image_url || null, targetParentId, show_in_homepage ? 1 : 0, id], (err, result) => {
+        db.query(sql, [name, description, image_url || null, targetParentId, show_in_homepage ? 1 : 0, targetHsnId, id], (err, result) => {
             if (err) {
                 console.error("DB error:", err);
                 return res.status(500).json({ message: "DB error" });
@@ -214,9 +216,15 @@ export const adminOrderDetails = (req, res) => {
             p.name,
             p.image_url,
             oi.quantity,
-            oi.price
+            oi.price,
+            oi.selected_variation,
+            COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
         FROM order_items oi
         JOIN products p ON p.id = oi.product_id
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN hsn_codes h ON c.hsn_id = h.id
+        LEFT JOIN categories parent_c ON c.parent_id = parent_c.id
+        LEFT JOIN hsn_codes ph ON parent_c.hsn_id = ph.id
         WHERE oi.order_id = ?
     `;
 
@@ -436,6 +444,74 @@ export const searchCustomer = (req, res) => {
         } else {
             return res.json({ found: false });
         }
+    });
+};
+
+// ===========================================================
+// ADMIN: HSN CODE MANAGEMENT (MASTERS)
+// ===========================================================
+
+export const getHsnCodes = (req, res) => {
+    db.query("SELECT * FROM hsn_codes ORDER BY id DESC", (err, rows) => {
+        if (err) {
+            console.error("DB error fetching HSN codes:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        res.json(rows);
+    });
+};
+
+export const createHsnCode = (req, res) => {
+    const { hsn_code, hsn_name, tax_percentage } = req.body;
+
+    if (!hsn_code || !hsn_name || tax_percentage === undefined || tax_percentage === null) {
+        return res.status(400).json({ message: "HSN Code, HSN Name, and Tax Percentage are required" });
+    }
+
+    const sql = "INSERT INTO hsn_codes (hsn_code, hsn_name, tax_percentage) VALUES (?, ?, ?)";
+    db.query(sql, [hsn_code.trim(), hsn_name.trim(), parseFloat(tax_percentage)], (err, result) => {
+        if (err) {
+            console.error("DB error creating HSN code:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        res.json({ message: "HSN code created successfully", id: result.insertId });
+    });
+};
+
+export const updateHsnCode = (req, res) => {
+    const { id } = req.params;
+    const { hsn_code, hsn_name, tax_percentage } = req.body;
+
+    if (!hsn_code || !hsn_name || tax_percentage === undefined || tax_percentage === null) {
+        return res.status(400).json({ message: "HSN Code, HSN Name, and Tax Percentage are required" });
+    }
+
+    const sql = "UPDATE hsn_codes SET hsn_code = ?, hsn_name = ?, tax_percentage = ? WHERE id = ?";
+    db.query(sql, [hsn_code.trim(), hsn_name.trim(), parseFloat(tax_percentage), id], (err, result) => {
+        if (err) {
+            console.error("DB error updating HSN code:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "HSN code not found" });
+        }
+        res.json({ message: "HSN code updated successfully" });
+    });
+};
+
+export const deleteHsnCode = (req, res) => {
+    const { id } = req.params;
+
+    const sql = "DELETE FROM hsn_codes WHERE id = ?";
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("DB error deleting HSN code:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "HSN code not found" });
+        }
+        res.json({ message: "HSN code deleted successfully" });
     });
 };
 

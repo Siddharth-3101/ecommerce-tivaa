@@ -81,15 +81,56 @@ db.query(`
   }
 });
 
-// Auto-migrate settings value column to LONGTEXT
+// Auto-migrate hsn_codes table
 db.query(`
-  ALTER TABLE settings 
-  MODIFY COLUMN \`value\` LONGTEXT NOT NULL;
+  CREATE TABLE IF NOT EXISTS hsn_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hsn_code VARCHAR(255) NOT NULL,
+    hsn_name VARCHAR(255) NOT NULL,
+    tax_percentage DECIMAL(5, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
 `, (err) => {
   if (err) {
-    console.error("Auto-migration settings value modification note:", err.message);
+    console.error("Auto-migration hsn_codes note:", err.message);
   } else {
-    console.log("Settings value column successfully modified to LONGTEXT.");
+    console.log("hsn_codes table successfully verified/created.");
+
+    // Ensure hsn_code column exists for existing setups
+    db.query("ALTER TABLE hsn_codes ADD COLUMN hsn_code VARCHAR(255) NULL", (errCol) => {
+      // Seed or update initial HSN codes if empty
+      db.query("SELECT COUNT(*) AS count FROM hsn_codes", (errCount, rows) => {
+        if (!errCount && rows && rows[0].count === 0) {
+          const initialHsn = [
+            ['7323', 'SteelItems', 5.00],
+            ['4202', 'SteelBags', 5.00],
+            ['9615', 'SteelHairItems', 12.00],
+            ['9615', 'SteelImiJewel', 3.00]
+          ];
+          db.query("INSERT INTO hsn_codes (hsn_code, hsn_name, tax_percentage) VALUES ?", [initialHsn], (errSeed) => {
+            if (errSeed) {
+              console.error("Error seeding initial HSN codes:", errSeed.message);
+            } else {
+              console.log("Initial HSN codes successfully seeded.");
+            }
+          });
+        }
+      });
+    });
+  }
+});
+
+// Auto-migrate categories table schema to include hsn_id
+db.query(`
+  ALTER TABLE categories 
+  ADD COLUMN hsn_id INT NULL;
+`, (err) => {
+  if (err) {
+    if (!err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+      console.error("Auto-migration categories hsn_id note:", err.message);
+    }
+  } else {
+    console.log("Categories schema successfully updated for hsn_id.");
   }
 });
 

@@ -83,14 +83,27 @@ export default function AdminOrderDetails({ params }) {
 
     return (
         <div className="animate-fade-in">
-            <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "32px" }}>
-                <Link href="/admin/orders" className="btn btn-secondary" style={{ padding: "8px 12px" }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </Link>
-                <div>
-                    <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Order #TEJWL{String(order.id).padStart(2, '0')}</h1>
-                    <p style={{ color: "var(--text-muted)", margin: "8px 0 0 0" }}>Placed on {new Date(order.created_at || new Date()).toLocaleDateString()}</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+                <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                    <Link href="/admin/orders" className="btn btn-secondary" style={{ padding: "8px 12px" }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </Link>
+                    <div>
+                        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Order #TEJWL{String(order.id).padStart(2, '0')}</h1>
+                        <p style={{ color: "var(--text-muted)", margin: "8px 0 0 0" }}>Placed on {new Date(order.created_at || new Date()).toLocaleDateString()}</p>
+                    </div>
                 </div>
+                <button
+                    className="btn btn-secondary"
+                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 18px", fontSize: "0.9rem", color: "#10b981", border: "1px solid rgba(16, 185, 129, 0.3)", background: "rgba(16, 185, 129, 0.08)" }}
+                    onClick={async () => {
+                        const { downloadInvoice } = await import("@/lib/invoice");
+                        downloadInvoice(order, items);
+                    }}
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download Bill
+                </button>
             </div>
 
             <div className="order-details-grid" style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "32px" }}>
@@ -117,6 +130,96 @@ export default function AdminOrderDetails({ params }) {
                             <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>Total Paid</span>
                             <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>₹{order.total}</span>
                         </div>
+                    </div>
+
+                    {/* Amount & Tax Breakup Card (Admin Only) */}
+                    <div className="card" style={{ padding: "24px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid var(--border)", paddingBottom: "16px" }}>
+                            <h2 style={{ fontSize: "1.4rem", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                                📊 Amount & Tax Breakup <span style={{ fontSize: "0.8rem", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "3px 10px", borderRadius: "12px", fontWeight: 600 }}>Admin Only</span>
+                            </h2>
+                        </div>
+
+                        {(() => {
+                            let totalTaxable = 0;
+                            let totalGst = 0;
+                            let totalGross = 0;
+
+                            const itemRows = items.map((item) => {
+                                const qty = Number(item.quantity || 1);
+                                const unitPrice = Number(item.price || 0);
+                                const grossTotal = unitPrice * qty;
+                                const gstRate = Number(item.gst_percentage || 0);
+                                
+                                const taxableAmount = gstRate > 0 ? (grossTotal * 100) / (100 + gstRate) : grossTotal;
+                                const gstAmount = grossTotal - taxableAmount;
+
+                                totalTaxable += taxableAmount;
+                                totalGst += gstAmount;
+                                totalGross += grossTotal;
+
+                                return {
+                                    id: item.product_id || item.id,
+                                    name: item.name,
+                                    qty,
+                                    taxableAmount,
+                                    gstAmount,
+                                    grossTotal,
+                                    gstRate
+                                };
+                            });
+
+                            return (
+                                <div>
+                                    <div style={{ overflowX: "auto" }}>
+                                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                                            <thead>
+                                                <tr style={{ background: "rgba(255, 255, 255, 0.03)", borderBottom: "2px solid var(--border)" }}>
+                                                    <th style={{ padding: "12px", textAlign: "left" }}>Product Code</th>
+                                                    <th style={{ padding: "12px", textAlign: "left" }}>Product Name</th>
+                                                    <th style={{ padding: "12px", textAlign: "center" }}>Quantity</th>
+                                                    <th style={{ padding: "12px", textAlign: "right" }}>Taxable Amount</th>
+                                                    <th style={{ padding: "12px", textAlign: "right" }}>GST Amount</th>
+                                                    <th style={{ padding: "12px", textAlign: "right" }}>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {itemRows.map((row, idx) => (
+                                                    <tr key={idx} style={{ borderBottom: "1px solid var(--border)" }}>
+                                                        <td style={{ padding: "12px", color: "var(--text-muted)" }}>#{row.id}</td>
+                                                        <td style={{ padding: "12px", fontWeight: 500, color: "var(--text-main)" }}>
+                                                            {row.name}
+                                                            {row.gstRate > 0 && (
+                                                                <span style={{ fontSize: "0.78rem", color: "#10b981", marginLeft: "8px" }}>
+                                                                    ({row.gstRate}% GST)
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td style={{ padding: "12px", textAlign: "center" }}>{row.qty}</td>
+                                                        <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem" }}>₹{row.taxableAmount.toFixed(2)}</td>
+                                                        <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem", color: "#10b981" }}>₹{row.gstAmount.toFixed(2)}</td>
+                                                        <td style={{ padding: "12px", textAlign: "right", fontWeight: 600, fontFamily: "monospace", fontSize: "0.95rem" }}>₹{row.grossTotal.toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr style={{ borderTop: "2px solid var(--border)", background: "rgba(16, 185, 129, 0.04)", fontWeight: 700 }}>
+                                                    <td colSpan="3" style={{ padding: "12px", textAlign: "right", color: "var(--text-muted)" }}>Subtotal Breakup Total:</td>
+                                                    <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem" }}>₹{totalTaxable.toFixed(2)}</td>
+                                                    <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem", color: "#10b981" }}>₹{totalGst.toFixed(2)}</td>
+                                                    <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1.05rem", color: "var(--accent)" }}>₹{totalGross.toFixed(2)}</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px", paddingTop: "14px", borderTop: "1px dashed var(--border)", gap: "20px", alignItems: "center" }}>
+                                        <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-muted)" }}>Total:</span>
+                                        <span style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--accent)", fontFamily: "monospace" }}>₹{totalGross.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
 
