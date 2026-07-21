@@ -501,7 +501,7 @@ function DirectStoreSaleContent() {
                                         className="input-field"
                                         value={customerPhone}
                                         onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ""))}
-                                        style={{ flex: 1, height: '42px', padding: '0 12px', fontSize: '0.88rem', minWidth: 0, width: '100%', boxSizing: 'border-box' }}
+                                        style={{ flex: 1, height: '42px', padding: '0 12px', fontSize: '0.88rem', minWidth: 0, boxSizing: 'border-box' }}
                                     />
                                 </div>
                             </div>
@@ -602,7 +602,7 @@ function DirectStoreSaleContent() {
                 }
                 .direct-sale-grid {
                     display: grid;
-                    grid-template-columns: 1fr 1fr;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
                     gap: 24px;
                     margin-top: 16px;
                     width: 100%;
@@ -649,7 +649,7 @@ function DirectStoreSaleContent() {
                         padding-right: 12px !important;
                     }
                     .direct-sale-grid {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: minmax(0, 1fr);
                         gap: 16px;
                         margin-top: 12px;
                     }
