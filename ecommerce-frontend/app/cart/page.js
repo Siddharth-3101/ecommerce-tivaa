@@ -6,7 +6,6 @@ import Link from "next/link";
 import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Heading from "@/components/Heading";
-import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 
 // Local payment logos and trust icons for a premium look
 function PaymentLogos() {
@@ -522,12 +521,6 @@ export default function CartPage() {
 
                     </div>
                 </>
-            )}
-
-            {recommendedProducts.length > 0 && (
-                <div style={{ marginTop: '48px' }}>
-                    <RelatedProductsSlider relatedProducts={recommendedProducts} />
-                </div>
             )}
 
             <style jsx global>{`
@@ -1104,8 +1097,8 @@ export default function CartPage() {
                     /* Spacing cells for mobile */
                     .item-quantity-cell {
                         justify-content: flex-start;
-                        margin-left: 80px; /* Align with details start */
-                        margin-top: -16px; /* pull up closer */
+                        margin-left: 0;
+                        margin-top: 4px;
                     }
                     .item-remove-cell {
                         position: absolute;

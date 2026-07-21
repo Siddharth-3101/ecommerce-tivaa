@@ -8,6 +8,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { Calendar, Trash2 } from "lucide-react";
 import Heading from "@/components/Heading";
+import { formatOrderNumber } from "@/lib/invoice";
 
 export default function MyOrdersPage() {
     const router = useRouter();
@@ -63,7 +64,7 @@ export default function MyOrdersPage() {
                 amount: razorpayOrder.amount,
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
-                description: `Order #TEJWL${String(orderId).padStart(2, '0')}`,
+                description: `Order ${formatOrderNumber(orderId)}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {
@@ -466,7 +467,7 @@ export default function MyOrdersPage() {
 
                                     {/* Column 2: Order Meta Info */}
                                     <div className="order-meta-info">
-                                        <h3 className="order-title-text">Order #TEJWL{String(order.id).padStart(2, '0')}</h3>
+                                        <h3 className="order-title-text">Order {formatOrderNumber(order.id, order.created_at)}</h3>
                                         <div className="order-date-text">
                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                             <span>{dateDetails.date} &bull; {dateDetails.time}</span>

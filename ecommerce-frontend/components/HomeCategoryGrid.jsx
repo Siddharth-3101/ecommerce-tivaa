@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { slugify } from "@/lib/slug";
 
 export default function HomeCategoryGrid({ categories = [], products = [] }) {
     const router = useRouter();
@@ -32,7 +33,7 @@ export default function HomeCategoryGrid({ categories = [], products = [] }) {
     const subcategories = categories.filter(c => Number(c.parent_id) === Number(activeParent.id));
 
     const handleMainCategoryClick = () => {
-        router.push(`/products?category=${encodeURIComponent(activeParent.name)}`);
+        router.push(`/category/${slugify(activeParent.name)}`);
     };
 
     const handleSelectParent = (parentId) => {
@@ -128,7 +129,7 @@ export default function HomeCategoryGrid({ categories = [], products = [] }) {
                     subcategories.map((sub) => (
                         <Link 
                             key={sub.id} 
-                            href={`/products?category=${encodeURIComponent(sub.name)}`} 
+                            href={`/category/${slugify(activeParent.name)}/${slugify(sub.name)}`} 
                             className="category-item animate-fade-in"
                         >
                             <div className="category-image-container">

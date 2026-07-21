@@ -4,10 +4,22 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 
+const INDIAN_STATES = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
+    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
+    "Uttar Pradesh", "Uttarakhand", "West Bengal", 
+    "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+    "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
 export default function AdminSettingsPage() {
     const [slides, setSlides] = useState([]);
     const [showHeroBanner, setShowHeroBanner] = useState(true);
     const [shippingCost, setShippingCost] = useState("0");
+    const [businessState, setBusinessState] = useState("Tamil Nadu");
     const [storeUpiName, setStoreUpiName] = useState("");
     const [storeUpiId, setStoreUpiId] = useState("");
     const [storeQrCode, setStoreQrCode] = useState("");
@@ -48,6 +60,7 @@ export default function AdminSettingsPage() {
                     setSlides(parsedSlides);
                     setShowHeroBanner(res.data.show_hero_banner !== "false");
                     setShippingCost(res.data.shipping_cost || "0");
+                    setBusinessState(res.data.business_state || "Tamil Nadu");
                     setStoreUpiName(res.data.store_upi_name || "");
                     setStoreUpiId(res.data.store_upi_id || "");
                     setStoreQrCode(res.data.store_qr_code || "");
@@ -124,6 +137,7 @@ export default function AdminSettingsPage() {
                     mobile_banner: cleanedSlides[0]?.mobile_url || "",
                     show_hero_banner: showHeroBanner ? "true" : "false",
                     shipping_cost: shippingCost,
+                    business_state: businessState,
                     store_upi_name: storeUpiName,
                     store_upi_id: storeUpiId,
                     store_qr_code: storeQrCode
@@ -507,6 +521,28 @@ export default function AdminSettingsPage() {
                         required
                         style={{ height: '42px', padding: '0 12px' }}
                     />
+                </div>
+
+                {/* 4. BUSINESS STATE */}
+                <div className="card" style={{ padding: '32px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
+                        Business State (for GST Tax Calculation)
+                    </label>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px' }}>
+                        Select the state where your business is registered. Sales to customers in this state will apply Intra-state Tax (CGST + SGST), while sales outside this state will apply Inter-state Tax (IGST).
+                    </p>
+                    <select 
+                        className="input-field" 
+                        value={businessState}
+                        onChange={(e) => setBusinessState(e.target.value)}
+                        required
+                        style={{ height: '44px', padding: '0 12px', width: '100%', cursor: 'pointer', background: '#ffffff' }}
+                    >
+                        <option value="">-- Select Business State --</option>
+                        {INDIAN_STATES.map((st) => (
+                            <option key={st} value={st}>{st}</option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* 4. SAVE BUTTON */}

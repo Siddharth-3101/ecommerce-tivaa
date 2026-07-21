@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import Link from "next/link";
 import React from "react";
+import { formatOrderNumber } from "@/lib/invoice";
 
 export default function AdminOrderDetails({ params }) {
     const { id } = use(params);
@@ -15,6 +16,7 @@ export default function AdminOrderDetails({ params }) {
     const [order, setOrder] = useState(null);
     const [items, setItems] = useState([]);
     const [status, setStatus] = useState("");
+    const [businessState, setBusinessState] = useState("Tamil Nadu");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,6 +29,15 @@ export default function AdminOrderDetails({ params }) {
                 setOrder(res.data.order);
                 setItems(res.data.items);
                 setStatus(res.data.order.order_status?.toLowerCase());
+
+                try {
+                    const settingsRes = await api.get("/settings");
+                    if (settingsRes.data && settingsRes.data.business_state) {
+                        setBusinessState(settingsRes.data.business_state);
+                    }
+                } catch (sErr) {
+                    console.error("Failed to load business state:", sErr);
+                }
             } catch (err) {
                 // Silenced console.error to prevent next.js dev overlay interruptions
             } finally {
@@ -89,7 +100,7 @@ export default function AdminOrderDetails({ params }) {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     </Link>
                     <div>
-                        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Order #TEJWL{String(order.id).padStart(2, '0')}</h1>
+                        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Order {formatOrderNumber(order.id, order.created_at)}</h1>
                         <p style={{ color: "var(--text-muted)", margin: "8px 0 0 0" }}>Placed on {new Date(order.created_at || new Date()).toLocaleDateString()}</p>
                     </div>
                 </div>
@@ -134,15 +145,18 @@ export default function AdminOrderDetails({ params }) {
 
                     {/* Amount & Tax Breakup Card (Admin Only) */}
                     <div className="card" style={{ padding: "24px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid var(--border)", paddingBottom: "16px" }}>
-                            <h2 style={{ fontSize: "1.4rem", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                                📊 Amount & Tax Breakup <span style={{ fontSize: "0.8rem", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "3px 10px", borderRadius: "12px", fontWeight: 600 }}>Admin Only</span>
-                            </h2>
-                        </div>
-
                         {(() => {
+                            const cleanState = (s) => (s || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+                            const saleState = order?.state || "";
+                            const isStoreSale = (order?.order_type || "").toLowerCase() === "store";
+                            
+                            // Direct store sales or sales within business state apply Intra-State Tax (CGST + SGST)
+                            const isSameState = isStoreSale || saleState === "" || cleanState(saleState) === cleanState(businessState);
+
                             let totalTaxable = 0;
                             let totalGst = 0;
+                            let totalCgst = 0;
+                            let totalSgst = 0;
                             let totalGross = 0;
 
                             const itemRows = items.map((item) => {
@@ -153,9 +167,13 @@ export default function AdminOrderDetails({ params }) {
                                 
                                 const taxableAmount = gstRate > 0 ? (grossTotal * 100) / (100 + gstRate) : grossTotal;
                                 const gstAmount = grossTotal - taxableAmount;
+                                const cgstAmount = gstAmount / 2;
+                                const sgstAmount = gstAmount / 2;
 
                                 totalTaxable += taxableAmount;
                                 totalGst += gstAmount;
+                                totalCgst += cgstAmount;
+                                totalSgst += sgstAmount;
                                 totalGross += grossTotal;
 
                                 return {
@@ -164,6 +182,8 @@ export default function AdminOrderDetails({ params }) {
                                     qty,
                                     taxableAmount,
                                     gstAmount,
+                                    cgstAmount,
+                                    sgstAmount,
                                     grossTotal,
                                     gstRate
                                 };
@@ -171,6 +191,28 @@ export default function AdminOrderDetails({ params }) {
 
                             return (
                                 <div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid var(--border)", paddingBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+                                        <div>
+                                            <h2 style={{ fontSize: "1.3rem", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                                                📊 Amount & Tax Breakup <span style={{ fontSize: "0.8rem", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", padding: "3px 10px", borderRadius: "12px", fontWeight: 600 }}>Admin Only</span>
+                                            </h2>
+                                            <div style={{ fontSize: "0.83rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                                                Shipping State: <strong style={{ color: "var(--text-main)" }}>{isStoreSale ? "Direct Store Sale (Over-the-Counter)" : (saleState || "Not Specified (Local Sale)")}</strong> | Business State: <strong style={{ color: "var(--text-main)" }}>{businessState}</strong>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            {isSameState ? (
+                                                <span style={{ fontSize: "0.8rem", background: "rgba(16, 185, 129, 0.1)", color: "#10b981", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "4px 12px", borderRadius: "14px", fontWeight: 600 }}>
+                                                    Intra-State: Central Tax (CGST) + State Tax (SGST)
+                                                </span>
+                                            ) : (
+                                                <span style={{ fontSize: "0.8rem", background: "rgba(99, 102, 241, 0.1)", color: "#818cf8", border: "1px solid rgba(99, 102, 241, 0.3)", padding: "4px 12px", borderRadius: "14px", fontWeight: 600 }}>
+                                                    Inter-State: Integrated Tax (IGST)
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div style={{ overflowX: "auto" }}>
                                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
                                             <thead>
@@ -179,7 +221,14 @@ export default function AdminOrderDetails({ params }) {
                                                     <th style={{ padding: "12px", textAlign: "left" }}>Product Name</th>
                                                     <th style={{ padding: "12px", textAlign: "center" }}>Quantity</th>
                                                     <th style={{ padding: "12px", textAlign: "right" }}>Taxable Amount</th>
-                                                    <th style={{ padding: "12px", textAlign: "right" }}>GST Amount</th>
+                                                    {isSameState ? (
+                                                        <>
+                                                            <th style={{ padding: "12px", textAlign: "right" }}>Central Tax (CGST)</th>
+                                                            <th style={{ padding: "12px", textAlign: "right" }}>State Tax (SGST)</th>
+                                                        </>
+                                                    ) : (
+                                                        <th style={{ padding: "12px", textAlign: "right" }}>Integrated Tax (IGST)</th>
+                                                    )}
                                                     <th style={{ padding: "12px", textAlign: "right" }}>Total</th>
                                                 </tr>
                                             </thead>
@@ -197,7 +246,23 @@ export default function AdminOrderDetails({ params }) {
                                                         </td>
                                                         <td style={{ padding: "12px", textAlign: "center" }}>{row.qty}</td>
                                                         <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem" }}>₹{row.taxableAmount.toFixed(2)}</td>
-                                                        <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem", color: "#10b981" }}>₹{row.gstAmount.toFixed(2)}</td>
+                                                        {isSameState ? (
+                                                            <>
+                                                                <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem", color: "#10b981" }}>
+                                                                    ₹{row.cgstAmount.toFixed(2)}
+                                                                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>({(row.gstRate / 2).toFixed(1)}%)</div>
+                                                                </td>
+                                                                <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem", color: "#10b981" }}>
+                                                                    ₹{row.sgstAmount.toFixed(2)}
+                                                                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>({(row.gstRate / 2).toFixed(1)}%)</div>
+                                                                </td>
+                                                            </>
+                                                        ) : (
+                                                            <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "0.95rem", color: "#818cf8" }}>
+                                                                ₹{row.gstAmount.toFixed(2)}
+                                                                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>({row.gstRate}%)</div>
+                                                            </td>
+                                                        )}
                                                         <td style={{ padding: "12px", textAlign: "right", fontWeight: 600, fontFamily: "monospace", fontSize: "0.95rem" }}>₹{row.grossTotal.toFixed(2)}</td>
                                                     </tr>
                                                 ))}
@@ -206,7 +271,14 @@ export default function AdminOrderDetails({ params }) {
                                                 <tr style={{ borderTop: "2px solid var(--border)", background: "rgba(16, 185, 129, 0.04)", fontWeight: 700 }}>
                                                     <td colSpan="3" style={{ padding: "12px", textAlign: "right", color: "var(--text-muted)" }}>Subtotal Breakup Total:</td>
                                                     <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem" }}>₹{totalTaxable.toFixed(2)}</td>
-                                                    <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem", color: "#10b981" }}>₹{totalGst.toFixed(2)}</td>
+                                                    {isSameState ? (
+                                                        <>
+                                                            <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem", color: "#10b981" }}>₹{totalCgst.toFixed(2)}</td>
+                                                            <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem", color: "#10b981" }}>₹{totalSgst.toFixed(2)}</td>
+                                                        </>
+                                                    ) : (
+                                                        <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1rem", color: "#818cf8" }}>₹{totalGst.toFixed(2)}</td>
+                                                    )}
                                                     <td style={{ padding: "12px", textAlign: "right", fontFamily: "monospace", fontSize: "1.05rem", color: "var(--accent)" }}>₹{totalGross.toFixed(2)}</td>
                                                 </tr>
                                             </tfoot>

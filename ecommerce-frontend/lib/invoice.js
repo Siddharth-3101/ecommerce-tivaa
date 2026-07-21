@@ -1,3 +1,16 @@
+export function formatOrderNumber(id, created_at, invoice_number) {
+    if (invoice_number && String(invoice_number).trim()) {
+        return String(invoice_number).trim();
+    }
+    if (!id) return "";
+    const dateObj = created_at ? new Date(created_at) : new Date();
+    const yy = String(dateObj.getFullYear()).substring(2);
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const seq = String(id).padStart(3, '0');
+    return `#TV${yy}${mm}${dd}${seq}`;
+}
+
 export function downloadInvoice(order, items) {
     if (typeof window === 'undefined') return;
 
@@ -24,7 +37,7 @@ export function downloadInvoice(order, items) {
 
     const subtotal = items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
     const shippingCost = Number(order.shipping_cost || 0);
-    const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
+    const formattedOrderId = formatOrderNumber(order.id, order.created_at, order.invoice_number);
 
     // Open a new window/tab for the bill
     const printWindow = window.open('', '_blank');

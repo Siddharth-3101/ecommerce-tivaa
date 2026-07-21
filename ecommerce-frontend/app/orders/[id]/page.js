@@ -6,6 +6,7 @@ import { getUser } from "@/lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
+import { formatOrderNumber } from "@/lib/invoice";
 import { 
     ArrowLeft, 
     Download, 
@@ -195,7 +196,7 @@ export default function OrderDetailsPage({ params }) {
                 amount: razorpayOrder.amount, // in paise
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
-                description: `Order #TEJWL${String(order.id).padStart(2, '0')}`,
+                description: `Order ${formatOrderNumber(order.id, order.created_at)}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {
@@ -381,7 +382,7 @@ export default function OrderDetailsPage({ params }) {
                                 {isSuccess ? "Your order has been placed successfully." : "We couldn't process your payment. Your order remains pending."}
                             </p>
                             <div className="status-meta-row">
-                                <span className="status-order-id">Order ID: TEJWL{String(order.id).padStart(2, '0')}</span>
+                                <span className="status-order-id">Order ID: {formatOrderNumber(order.id, order.created_at)}</span>
                                 <span className="status-meta-separator">|</span>
                                 <span className="status-date">{formatOrderDate(order.created_at)}</span>
                             </div>
@@ -453,7 +454,7 @@ export default function OrderDetailsPage({ params }) {
                             >
                                 <ArrowLeft size={14} /> Back to Orders
                             </Link>
-                            <Heading as="h1" variant="HomeHeader2" className="order-title" style={{ margin: 0 }}>Order #TEJWL{String(order.id).padStart(2, '0')}</Heading>
+                            <Heading as="h1" variant="HomeHeader2" className="order-title" style={{ margin: 0 }}>Order {formatOrderNumber(order.id, order.created_at)}</Heading>
                         </div>
                         <div className="header-actions">
                             <button className="btn-outline" onClick={async () => {
@@ -486,7 +487,7 @@ export default function OrderDetailsPage({ params }) {
 
                     <div className="mobile-title-block">
                         <div className="mobile-title-row">
-                            <Heading as="h2" variant="HomeHeader2">Order #TEJWL{String(order.id).padStart(2, '0')}</Heading>
+                            <Heading as="h2" variant="HomeHeader2">Order {formatOrderNumber(order.id, order.created_at)}</Heading>
                             <span className="status-badge" style={getStatusBadgeStyle(order.order_status)}>
                                 {order.order_status?.toLowerCase() === "processing" ? "Confirmed" : order.order_status}
                             </span>
@@ -581,7 +582,7 @@ export default function OrderDetailsPage({ params }) {
                     <div className="order-info-bar">
                         <div className="info-col">
                             <span className="info-label">Order ID</span>
-                            <span className="info-value">TEJWL{String(order.id).padStart(2, '0')}</span>
+                            <span className="info-value">{formatOrderNumber(order.id, order.created_at)}</span>
                         </div>
                         <div className="info-divider"></div>
                         <div className="info-col">

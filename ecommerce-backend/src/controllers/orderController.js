@@ -58,26 +58,70 @@ export const createOrder = (req, res) => {
         }
 
         const orderId = result.insertId;
+        const now = new Date();
+        const yy = String(now.getFullYear()).substring(2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const seq = String(orderId).padStart(3, '0');
+        const invoiceNumber = `#TV${yy}${mm}${dd}${seq}`;
 
-        // Step 5 — Insert order items
-        const itemsSql = `
-                  INSERT INTO order_items (order_id, product_id, quantity, price, selected_variation)
-                  VALUES ?
-              `;
+        db.query("UPDATE orders SET invoice_number = ? WHERE id = ?", [invoiceNumber, orderId]);
 
-        const values = cartItems.map((item) => [
-          orderId,
-          item.product_id,
-          item.quantity,
-          item.price,
-          item.selected_variation || null,
-        ]);
+        // Step 5 — Fetch Business State setting and insert order items with tax snapshot
+        db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
+          const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
+          const cleanBizState = bizState.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const cleanSaleState = (state || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+          const isSameState = cleanSaleState === "" || cleanSaleState === cleanBizState;
+          const itemGstState = (state && state.trim()) ? state.trim() : bizState;
 
-        db.query(itemsSql, [values], (err3) => {
-          if (err3) {
-            console.error("DB error:", err3);
-            return res.status(500).json({ message: "Database error" });
-          }
+          const itemsSql = `
+            INSERT INTO order_items (
+              order_id, product_id, quantity, price, selected_variation,
+              gst_rate, taxable_amount, cgst_amount, sgst_amount, igst_amount, gst_state_name
+            ) VALUES ?
+          `;
+
+          const values = cartItems.map((item) => {
+            const qty = Number(item.quantity || 1);
+            const unitPrice = Number(item.price || 0);
+            const lineTotal = unitPrice * qty;
+            const gstRate = Number(item.gst_percentage || 0);
+            
+            const taxableAmount = gstRate > 0 ? Number(((lineTotal * 100) / (100 + gstRate)).toFixed(2)) : lineTotal;
+            const totalTax = Number((lineTotal - taxableAmount).toFixed(2));
+            
+            let cgst = 0.00;
+            let sgst = 0.00;
+            let igst = 0.00;
+
+            if (isSameState) {
+              cgst = Number((totalTax / 2).toFixed(2));
+              sgst = Number((totalTax / 2).toFixed(2));
+            } else {
+              igst = totalTax;
+            }
+
+            return [
+              orderId,
+              item.product_id,
+              item.quantity,
+              item.price,
+              item.selected_variation || null,
+              gstRate,
+              taxableAmount,
+              cgst,
+              sgst,
+              igst,
+              itemGstState
+            ];
+          });
+
+          db.query(itemsSql, [values], (err3) => {
+            if (err3) {
+              console.error("DB error inserting order items with tax snapshot:", err3);
+              return res.status(500).json({ message: "Database error" });
+            }
 
           // Step 6 — Reduce stock
           cartItems.forEach((item) => {
@@ -134,12 +178,26 @@ export const createOrder = (req, res) => {
           });
         });
       });
-    };
+    });
+  };
 
     if (buy_now) {
       // Fetch single product details for buy now
       db.query(
-        "SELECT id, price, stock, name, variations, discounted_price FROM products WHERE id = ?",
+        `SELECT 
+            p.id, 
+            p.price, 
+            p.stock, 
+            p.name, 
+            p.variations, 
+            p.discounted_price,
+            COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
+         FROM products p
+         LEFT JOIN categories cat ON cat.id = p.category_id
+         LEFT JOIN hsn_codes h ON h.id = cat.hsn_id
+         LEFT JOIN categories pc ON pc.id = cat.parent_id
+         LEFT JOIN hsn_codes ph ON ph.id = pc.hsn_id
+         WHERE p.id = ?`,
         [buy_now.product_id],
         (errProd, prodRows) => {
           if (errProd) {
@@ -157,13 +215,14 @@ export const createOrder = (req, res) => {
             price: effectivePrice,
             stock: effectiveStock,
             name: product.name,
-            selected_variation: buy_now.selected_variation || null
+            selected_variation: buy_now.selected_variation || null,
+            gst_percentage: product.gst_percentage || 0
           };
           processOrderWithItems([singleItem]);
         }
       );
     } else {
-      // Step 1 — Fetch cart items
+      // Step 1 — Fetch cart items with category HSN GST percentage
       const sqlCart = `
             SELECT 
                 c.product_id, 
@@ -173,9 +232,14 @@ export const createOrder = (req, res) => {
                 p.name,
                 c.selected_variation,
                 p.variations,
-                p.discounted_price
+                p.discounted_price,
+                COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
             FROM cart c
             JOIN products p ON p.id = c.product_id
+            LEFT JOIN categories cat ON cat.id = p.category_id
+            LEFT JOIN hsn_codes h ON h.id = cat.hsn_id
+            LEFT JOIN categories pc ON pc.id = cat.parent_id
+            LEFT JOIN hsn_codes ph ON ph.id = pc.hsn_id
             WHERE c.user_id = ?
         `;
 
@@ -214,7 +278,7 @@ export const getUserOrders = (req, res) => {
   const sql = `
         SELECT *
         FROM orders
-        WHERE user_id = ?
+        WHERE user_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
         ORDER BY id DESC
     `;
 
@@ -522,7 +586,7 @@ export const cancelOrder = (req, res) => {
 export const initiateDirectSaleOrder = (req, res) => {
   const adminId = req.user.id;
 
-  // 1. Fetch admin's cart items
+  // 1. Fetch admin's cart items with category HSN GST percentage
   const sqlCart = `
     SELECT 
         c.product_id, 
@@ -532,9 +596,14 @@ export const initiateDirectSaleOrder = (req, res) => {
         p.name,
         c.selected_variation,
         p.variations,
-        p.discounted_price
+        p.discounted_price,
+        COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
     FROM cart c
     JOIN products p ON p.id = c.product_id
+    LEFT JOIN categories cat ON cat.id = p.category_id
+    LEFT JOIN hsn_codes h ON h.id = cat.hsn_id
+    LEFT JOIN categories pc ON pc.id = cat.parent_id
+    LEFT JOIN hsn_codes ph ON ph.id = pc.hsn_id
     WHERE c.user_id = ?
   `;
 
@@ -587,42 +656,75 @@ export const initiateDirectSaleOrder = (req, res) => {
         }
 
         const orderId = result.insertId;
+        const now = new Date();
+        const yy = String(now.getFullYear()).substring(2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const seq = String(orderId).padStart(3, '0');
+        const invoiceNumber = `#TV${yy}${mm}${dd}${seq}`;
 
-        // Insert order items
-        const itemsSql = `
-          INSERT INTO order_items (order_id, product_id, quantity, price, selected_variation)
-          VALUES ?
-        `;
-        const values = overriddenItems.map((item) => [
-          orderId,
-          item.product_id,
-          item.quantity,
-          item.price,
-          item.selected_variation || null,
-        ]);
+        db.query("UPDATE orders SET invoice_number = ? WHERE id = ?", [invoiceNumber, orderId]);
 
-        db.query(itemsSql, [values], (errItems) => {
-          if (errItems) {
-            console.error("Error inserting store order items:", errItems);
-            return res.status(500).json({ message: "Database error" });
-          }
+        // Fetch Business State setting (default Tamil Nadu) and insert order items with tax snapshot
+        db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
+          const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
 
-          // Reduce product stock values
-          overriddenItems.forEach((item) => {
-            db.query(
-              "UPDATE products SET stock = stock - ? WHERE id = ?",
-              [item.quantity, item.product_id]
-            );
-          });
-
-          // Insert dummy shipping details (default values)
-          const sqlShip = `
-            INSERT INTO shipping_details (order_id, address, city, state, pincode, phone)
-            VALUES (?, 'Direct Store Sale', 'Store', 'Store', '000000', NULL)
+          const itemsSql = `
+            INSERT INTO order_items (
+              order_id, product_id, quantity, price, selected_variation,
+              gst_rate, taxable_amount, cgst_amount, sgst_amount, igst_amount, gst_state_name
+            ) VALUES ?
           `;
-          db.query(sqlShip, [orderId], (errShip) => {
-            if (errShip) console.warn("Store shipping insert error:", errShip);
+
+          const values = overriddenItems.map((item) => {
+            const qty = Number(item.quantity || 1);
+            const unitPrice = Number(item.price || 0);
+            const lineTotal = unitPrice * qty;
+            const gstRate = Number(item.gst_percentage || 0);
+            
+            const taxableAmount = gstRate > 0 ? Number(((lineTotal * 100) / (100 + gstRate)).toFixed(2)) : lineTotal;
+            const totalTax = Number((lineTotal - taxableAmount).toFixed(2));
+            const cgst = Number((totalTax / 2).toFixed(2));
+            const sgst = Number((totalTax / 2).toFixed(2));
+            const igst = 0.00;
+
+            return [
+              orderId,
+              item.product_id,
+              item.quantity,
+              item.price,
+              item.selected_variation || null,
+              gstRate,
+              taxableAmount,
+              cgst,
+              sgst,
+              igst,
+              bizState
+            ];
           });
+
+          db.query(itemsSql, [values], (errItems) => {
+            if (errItems) {
+              console.error("Error inserting store order items:", errItems);
+              return res.status(500).json({ message: "Database error" });
+            }
+
+            // Reduce product stock values
+            overriddenItems.forEach((item) => {
+              db.query(
+                "UPDATE products SET stock = stock - ? WHERE id = ?",
+                [item.quantity, item.product_id]
+              );
+            });
+
+            // Insert shipping details
+            const sqlShip = `
+              INSERT INTO shipping_details (order_id, address, city, state, pincode, phone)
+              VALUES (?, 'Direct Store Sale', 'Store', ?, '000000', NULL)
+            `;
+            db.query(sqlShip, [orderId, bizState], (errShip) => {
+              if (errShip) console.warn("Store shipping insert error:", errShip);
+            });
 
           // Clear admin's cart
           db.query("DELETE FROM cart WHERE user_id = ?", [adminId], (errClear) => {
@@ -646,7 +748,8 @@ export const initiateDirectSaleOrder = (req, res) => {
           });
         });
       });
-    };
+    });
+  };
 
     // Find or create default guest user 'guest-store-sale@tivaa.in'
     const defaultEmail = "guest-store-sale@tivaa.in";
@@ -689,6 +792,14 @@ export const confirmDirectSaleOrder = (req, res) => {
     return res.status(400).json({ message: "Payment method required" });
   }
 
+  const hasName = customer_name && String(customer_name).trim().length > 0;
+  const hasEmail = customer_email && String(customer_email).trim().length > 0;
+  const hasPhone = customer_phone && String(customer_phone).trim().length > 0;
+
+  if (!hasName && !hasEmail && !hasPhone) {
+    return res.status(400).json({ message: "Please enter at least one customer detail (Full Name, Email Address, or Mobile Number) to confirm the order." });
+  }
+
   // Find or create the customer user
   const resolveCustomerAndConfirm = (customerId) => {
     // 1. Update order fields (status to 'paid', user_id to customerId, payment_method)
@@ -708,16 +819,20 @@ export const confirmDirectSaleOrder = (req, res) => {
         return res.status(404).json({ message: "Order not found or not a Store sale" });
       }
 
-      // 2. Insert/update shipping details with customer phone and admin notes
-      const sqlUpdateShip = `
-        INSERT INTO shipping_details (order_id, address, city, state, pincode, phone)
-        VALUES (?, ?, 'Store', 'Store', '000000', ?)
-        ON DUPLICATE KEY UPDATE 
-          address = VALUES(address),
-          phone = VALUES(phone)
-      `;
-      db.query(sqlUpdateShip, [orderId, notes || "Direct Store Sale", customer_phone || null], (errShip) => {
-        if (errShip) console.warn("Error updating direct sale shipping details:", errShip);
+      // 2. Insert/update shipping details with Business State, customer phone, and admin notes
+      db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
+        const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
+        const sqlUpdateShip = `
+          INSERT INTO shipping_details (order_id, address, city, state, pincode, phone)
+          VALUES (?, ?, 'Store', ?, '000000', ?)
+          ON DUPLICATE KEY UPDATE 
+            address = VALUES(address),
+            state = VALUES(state),
+            phone = VALUES(phone)
+        `;
+        db.query(sqlUpdateShip, [orderId, notes || "Direct Store Sale", bizState, customer_phone || null], (errShip) => {
+          if (errShip) console.warn("Error updating direct sale shipping details:", errShip);
+        });
       });
 
       // Send email to customer (if email is provided)

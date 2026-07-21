@@ -5,11 +5,16 @@ import ProductCard from "@/components/ProductCard";
 import ProductTabs from "@/components/ProductTabs";
 import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 import Link from "next/link";
+import { redirect, RedirectType } from "next/navigation";
+import { extractProductId, getProductSlug } from "@/lib/slug";
 
-async function fetchProduct(id) {
+async function fetchProduct(param) {
     try {
+        const numericId = extractProductId(param);
+        if (!numericId) return null;
+
         const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-        const res = await fetch(`${backendUrl}/api/products/${id}`, {
+        const res = await fetch(`${backendUrl}/api/products/${numericId}`, {
             cache: "no-store",
         });
         if (!res.ok) return null;
@@ -17,6 +22,50 @@ async function fetchProduct(id) {
     } catch (err) {
         return null;
     }
+}
+
+export async function generateMetadata({ params }) {
+    const resolvedParams = await params;
+    const product = await fetchProduct(resolvedParams.id);
+    if (!product) {
+        return {
+            title: "Product Details | TIVAA",
+            description: "Premium quality products with secure payment and fast delivery across India."
+        };
+    }
+    const name = product.name || "Product";
+    const canonicalSlug = getProductSlug(product);
+    const mainImage = product.image_url ? product.image_url.split(",")[0].trim() : "https://tivaa.in/favicon.png";
+    const desc = `Buy ${name} online at TIVAA. Premium quality, secure payments, fast delivery and great prices across India.`;
+
+    return {
+        title: `${name} | Buy Online at TIVAA`,
+        description: desc,
+        alternates: {
+            canonical: `https://tivaa.in/product/${canonicalSlug}`,
+        },
+        openGraph: {
+            title: `${name} | Buy Online at TIVAA`,
+            description: desc,
+            url: `https://tivaa.in/product/${canonicalSlug}`,
+            siteName: "TIVAA",
+            images: [
+                {
+                    url: mainImage,
+                    width: 800,
+                    height: 800,
+                    alt: name,
+                },
+            ],
+            type: "article",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${name} | TIVAA`,
+            description: desc,
+            images: [mainImage],
+        },
+    };
 }
 
 async function fetchRelatedProducts(categoryName, currentProductId) {
@@ -101,6 +150,13 @@ export default async function ProductPage({ params }) {
     const { id } = await params;
     const product = await fetchProduct(id);
 
+    if (product) {
+        const canonicalSlug = getProductSlug(product);
+        if (id !== canonicalSlug) {
+            redirect(`/product/${canonicalSlug}`, RedirectType.replace);
+        }
+    }
+
     if (!product) {
         return (
             <div className="container" style={{ paddingTop: '140px', textAlign: 'center' }}>
@@ -145,8 +201,62 @@ export default async function ProductPage({ params }) {
         discountBadge = `-${disc}%`;
     }
 
+    const productJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": product.name,
+        "image": images,
+        "description": product.description || `Buy ${product.name} online at TIVAA.`,
+        "sku": `TIVAA-${product.id}`,
+        "brand": {
+            "@type": "Brand",
+            "name": "TIVAA"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": `https://tivaa.in/product/${product.id}`,
+            "priceCurrency": "INR",
+            "price": product.discounted_price && Number(product.discounted_price) > 0 ? product.discounted_price : product.price,
+            "availability": Number(product.stock || 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "itemCondition": "https://schema.org/NewCondition"
+        }
+    };
+
+    const breadcrumbJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://tivaa.in"
+            },
+            ...(product.category_name ? [{
+                "@type": "ListItem",
+                "position": 2,
+                "name": product.category_name,
+                "item": `https://tivaa.in/products?category=${encodeURIComponent(product.category_name)}`
+            }] : []),
+            {
+                "@type": "ListItem",
+                "position": product.category_name ? 3 : 2,
+                "name": product.name,
+                "item": `https://tivaa.in/product/${product.id}`
+            }
+        ]
+    };
+
     return (
         <div className="animate-fade-in" style={{ padding: '30px 0 0', backgroundColor: '#fff', fontFamily: 'var(--font-poppins), sans-serif' }}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+            />
             <div className="container" style={{ maxWidth: '1200px' }}>
                 
                 {/* Breadcrumbs */}

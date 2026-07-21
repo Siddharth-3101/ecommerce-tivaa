@@ -156,7 +156,7 @@ export const updateCategory = (req, res) => {
 };
 
 // ===========================================================
-// ADMIN: VIEW ALL ORDERS
+// ADMIN: VIEW ALL ORDERS (EXCLUDING SOFT-DELETED)
 // ===========================================================
 
 export const adminGetOrders = (req, res) => {
@@ -172,10 +172,12 @@ export const adminGetOrders = (req, res) => {
             o.created_at,
             o.razorpay_order_id,
             pay.payment_reference AS payment_id,
-            o.order_type
+            o.order_type,
+            COALESCE(o.is_deleted, 0) AS is_deleted
         FROM orders o
         JOIN users u ON u.id = o.user_id
         LEFT JOIN payments pay ON pay.order_id = o.id
+        WHERE (o.is_deleted = 0 OR o.is_deleted IS NULL)
         ORDER BY o.id DESC
     `;
 
@@ -185,6 +187,87 @@ export const adminGetOrders = (req, res) => {
             return res.status(500).json({ message: "DB error" });
         }
         res.json(rows);
+    });
+};
+
+// ===========================================================
+// ADMIN: VIEW ALL ORDERS FOR SOFT-DELETE MANAGEMENT (INCLUDES DELETED)
+// ===========================================================
+
+export const adminGetManageOrders = (req, res) => {
+    const sql = `
+        SELECT 
+            o.id,
+            o.user_id,
+            u.name AS customer,
+            u.email,
+            o.total,
+            o.order_status,
+            o.payment_method,
+            o.created_at,
+            o.razorpay_order_id,
+            pay.payment_reference AS payment_id,
+            o.order_type,
+            COALESCE(o.is_deleted, 0) AS is_deleted,
+            o.deleted_at
+        FROM orders o
+        JOIN users u ON u.id = o.user_id
+        LEFT JOIN payments pay ON pay.order_id = o.id
+        ORDER BY o.id DESC
+    `;
+
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.error("DB error fetching manage orders:", err);
+            return res.status(500).json({ message: "DB error" });
+        }
+        res.json(rows);
+    });
+};
+
+// ===========================================================
+// ADMIN: SOFT DELETE ORDER
+// ===========================================================
+
+export const adminSoftDeleteOrder = (req, res) => {
+    const { id } = req.params;
+
+    const sql = "UPDATE orders SET is_deleted = 1, deleted_at = NOW() WHERE id = ?";
+
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("DB error soft deleting order:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json({ message: "Order soft deleted successfully" });
+    });
+};
+
+// ===========================================================
+// ADMIN: RESTORE SOFT-DELETED ORDER
+// ===========================================================
+
+export const adminRestoreOrder = (req, res) => {
+    const { id } = req.params;
+
+    const sql = "UPDATE orders SET is_deleted = 0, deleted_at = NULL WHERE id = ?";
+
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("DB error restoring order:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json({ message: "Order restored successfully" });
     });
 };
 
@@ -512,6 +595,78 @@ export const deleteHsnCode = (req, res) => {
             return res.status(404).json({ message: "HSN code not found" });
         }
         res.json({ message: "HSN code deleted successfully" });
+    });
+};
+
+// ===========================================================
+// ADMIN: GST STATE MANAGEMENT (MASTERS)
+// ===========================================================
+
+export const getGstStates = (req, res) => {
+    db.query("SELECT * FROM gst_states ORDER BY id DESC", (err, rows) => {
+        if (err) {
+            console.error("DB error fetching GST states:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        res.json(rows || []);
+    });
+};
+
+export const createGstState = (req, res) => {
+    const { state_code, state_name } = req.body;
+    const codeStr = String(state_code ?? "").trim();
+    const nameStr = String(state_name ?? "").trim();
+
+    if (!codeStr || !nameStr) {
+        return res.status(400).json({ message: "State Code and GST State name are required" });
+    }
+
+    const sql = "INSERT INTO gst_states (state_code, state_name) VALUES (?, ?)";
+    db.query(sql, [codeStr, nameStr], (err, result) => {
+        if (err) {
+            console.error("DB error creating GST state:", err);
+            return res.status(500).json({ message: "Database error: " + err.message });
+        }
+        res.json({ message: "GST State created successfully", id: result.insertId });
+    });
+};
+
+export const updateGstState = (req, res) => {
+    const { id } = req.params;
+    const { state_code, state_name } = req.body;
+    const codeStr = String(state_code ?? "").trim();
+    const nameStr = String(state_name ?? "").trim();
+
+    if (!codeStr || !nameStr) {
+        return res.status(400).json({ message: "State Code and GST State name are required" });
+    }
+
+    const sql = "UPDATE gst_states SET state_code = ?, state_name = ? WHERE id = ?";
+    db.query(sql, [codeStr, nameStr, id], (err, result) => {
+        if (err) {
+            console.error("DB error updating GST state:", err);
+            return res.status(500).json({ message: "Database error: " + err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "GST State not found" });
+        }
+        res.json({ message: "GST State updated successfully" });
+    });
+};
+
+export const deleteGstState = (req, res) => {
+    const { id } = req.params;
+
+    const sql = "DELETE FROM gst_states WHERE id = ?";
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("DB error deleting GST state:", err);
+            return res.status(500).json({ message: "Database error" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "GST State not found" });
+        }
+        res.json({ message: "GST State deleted successfully" });
     });
 };
 

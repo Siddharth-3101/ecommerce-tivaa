@@ -8,6 +8,45 @@ import { getPaginationRange } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ searchParams }) {
+    const sParams = await searchParams;
+    const searchKeyword = sParams?.search || sParams?.q || sParams?.query || "";
+    const categoryName = sParams?.category || "";
+
+    if (searchKeyword.trim()) {
+        return {
+            title: `Search Results for "${searchKeyword.trim()}" | TIVAA`,
+            description: `Browse search results for "${searchKeyword.trim()}" at TIVAA. Find jewellery, school supplies and more with secure online shopping.`
+        };
+    }
+
+    if (categoryName.trim()) {
+        const cat = categoryName.trim();
+        const lowerCat = cat.toLowerCase();
+        if (lowerCat.includes("jewel") || lowerCat.includes("bangle") || lowerCat.includes("earring")) {
+            return {
+                title: "Fashion Jewellery Online | TIVAA",
+                description: "Discover beautiful bangles, earrings, necklaces, bracelets and fashion jewellery for women. Shop stylish designs at TIVAA."
+            };
+        }
+        if (lowerCat.includes("school") || lowerCat.includes("kid") || lowerCat.includes("supply")) {
+            return {
+                title: "Kids School Supplies Online | TIVAA",
+                description: "Shop water bottles, lunch boxes, pencil pouches, school bags and other school essentials for kids at affordable prices."
+            };
+        }
+        return {
+            title: `${cat} | TIVAA`,
+            description: `Explore the latest ${cat} collection at TIVAA. Shop quality products with secure payments and fast delivery across India.`
+        };
+    }
+
+    return {
+        title: "Shop All Products | TIVAA Online Store",
+        description: "Browse all jewellery, school supplies and lifestyle products at TIVAA. Find quality products for every occasion with secure online shopping."
+    };
+}
+
 function partitionAndSortProducts(products, sort) {
     const sortFn = (a, b) => {
         const priceA = a.discounted_price && Number(a.discounted_price) > 0 ? Number(a.discounted_price) : Number(a.price || 0);

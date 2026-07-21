@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import WishlistButton from "./WishlistButton";
 import Button from "./Button";
+import { getProductSlug } from "@/lib/slug";
 
 export default function ProductCard({ product, variant = "default", onRemoveFromWishlist }) {
     const [loading, setLoading] = useState(false);
@@ -161,7 +162,7 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                     </div>
                 </div>
                 <Link 
-                    href={`/product/${product.id}`} 
+                    href={`/product/${getProductSlug(product)}`} 
                     style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }} 
                     aria-label={product.name}
                 />
@@ -349,7 +350,7 @@ export default function ProductCard({ product, variant = "default", onRemoveFrom
                 </div>
             </div>
             <Link 
-                href={`/product/${product.id}`} 
+                href={`/product/${getProductSlug(product)}`} 
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }} 
                 aria-label={product.name}
             />

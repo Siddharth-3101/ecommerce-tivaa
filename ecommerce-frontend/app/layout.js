@@ -5,10 +5,43 @@ import Script from "next/script";
 import StyledJsxRegistry from "./registry";
 
 export const metadata = {
-  title: "Tivaa Elegance",
-  description: "A breathtaking shopping experience",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://tivaa.in"),
+  title: {
+    default: "TIVAA - Jewellery & School Supplies Online",
+    template: "%s | TIVAA"
+  },
+  description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India.",
+  alternates: {
+    canonical: "./",
+  },
+  openGraph: {
+    title: "TIVAA - Jewellery & School Supplies Online",
+    description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India.",
+    url: "https://tivaa.in",
+    siteName: "TIVAA",
+    images: [
+      {
+        url: "/favicon.png",
+        width: 1200,
+        height: 630,
+        alt: "TIVAA Online Store",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TIVAA - Jewellery & School Supplies Online",
+    description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA.",
+    images: ["/favicon.png"],
+  },
   icons: {
-    icon: "/favicon.ico"
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.ico" }
+    ],
+    apple: "/apple-icon.png"
   }
 };
 

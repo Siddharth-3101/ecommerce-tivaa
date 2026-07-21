@@ -28,7 +28,12 @@ export const sendOrderEmailToAdmins = async (orderId) => {
     }
 
     const order = orderRows[0];
-    const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
+    const dateObj = order.created_at ? new Date(order.created_at) : new Date();
+    const yy = String(dateObj.getFullYear()).substring(2);
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const seq = String(order.id).padStart(3, '0');
+    const formattedOrderId = `#TV${yy}${mm}${dd}${seq}`;
 
     // 2. Fetch order items with product details
     const itemsQuery = `
@@ -188,7 +193,12 @@ export const sendOrderEmailToCustomer = async (orderId) => {
     }
 
     const order = orderRows[0];
-    const formattedOrderId = "TEJWL" + String(order.id).padStart(2, '0');
+    const dateObj = order.created_at ? new Date(order.created_at) : new Date();
+    const yy = String(dateObj.getFullYear()).substring(2);
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const seq = String(order.id).padStart(3, '0');
+    const formattedOrderId = `#TV${yy}${mm}${dd}${seq}`;
 
     // 2. Fetch order items with product details
     const itemsQuery = `

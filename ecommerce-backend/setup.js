@@ -81,6 +81,7 @@ export const runSetup = async () => {
                 order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending',
                 order_type ENUM('Online', 'Store') DEFAULT 'Online',
                 razorpay_order_id VARCHAR(255) NULL,
+                invoice_number VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
@@ -95,6 +96,13 @@ export const runSetup = async () => {
                 product_id INT NOT NULL,
                 quantity INT NOT NULL,
                 price DECIMAL(10, 2) NOT NULL,
+                selected_variation VARCHAR(255) NULL,
+                gst_rate DECIMAL(5, 2) DEFAULT 0.00,
+                taxable_amount DECIMAL(10, 2) DEFAULT 0.00,
+                cgst_amount DECIMAL(10, 2) DEFAULT 0.00,
+                sgst_amount DECIMAL(10, 2) DEFAULT 0.00,
+                igst_amount DECIMAL(10, 2) DEFAULT 0.00,
+                gst_state_name VARCHAR(255) NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
                 FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -190,22 +198,16 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("HSN codes table verified/created");
 
-        // Seed initial HSN codes if table is empty
-        await new Promise((res) => {
-            db.query("SELECT COUNT(*) AS count FROM hsn_codes", (errCount, rows) => {
-                if (!errCount && rows && rows[0].count === 0) {
-                    const initialHsn = [
-                        ['7323', 'SteelItems', 5.00],
-                        ['4202', 'SteelBags', 5.00],
-                        ['9615', 'SteelHairItems', 12.00],
-                        ['9615', 'SteelImiJewel', 3.00]
-                    ];
-                    db.query("INSERT INTO hsn_codes (hsn_code, hsn_name, tax_percentage) VALUES ?", [initialHsn], () => res());
-                } else {
-                    res();
-                }
-            });
-        });
+        // 13. Create gst_states table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS gst_states (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                state_code VARCHAR(50) NOT NULL,
+                state_name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("GST states table verified/created");
 
         // 13. Safe Column ALTER Migrations
         const productCols = await getExistingColumns("products");
@@ -315,6 +317,24 @@ export const runSetup = async () => {
 
         if (!orderItemCols.includes("selected_variation")) {
             await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN selected_variation VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("gst_rate")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN gst_rate DECIMAL(5, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("taxable_amount")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN taxable_amount DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("cgst_amount")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN cgst_amount DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("sgst_amount")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN sgst_amount DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("igst_amount")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN igst_amount DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+        }
+        if (!orderItemCols.includes("gst_state_name")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE order_items ADD COLUMN gst_state_name VARCHAR(255) NULL", (err) => err ? rej(err) : res()));
         }
 
         if (!shippingCols.includes("shipped_date")) {

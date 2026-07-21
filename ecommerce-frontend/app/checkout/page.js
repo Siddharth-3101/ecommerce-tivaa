@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
+import { formatOrderNumber } from "@/lib/invoice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
@@ -364,7 +365,7 @@ export default function CheckoutPage() {
                 amount: razorpayOrder.amount, 
                 currency: razorpayOrder.currency,
                 name: "Tivaa Elegance",
-                description: `Order #TEJWL${String(orderId).padStart(2, '0')}`,
+                description: `Order ${formatOrderNumber(orderId)}`,
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {

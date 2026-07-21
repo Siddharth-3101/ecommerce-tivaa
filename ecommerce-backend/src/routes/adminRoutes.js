@@ -7,6 +7,9 @@ import {
   adminGetOrders,
   adminOrderDetails,
   adminUpdateOrderStatus,
+  adminGetManageOrders,
+  adminSoftDeleteOrder,
+  adminRestoreOrder,
   bulkImportProducts,
   bulkImportOrders,
   searchCustomer,
@@ -14,6 +17,10 @@ import {
   createHsnCode,
   updateHsnCode,
   deleteHsnCode,
+  getGstStates,
+  createGstState,
+  updateGstState,
+  deleteGstState,
 } from "../controllers/adminController.js";
 
 import {
@@ -63,8 +70,11 @@ router.delete("/category/:id", verifyToken, verifyAdmin, deleteCategory);
 // ORDER MANAGEMENT (ADMIN ONLY)
 // ======================================================
 router.get("/orders", verifyToken, verifyAdmin, adminGetOrders);
+router.get("/orders-manage", verifyToken, verifyAdmin, adminGetManageOrders);
 router.get("/orders/:id", verifyToken, verifyAdmin, adminOrderDetails);
 router.put("/orders/:id/status", verifyToken, verifyAdmin, adminUpdateOrderStatus);
+router.put("/orders/:id/soft-delete", verifyToken, verifyAdmin, adminSoftDeleteOrder);
+router.put("/orders/:id/restore", verifyToken, verifyAdmin, adminRestoreOrder);
 router.post("/orders/bulk", verifyToken, verifyAdmin, bulkImportOrders);
 
 // ======================================================
@@ -74,5 +84,24 @@ router.get("/hsn", verifyToken, verifyAdmin, getHsnCodes);
 router.post("/hsn", verifyToken, verifyAdmin, createHsnCode);
 router.put("/hsn/:id", verifyToken, verifyAdmin, updateHsnCode);
 router.delete("/hsn/:id", verifyToken, verifyAdmin, deleteHsnCode);
+
+import {
+  downloadGstReadyReport,
+  downloadOrderReport
+} from "../controllers/reportController.js";
+
+// ======================================================
+// GST STATE MASTERS (ADMIN ONLY)
+// ======================================================
+router.get("/gst-states", verifyToken, verifyAdmin, getGstStates);
+router.post("/gst-states", verifyToken, verifyAdmin, createGstState);
+router.put("/gst-states/:id", verifyToken, verifyAdmin, updateGstState);
+router.delete("/gst-states/:id", verifyToken, verifyAdmin, deleteGstState);
+
+// ======================================================
+// REPORTS & EXCEL EXPORTS (ADMIN ONLY)
+// ======================================================
+router.get("/reports/gst-ready", verifyToken, verifyAdmin, downloadGstReadyReport);
+router.get("/reports/orders", verifyToken, verifyAdmin, downloadOrderReport);
 
 export default router;

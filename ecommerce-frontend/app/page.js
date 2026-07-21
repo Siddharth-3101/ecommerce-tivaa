@@ -7,6 +7,11 @@ import CategoryTitle from "@/components/CategoryTitle";
 import { ShoppingBag, ArrowRight, Truck, ShieldCheck, Award, Headphones } from "lucide-react";
 
 
+export const metadata = {
+    title: "TIVAA - Jewellery & School Supplies Online",
+    description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India."
+};
+
 export const revalidate = 10;
 
 async function fetchLandingData() {
