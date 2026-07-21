@@ -203,6 +203,7 @@ export const downloadGstReadyReport = (req, res) => {
         } catch (excelErr) {
           console.error("Error generating GST Ready excel file:", excelErr);
           return res.status(500).json({ message: "Excel generation error" });
+        }
       });
     });
   });
