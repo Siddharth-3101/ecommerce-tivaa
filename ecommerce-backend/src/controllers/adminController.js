@@ -198,9 +198,10 @@ export const adminGetManageOrders = (req, res) => {
     const sql = `
         SELECT 
             o.id,
+            o.invoice_number,
             o.user_id,
-            u.name AS customer,
-            u.email,
+            COALESCE(u.name, 'Store Customer') AS customer,
+            COALESCE(u.email, 'N/A') AS email,
             o.total,
             o.order_status,
             o.payment_method,
@@ -211,7 +212,7 @@ export const adminGetManageOrders = (req, res) => {
             COALESCE(o.is_deleted, 0) AS is_deleted,
             o.deleted_at
         FROM orders o
-        JOIN users u ON u.id = o.user_id
+        LEFT JOIN users u ON u.id = o.user_id
         LEFT JOIN payments pay ON pay.order_id = o.id
         ORDER BY o.id DESC
     `;
@@ -219,7 +220,7 @@ export const adminGetManageOrders = (req, res) => {
     db.query(sql, (err, rows) => {
         if (err) {
             console.error("DB error fetching manage orders:", err);
-            return res.status(500).json({ message: "DB error" });
+            return res.status(500).json({ message: "DB error", error: err.message });
         }
         res.json(rows);
     });

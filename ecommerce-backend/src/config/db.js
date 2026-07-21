@@ -82,17 +82,15 @@ db.query(`
 });
 
 // Auto-migrate orders table schema to include is_deleted and deleted_at
-db.query(`
-  ALTER TABLE orders 
-  ADD COLUMN is_deleted TINYINT(1) DEFAULT 0,
-  ADD COLUMN deleted_at DATETIME NULL;
-`, (err) => {
-  if (err) {
-    if (!err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
-      console.error("Auto-migration orders is_deleted note:", err.message);
-    }
-  } else {
-    console.log("Orders schema successfully updated for is_deleted.");
+db.query(`ALTER TABLE orders ADD COLUMN is_deleted TINYINT(1) DEFAULT 0;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration orders is_deleted note:", err.message);
+  }
+});
+
+db.query(`ALTER TABLE orders ADD COLUMN deleted_at DATETIME NULL;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration orders deleted_at note:", err.message);
   }
 });
 
