@@ -317,4 +317,20 @@ db.query(`
   }
 });
 
+// Auto-migrate user_logins table
+db.query(`
+  CREATE TABLE IF NOT EXISTS user_logins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration user_logins note:", err.message);
+  } else {
+    console.log("user_logins table successfully verified/created.");
+  }
+});
+
 export default db;

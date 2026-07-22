@@ -106,7 +106,7 @@ export default async function RelatedProductsPage({ searchParams }) {
     const query = resolvedParams.q || "";
     const sort = resolvedParams.sort;
     const page = parseInt(resolvedParams.page) || 1;
-    const limit = 12;
+    const limit = 15;
 
     const { related, categories } = query 
         ? await fetchRelatedProducts(query, sort)

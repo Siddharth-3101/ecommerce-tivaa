@@ -209,6 +209,59 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("GST states table verified/created");
 
+        // 14. Create user_logins table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS user_logins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("User logins table verified/created");
+
+        // Seed mock user logins if empty
+        const loginsCount = await new Promise((res) => {
+            db.query("SELECT COUNT(*) AS cnt FROM user_logins", (err, rows) => {
+                res(err ? 0 : rows[0].cnt);
+            });
+        });
+
+        if (loginsCount === 0) {
+            const userIds = await new Promise((res) => {
+                db.query("SELECT id FROM users LIMIT 10", (err, rows) => {
+                    res(err ? [] : rows.map(r => r.id));
+                });
+            });
+
+            if (userIds.length > 0) {
+                const mockLogins = [];
+                const now = new Date();
+                
+                userIds.forEach((uId) => {
+                    mockLogins.push([uId, now]);
+                    
+                    const threeDaysAgo = new Date();
+                    threeDaysAgo.setDate(now.getDate() - 3);
+                    mockLogins.push([uId, threeDaysAgo]);
+                    mockLogins.push([uId, threeDaysAgo]);
+                    
+                    const fifteenDaysAgo = new Date();
+                    fifteenDaysAgo.setDate(now.getDate() - 15);
+                    mockLogins.push([uId, fifteenDaysAgo]);
+                    mockLogins.push([uId, fifteenDaysAgo]);
+                });
+
+                await new Promise((res) => {
+                    db.query("INSERT INTO user_logins (user_id, login_time) VALUES ?", [mockLogins], (err) => {
+                        if (err) console.error("Error seeding mock user logins:", err.message);
+                        else console.log("Seeded mock user logins successfully.");
+                        res();
+                    });
+                });
+            }
+        }
+
         // 13. Safe Column ALTER Migrations
         const productCols = await getExistingColumns("products");
         const userCols = await getExistingColumns("users");

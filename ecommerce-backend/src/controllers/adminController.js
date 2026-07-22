@@ -702,3 +702,93 @@ export const deleteGstState = (req, res) => {
     });
 };
 
+export const getDashboardAnalytics = async (req, res) => {
+    try {
+        const getQueryPromise = (sql, params = []) => {
+            return new Promise((resolve, reject) => {
+                db.query(sql, params, (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
+                });
+            });
+        };
+
+        const [
+            loginRows,
+            cartRows,
+            orderRows
+        ] = await Promise.all([
+            getQueryPromise(`
+                SELECT ul.login_time, u.email, u.name 
+                FROM user_logins ul 
+                JOIN users u ON u.id = ul.user_id 
+                ORDER BY ul.login_time DESC
+            `),
+            getQueryPromise(`
+                SELECT 
+                    u.id AS user_id, 
+                    u.email, 
+                    u.name AS user_name,
+                    c.product_id,
+                    c.quantity,
+                    c.selected_variation,
+                    p.name AS product_name,
+                    p.price,
+                    p.discounted_price
+                FROM cart c
+                JOIN users u ON u.id = c.user_id
+                JOIN products p ON p.id = c.product_id
+            `),
+            getQueryPromise("SELECT id, total, order_status, created_at FROM orders ORDER BY created_at DESC")
+        ]);
+
+        const cartsByUser = {};
+        cartRows.forEach(row => {
+            const userId = row.user_id;
+            if (!cartsByUser[userId]) {
+                cartsByUser[userId] = {
+                    userId,
+                    email: row.email,
+                    name: row.user_name || "Guest Customer",
+                    itemCount: 0,
+                    totalPrice: 0,
+                    items: []
+                };
+            }
+            const unitPrice = Number(row.discounted_price || row.price || 0);
+            const qty = Number(row.quantity || 1);
+            const subtotal = unitPrice * qty;
+            
+            cartsByUser[userId].itemCount += qty;
+            cartsByUser[userId].totalPrice += subtotal;
+            cartsByUser[userId].items.push({
+                productId: row.product_id,
+                productName: row.product_name,
+                quantity: qty,
+                selectedVariation: row.selected_variation,
+                price: unitPrice,
+                subtotal
+            });
+        });
+
+        res.json({
+            logins: loginRows.map(l => ({
+                email: l.email,
+                name: l.name,
+                loginTime: l.login_time
+            })),
+            activeCarts: Object.values(cartsByUser),
+            orders: orderRows.map(o => ({
+                id: o.id,
+                total: o.total,
+                status: o.order_status,
+                createdAt: o.created_at
+            }))
+        });
+
+    } catch (error) {
+        console.error("Error fetching dashboard analytics:", error);
+        res.status(500).json({ message: "Error fetching dashboard analytics: " + error.message });
+    }
+};
+

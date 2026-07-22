@@ -941,3 +941,261 @@ export const cancelDirectSaleOrder = (req, res) => {
     });
   });
 };
+
+// ===========================================================
+// ADMIN: PLACE DIRECT STORE SALE (Single-Phase unified checkout)
+// ===========================================================
+export const placeDirectSaleOrder = (req, res) => {
+  const adminId = req.user.id;
+  const { payment_method, customer_name, customer_email, customer_phone, notes } = req.body;
+
+  if (!payment_method) {
+    return res.status(400).json({ message: "Payment method required" });
+  }
+
+  // 1. Fetch admin's cart items with HSN/GST info
+  const sqlCart = `
+    SELECT 
+        c.product_id, 
+        c.quantity, 
+        p.price, 
+        p.stock, 
+        p.name,
+        c.selected_variation,
+        p.variations,
+        p.discounted_price,
+        COALESCE(h.tax_percentage, ph.tax_percentage, 0) AS gst_percentage
+    FROM cart c
+    JOIN products p ON p.id = c.product_id
+    LEFT JOIN categories cat ON cat.id = p.category_id
+    LEFT JOIN hsn_codes h ON h.id = cat.hsn_id
+    LEFT JOIN categories pc ON pc.id = cat.parent_id
+    LEFT JOIN hsn_codes ph ON ph.id = pc.hsn_id
+    WHERE c.user_id = ?
+  `;
+
+  db.query(sqlCart, [adminId], (err, cartItems) => {
+    if (err) {
+      console.error("DB error fetching admin cart:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(400).json({ message: "Admin's cart is empty" });
+    }
+
+    // Apply variants pricing & stock logic
+    const overriddenItems = cartItems.map(item => {
+      const { price: effectivePrice, stock: effectiveStock } = getEffectiveProductPriceAndStock(item, item.selected_variation);
+      return {
+        ...item,
+        price: effectivePrice,
+        stock: effectiveStock
+      };
+    });
+
+    // Check stock availability
+    for (const item of overriddenItems) {
+      const stockVal = item.stock === null || item.stock === undefined ? 0 : Number(item.stock);
+      if (item.quantity > stockVal) {
+        return res.status(400).json({ message: `Not enough stock for ${item.name}` });
+      }
+    }
+
+    const subtotal = overriddenItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const shippingCost = 0.00;
+    const total = subtotal;
+
+    // Helper: Execute order insertion and stock reduction
+    const createFinalOrder = (resolvedCustomerId) => {
+      const sqlCreateOrder = `
+        INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status, order_type)
+        VALUES (?, ?, ?, ?, 'paid', 'Store')
+      `;
+
+      db.query(sqlCreateOrder, [resolvedCustomerId, total, shippingCost, payment_method], (errCreate, result) => {
+        if (errCreate) {
+          console.error("Error creating store sale order:", errCreate);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        const orderId = result.insertId;
+
+        // Generate Invoice Number
+        const now = new Date();
+        const yy = String(now.getFullYear()).substring(2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const seq = String(orderId).padStart(3, '0');
+        const invoiceNumber = `#TV${yy}${mm}${dd}${seq}`;
+
+        db.query("UPDATE orders SET invoice_number = ? WHERE id = ?", [invoiceNumber, orderId]);
+
+        // Fetch Business State & Insert order items with tax snapshot
+        db.query("SELECT `value` FROM settings WHERE `key` = 'business_state'", (errSettings, sRows) => {
+          const bizState = (sRows && sRows.length > 0 && sRows[0].value) ? sRows[0].value.trim() : "Tamil Nadu";
+
+          // Fetch GST details for the Business State
+          db.query("SELECT state_code, gst_state, state_name FROM gst_states WHERE LOWER(state_name) = LOWER(?) LIMIT 1", [bizState], (errGst, gstRows) => {
+            const sCode = (gstRows && gstRows.length > 0 && gstRows[0].state_code) ? gstRows[0].state_code : "33";
+            const gState = (gstRows && gstRows.length > 0 && gstRows[0].gst_state) ? gstRows[0].gst_state : "33-Tamil Nadu";
+            const sName = (gstRows && gstRows.length > 0 && gstRows[0].state_name) ? gstRows[0].state_name : bizState;
+
+            const itemsSql = `
+              INSERT INTO order_items (
+                order_id, product_id, quantity, price, selected_variation,
+                gst_rate, taxable_amount, cgst_amount, sgst_amount, igst_amount, gst_state_name
+              ) VALUES ?
+            `;
+
+            const values = overriddenItems.map((item) => {
+              const qty = Number(item.quantity || 1);
+              const unitPrice = Number(item.price || 0);
+              const lineTotal = unitPrice * qty;
+              const gstRate = Number(item.gst_percentage || 0);
+              
+              const taxableAmount = gstRate > 0 ? Number(((lineTotal * 100) / (100 + gstRate)).toFixed(2)) : lineTotal;
+              const totalTax = Number((lineTotal - taxableAmount).toFixed(2));
+              const cgst = Number((totalTax / 2).toFixed(2));
+              const sgst = Number((totalTax / 2).toFixed(2));
+              const igst = 0.00;
+
+              return [
+                orderId,
+                item.product_id,
+                item.quantity,
+                item.price,
+                item.selected_variation || null,
+                gstRate,
+                taxableAmount,
+                cgst,
+                sgst,
+                igst,
+                sName
+              ];
+            });
+
+            db.query(itemsSql, [values], (errItems) => {
+              if (errItems) {
+                console.error("Error inserting store order items:", errItems);
+                return res.status(500).json({ message: "Database error" });
+              }
+
+              // Deduct stock levels
+              overriddenItems.forEach((item) => {
+                db.query(
+                  "UPDATE products SET stock = stock - ? WHERE id = ?",
+                  [item.quantity, item.product_id]
+                );
+              });
+
+              // Insert shipping details
+              const sqlShip = `
+                INSERT INTO shipping_details (order_id, address, city, state, state_code, gst_state, pincode, phone)
+                VALUES (?, ?, 'Store', ?, ?, ?, '000000', ?)
+              `;
+              db.query(sqlShip, [orderId, notes || "Direct Store Sale", sName, sCode, gState, customer_phone || null], (errShip) => {
+                if (errShip) console.warn("Store shipping insert error:", errShip);
+              });
+
+              // Clear admin's cart
+              db.query("DELETE FROM cart WHERE user_id = ?", [adminId], (errClear) => {
+                if (errClear) console.warn("Admin cart clear error:", errClear);
+              });
+
+              // Trigger order confirmation customer email if applicable
+              if (customer_email && !customer_email.includes("guest-")) {
+                sendOrderEmailToCustomer(orderId);
+              }
+
+              return res.json({
+                message: "Direct store sale placed successfully",
+                orderId,
+                total,
+                orderNumber: invoiceNumber,
+                orderDate: now.toISOString()
+              });
+            });
+          });
+        });
+      });
+    };
+
+    // Customer resolution: check details, create guest profile, or use default guest user
+    const hasName = customer_name && String(customer_name).trim().length > 0;
+    const hasEmail = customer_email && String(customer_email).trim().length > 0;
+    const hasPhone = customer_phone && String(customer_phone).trim().length > 0;
+
+    if (hasEmail || hasPhone) {
+      let checkSql = "SELECT id FROM users WHERE 1=0";
+      const checkParams = [];
+      if (hasEmail) {
+        checkSql += " OR email = ?";
+        checkParams.push(customer_email.trim());
+      }
+      if (hasPhone) {
+        checkSql += " OR phone = ?";
+        checkParams.push(customer_phone.trim());
+      }
+
+      db.query(checkSql, checkParams, (errSearch, userRows) => {
+        if (errSearch) {
+          console.error("Error searching customer for direct sale:", errSearch);
+          return res.status(500).json({ message: "Database error checking customer" });
+        }
+
+        if (userRows && userRows.length > 0) {
+          createFinalOrder(userRows[0].id);
+        } else {
+          // Create custom guest user profile
+          const safeEmail = customer_email ? customer_email.trim() : `guest-${Date.now()}-${Math.floor(Math.random() * 1000)}@tivaa.in`;
+          const safePhone = customer_phone ? customer_phone.trim() : null;
+          const safeName = customer_name ? customer_name.trim() : "Store Customer";
+          const dummyPassword = Math.random().toString(36).substring(2);
+
+          db.query(
+            "INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, 'user')",
+            [safeName, safeEmail, dummyPassword, safePhone],
+            (errCreateUser, createUserResult) => {
+              if (errCreateUser) {
+                console.error("Error creating guest user:", errCreateUser);
+                return res.status(500).json({ message: "Database error creating user profile" });
+              }
+              createFinalOrder(createUserResult.insertId);
+            }
+          );
+        }
+      });
+    } else {
+      // Find or create default global guest user
+      const defaultEmail = "guest-store-sale@tivaa.in";
+      db.query("SELECT id FROM users WHERE email = ?", [defaultEmail], (errDefault, defaultUserRows) => {
+        if (errDefault) {
+          console.error("Error searching for default store guest user:", errDefault);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        if (defaultUserRows && defaultUserRows.length > 0) {
+          createFinalOrder(defaultUserRows[0].id);
+        } else {
+          const defaultName = "Store Guest";
+          const dummyPassword = "store-guest-dummy-password";
+          db.query(
+            "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'user')",
+            [defaultName, defaultEmail, dummyPassword],
+            (errCreateDefault, createDefaultResult) => {
+              if (errCreateDefault) {
+                console.error("Error creating default guest user:", errCreateDefault);
+                return res.status(500).json({ message: "Database error" });
+              }
+              createFinalOrder(createDefaultResult.insertId);
+            }
+          );
+        }
+      });
+    }
+  });
+};

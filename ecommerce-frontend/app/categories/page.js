@@ -8,6 +8,7 @@ import api from "@/lib/api";
 import Heading from "@/components/Heading";
 import Button from "@/components/Button";
 import CategoryTitle from "@/components/CategoryTitle";
+import { slugify } from "@/lib/slug";
 
 function CategoriesContent() {
     const [categories, setCategories] = useState([]);
@@ -213,7 +214,7 @@ function CategoriesContent() {
                         {subCategories.map(sub => (
                             <Link 
                                 key={sub.id} 
-                                href={`/products?category=${encodeURIComponent(sub.name)}`}
+                                href={`/category/${slugify(selectedParent.name)}/${slugify(sub.name)}`}
                                 style={{ textDecoration: 'none' }}
                             >
                                 <div className="subcategory-card">

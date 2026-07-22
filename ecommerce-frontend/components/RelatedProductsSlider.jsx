@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 import Heading from "./Heading";
 
+import { slugify } from "@/lib/slug";
+
 export default function RelatedProductsSlider({ relatedProducts, categoryName }) {
     const carouselRef = useRef(null);
 
@@ -29,7 +31,7 @@ export default function RelatedProductsSlider({ relatedProducts, categoryName })
                     You May Also Like
                 </Heading>
                 {categoryName && (
-                    <Link href={`/products?category=${encodeURIComponent(categoryName)}`} className="related-view-all">
+                    <Link href={`/category/${slugify(categoryName)}`} className="related-view-all">
                         View All
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </Link>

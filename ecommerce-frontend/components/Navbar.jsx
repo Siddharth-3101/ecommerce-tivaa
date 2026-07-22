@@ -7,6 +7,7 @@ import { getUser, logout } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, Heart, ShoppingCart, Menu, X, ChevronRight, User, ChevronDown, Shield, LogOut, Package, Home } from "lucide-react";
 import Button from "./Button";
+import { slugify } from "@/lib/slug";
 
 // Recreated premium line-art vector icons from the theme assets
 const CustomSearchIcon = ({ size = 20, ...props }) => (
@@ -452,7 +453,7 @@ export default function Navbar() {
                                             {children.map(child => (
                                                 <Link 
                                                     key={child.id} 
-                                                    href={`/products?category=${encodeURIComponent(child.name)}`} 
+                                                    href={`/category/${slugify(parent.name)}/${slugify(child.name)}`} 
                                                     className="btn" 
                                                     style={{ justifyContent: 'flex-start', background: 'transparent', color: 'var(--text-muted)', borderBottom: '1px solid #fafafa', borderRadius: 0, padding: '3px 12px 3px 24px', fontSize: '0.57rem', textTransform: 'uppercase', letterSpacing: '0.5px' }} 
                                                     onClick={() => setMobileMenuOpen(false)}

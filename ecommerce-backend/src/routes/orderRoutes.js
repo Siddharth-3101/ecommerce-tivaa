@@ -6,7 +6,8 @@ import {
   cancelOrder,
   initiateDirectSaleOrder,
   confirmDirectSaleOrder,
-  cancelDirectSaleOrder
+  cancelDirectSaleOrder,
+  placeDirectSaleOrder
 } from "../controllers/orderController.js";
 
 import {
@@ -41,6 +42,9 @@ router.put("/my/:id/cancel", verifyToken, cancelOrder);
 
 // Admin: Initiate direct store sale order (Phase 1)
 router.post("/direct-sale/initiate", verifyToken, verifyAdmin, initiateDirectSaleOrder);
+
+// Admin: Place direct store sale order (Single-Phase unified flow)
+router.post("/direct-sale/place", verifyToken, verifyAdmin, placeDirectSaleOrder);
 
 // Admin: Confirm direct store sale order (Phase 2)
 router.put("/direct-sale/:id/confirm", verifyToken, verifyAdmin, confirmDirectSaleOrder);

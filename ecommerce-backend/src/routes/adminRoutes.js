@@ -21,6 +21,7 @@ import {
   createGstState,
   updateGstState,
   deleteGstState,
+  getDashboardAnalytics,
 } from "../controllers/adminController.js";
 
 import {
@@ -103,5 +104,10 @@ router.delete("/gst-states/:id", verifyToken, verifyAdmin, deleteGstState);
 // ======================================================
 router.get("/reports/gst-ready", verifyToken, verifyAdmin, downloadGstReadyReport);
 router.get("/reports/orders", verifyToken, verifyAdmin, downloadOrderReport);
+
+// ======================================================
+// DASHBOARD ANALYTICS (ADMIN ONLY)
+// ======================================================
+router.get("/dashboard/analytics", verifyToken, verifyAdmin, getDashboardAnalytics);
 
 export default router;

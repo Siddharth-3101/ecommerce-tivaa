@@ -5,6 +5,7 @@ import CategorySelect from "@/components/CategorySelect";
 import Heading from "@/components/Heading";
 import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 import { getPaginationRange } from "@/lib/pagination";
+import { slugify } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +89,7 @@ function partitionAndSortProducts(products, sort) {
 async function fetchProducts(categoryName, query, sort, page = 1) {
     try {
         const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
-        const limit = 12;
+        const limit = 15;
 
         let products = [];
         let isPaginatedOnBackend = false;
@@ -276,7 +277,7 @@ export default async function ProductsPage({ searchParams }) {
                             {matchingCats.map(cat => (
                                 <Link 
                                     key={cat.id} 
-                                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                                    href={`/category/${slugify(cat.name)}`}
                                     style={{ 
                                         display: 'inline-flex', 
                                         alignItems: 'center', 

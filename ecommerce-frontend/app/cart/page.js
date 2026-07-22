@@ -203,20 +203,8 @@ export default function CartPage() {
 
     const shippingCharged = shippingCost;
 
-    const handleDirectStoreSaleInit = async () => {
-        setInitiatingSale(true);
-        try {
-            const res = await api.post("/orders/direct-sale/initiate");
-            if (res.data && res.data.orderId) {
-                window.dispatchEvent(new Event('cart-updated'));
-                router.push(`/direct-store-sale?orderId=${res.data.orderId}`);
-            }
-        } catch (err) {
-            console.error("Failed to initiate direct store sale:", err);
-            alert(err.response?.data?.message || "Failed to initiate direct store sale");
-        } finally {
-            setInitiatingSale(false);
-        }
+    const handleDirectStoreSaleInit = () => {
+        router.push("/direct-store-sale");
     };
 
     if (loading) {

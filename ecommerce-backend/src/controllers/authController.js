@@ -180,6 +180,11 @@ export const loginUser = (req, res) => {
         { expiresIn: "7d" }
       );
 
+      // Log user login event
+      db.query("INSERT INTO user_logins (user_id) VALUES (?)", [user.id], (logErr) => {
+        if (logErr) console.error("Error logging user login event:", logErr);
+      });
+
       return res.json({
         message: "Login successful",
         token,
@@ -264,6 +269,11 @@ export const googleAuth = async (req, res) => {
           { expiresIn: "7d" }
         );
 
+        // Log user login event
+        db.query("INSERT INTO user_logins (user_id) VALUES (?)", [user.id], (logErr) => {
+          if (logErr) console.error("Error logging user login event:", logErr);
+        });
+
         return res.json({
           message: "Login successful",
           token,
@@ -308,6 +318,11 @@ export const googleAuth = async (req, res) => {
                 process.env.JWT_SECRET || "mysupersecretkey",
                 { expiresIn: "7d" }
               );
+
+              // Log user login event
+              db.query("INSERT INTO user_logins (user_id) VALUES (?)", [newUserId], (logErr) => {
+                if (logErr) console.error("Error logging user login event:", logErr);
+              });
 
               return res.json({
                 message: "Login successful",

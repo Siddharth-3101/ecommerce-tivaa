@@ -6,7 +6,7 @@ import ProductTabs from "@/components/ProductTabs";
 import RelatedProductsSlider from "@/components/RelatedProductsSlider";
 import Link from "next/link";
 import { redirect, RedirectType } from "next/navigation";
-import { extractProductId, getProductSlug } from "@/lib/slug";
+import { extractProductId, getProductSlug, slugify } from "@/lib/slug";
 
 async function fetchProduct(param) {
     try {
@@ -236,7 +236,7 @@ export default async function ProductPage({ params }) {
                 "@type": "ListItem",
                 "position": 2,
                 "name": product.category_name,
-                "item": `https://tivaa.in/products?category=${encodeURIComponent(product.category_name)}`
+                "item": `https://tivaa.in/category/${slugify(product.category_name)}`
             }] : []),
             {
                 "@type": "ListItem",
@@ -265,7 +265,7 @@ export default async function ProductPage({ params }) {
                     <span>&gt;</span>
                     {product.category_name ? (
                         <>
-                            <Link href={`/products?category=${encodeURIComponent(product.category_name)}`} style={{ color: 'var(--text-main)', textDecoration: 'none' }}>
+                            <Link href={`/category/${slugify(product.category_name)}`} style={{ color: 'var(--text-main)', textDecoration: 'none' }}>
                                 {product.category_name}
                             </Link>
                             <span>&gt;</span>

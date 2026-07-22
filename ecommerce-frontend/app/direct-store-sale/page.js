@@ -32,9 +32,9 @@ function DirectStoreSaleContent() {
     const [searchingCustomer, setSearchingCustomer] = useState(false);
     const [foundMessage, setFoundMessage] = useState("");
 
+    const [placedOrderId, setPlacedOrderId] = useState(null);
+
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const orderId = searchParams.get("orderId");
 
     // Load initial data
     useEffect(() => {
@@ -44,11 +44,6 @@ function DirectStoreSaleContent() {
             return;
         }
         setUser(currUser);
-
-        if (!orderId) {
-            router.push("/cart");
-            return;
-        }
 
         async function fetchData() {
             try {
@@ -60,15 +55,29 @@ function DirectStoreSaleContent() {
                     if (settingsRes.data.store_qr_code) setQrCodeImage(settingsRes.data.store_qr_code);
                 }
 
-                // Fetch Order details
-                const orderRes = await api.get(`/admin/orders/${orderId}`);
-                if (orderRes.data && orderRes.data.order) {
-                    setOrder(orderRes.data.order);
-                    setItems(orderRes.data.items || []);
-                } else {
-                    alert("Order not found or invalid format.");
+                // Fetch active Cart items
+                const cartRes = await api.get("/cart");
+                const data = cartRes.data;
+                const cartItems = Array.isArray(data) ? data : data.items || [];
+                
+                if (cartItems.length === 0) {
+                    alert("Your cart is empty. Please add items to checkout.");
                     router.push("/cart");
+                    return;
                 }
+
+                setItems(cartItems);
+
+                const subtotal = cartItems.reduce(
+                    (sum, item) => sum + Number(item.discounted_price || item.price || 0) * Number(item.quantity || 1),
+                    0
+                );
+                
+                setOrder({
+                    total: subtotal,
+                    created_at: new Date().toISOString()
+                });
+
             } catch (err) {
                 console.error("Failed to load store checkout details", err);
                 alert(err.response?.data?.message || "Failed to load checkout details");
@@ -79,7 +88,7 @@ function DirectStoreSaleContent() {
         }
 
         fetchData();
-    }, [orderId, router]);
+    }, [router]);
 
     // Handle lookup when phone or email changes
     useEffect(() => {
@@ -147,45 +156,31 @@ function DirectStoreSaleContent() {
                 notes: notes.trim() || undefined
             };
 
-            const res = await api.put(`/orders/direct-sale/${orderId}/confirm`, payload);
+            const res = await api.post("/orders/direct-sale/place", payload);
             
-            // Format order reference for success page
-            const now = new Date();
-            const yy = String(now.getFullYear()).substring(2);
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const seq = String(orderId).padStart(3, '0');
-            const orderNumber = `#TV${yy}${mm}${dd}${seq}`;
-
+            setPlacedOrderId(res.data.orderId);
             setSuccessData({
-                orderNumber,
-                total: order?.total || 0,
+                orderNumber: res.data.orderNumber,
+                total: res.data.total,
                 paymentMethod: paymentMethod,
-                customerName: customerName || "Store Guest"
+                customerName: cleanName || "Store Guest"
             });
+
+            // Dispatch cart-updated event to clear frontend headers
+            window.dispatchEvent(new Event('cart-updated'));
+
         } catch (err) {
-            console.error("Failed to confirm store sale:", err);
-            alert(err.response?.data?.message || "Failed to confirm store sale");
+            console.error("Failed to place store sale:", err);
+            alert(err.response?.data?.message || "Failed to place store sale");
         } finally {
             setConfirming(false);
         }
     };
 
     // Cancel Direct Store Sale
-    const handleCancelOrder = async () => {
-        if (!confirm("Are you sure you want to cancel this store sale? This will immediately cancel the order and release reserved stock back into inventory.")) {
-            return;
-        }
-
-        setCancelling(true);
-        try {
-            await api.put(`/orders/direct-sale/${orderId}/cancel`);
-            setCanceledState(true);
-        } catch (err) {
-            console.error("Failed to cancel store sale:", err);
-            alert(err.response?.data?.message || "Failed to cancel store sale");
-        } finally {
-            setCancelling(false);
+    const handleCancelOrder = () => {
+        if (confirm("Are you sure you want to cancel this store sale?")) {
+            router.push("/cart");
         }
     };
 
@@ -234,7 +229,7 @@ function DirectStoreSaleContent() {
                     </div>
 
                     <div className="card-actions-row">
-                        <Link href={`/admin/orders/${orderId}`} className="btn btn-primary" style={{ padding: '12px 20px', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
+                        <Link href={`/admin/orders/${placedOrderId}`} className="btn btn-primary" style={{ padding: '12px 20px', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
                             View Order Details
                         </Link>
                         <Link href="/products" className="btn btn-secondary" style={{ padding: '12px 20px', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
@@ -354,7 +349,7 @@ function DirectStoreSaleContent() {
         <div className="container animate-fade-in direct-sale-wrapper">
             <div style={{ marginBottom: '20px' }}>
                 <h1 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', fontWeight: 600, color: 'var(--text-main)', margin: 0 }}>Direct Store Checkout</h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>Order Session: {formatOrderNumber(orderId, order?.created_at)}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>POS Checkout Session</p>
             </div>
 
             <div className="direct-sale-grid">

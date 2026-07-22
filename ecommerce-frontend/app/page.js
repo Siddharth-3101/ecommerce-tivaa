@@ -5,6 +5,7 @@ import HomeCategoryGrid from "@/components/HomeCategoryGrid";
 import Heading from "@/components/Heading";
 import CategoryTitle from "@/components/CategoryTitle";
 import { ShoppingBag, ArrowRight, Truck, ShieldCheck, Award, Headphones } from "lucide-react";
+import { slugify } from "@/lib/slug";
 
 
 export const metadata = {
@@ -78,10 +79,10 @@ export default async function Home() {
 
     // Look up category names dynamically by ID and build links
     const schoolCat = categories.find(c => Number(c.id) === schoolId);
-    const schoolLink = schoolCat ? `/products?category=${encodeURIComponent(schoolCat.name)}` : "/products?category=School%20Supplies";
+    const schoolLink = schoolCat ? `/category/${slugify(schoolCat.name)}` : "/category/school-supplies";
 
     const jewelleryCat = categories.find(c => Number(c.id) === jewelleryId);
-    const jewelleryLink = jewelleryCat ? `/products?category=${encodeURIComponent(jewelleryCat.name)}` : "/products?category=Jewellery";
+    const jewelleryLink = jewelleryCat ? `/category/${slugify(jewelleryCat.name)}` : "/category/jewellery";
 
     return (
         <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -154,7 +155,7 @@ export default async function Home() {
                                 {cat.name}
                             </Heading>
                             <Link
-                                href={`/products?category=${encodeURIComponent(cat.name)}`}
+                                href={`/category/${slugify(cat.name)}`}
                                 className="category-view-all"
                             >
                                 View All <span>&gt;</span>
@@ -245,10 +246,15 @@ export default async function Home() {
                                         return fallbacks[catNameLower] || fallbacks['general'];
                                     };
 
+                                    const parentCat = categories.find(c => c.id === sub.parent_id);
+                                    const subLink = parentCat 
+                                        ? `/category/${slugify(parentCat.name)}/${slugify(sub.name)}`
+                                        : `/category/${slugify(sub.name)}`;
+
                                     return (
                                         <Link
                                             key={sub.id}
-                                            href={`/products?category=${encodeURIComponent(sub.name)}`}
+                                            href={subLink}
                                             className="category-card-container"
                                         >
                                             <div className="category-card-img-wrapper">
