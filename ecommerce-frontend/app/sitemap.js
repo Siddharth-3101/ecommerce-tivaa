@@ -1,5 +1,7 @@
 import { slugify, getProductSlug } from "@/lib/slug";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://tivaa.in";
   const backendUrl = process.env.BACKEND_API_URL || "http://api.tivaa.in";
