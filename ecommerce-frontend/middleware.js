@@ -22,10 +22,15 @@ export function middleware(request) {
       pathname + request.nextUrl.search,
       'https://www.tivaa.in'
     );
-    return NextResponse.redirect(targetUrl, 301);
+    const redirectResponse = NextResponse.redirect(targetUrl, 301);
+    redirectResponse.headers.set('x-tivaa-middleware', 'active-redirect');
+    return redirectResponse;
   }
   
-  return NextResponse.next();
+  // Add custom header to prove middleware is active on the www site
+  const response = NextResponse.next();
+  response.headers.set('x-tivaa-middleware', 'active-next');
+  return response;
 }
 
 // Catch all paths so the middleware is guaranteed to run
