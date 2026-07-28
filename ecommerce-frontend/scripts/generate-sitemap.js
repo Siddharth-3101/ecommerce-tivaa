@@ -16,7 +16,7 @@ try {
   // Ignore
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tivaa.in";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.tivaa.in";
 const API_URL = process.env.BACKEND_API_URL || envUrl || "https://api.tivaa.in";
 
 function slugify(text) {
