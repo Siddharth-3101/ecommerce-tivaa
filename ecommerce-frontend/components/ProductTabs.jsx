@@ -5,7 +5,7 @@ import Button from "./Button";
 
 export default function ProductTabs({ description, features }) {
     const hasDesc = description && description.trim() && description.trim() !== "<p><br></p>" && description.trim() !== "<p></p>";
-    const hasFeatures = features && features.trim().length > 0;
+    const hasFeatures = features && features.trim() && features.trim() !== "<p><br></p>" && features.trim() !== "<p></p>";
 
     // Use state to track active tab
     const [activeTab, setActiveTab] = useState("description");
@@ -92,14 +92,11 @@ export default function ProductTabs({ description, features }) {
                 )}
                 
                 {hasFeatures && activeTab === "features" && (
-                    <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {features.split('\n').filter(f => f.trim()).map((feature, idx) => (
-                            <li key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: 'var(--text-main)', fontSize: '13px' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '3px' }}><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>{feature}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <div 
+                        className="quill-content"
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
+                        dangerouslySetInnerHTML={{ __html: features }}
+                    />
                 )}
             </div>
         </div>

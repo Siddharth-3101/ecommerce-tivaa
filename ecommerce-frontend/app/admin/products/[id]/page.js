@@ -473,7 +473,7 @@ export default function EditProductPage({ params }) {
                         <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Description</label>
                         <ReactQuill
                             theme="snow"
-                            value={product.description}
+                            value={product.description || ""}
                             onChange={(val) => setProduct({ ...product, description: val })}
                             style={{ background: "transparent", color: "var(--text-main)", borderRadius: "8px" }}
                         />
@@ -481,16 +481,12 @@ export default function EditProductPage({ params }) {
 
                     <div>
                         <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted)" }}>Product Features (Optional)</label>
-                        <textarea
-                            className="input-field"
-                            placeholder="Format: Feature Name: Description&#10;E.g.:&#10;Premium Quality: Built with high quality materials.&#10;Express Delivery: Delivered directly to your door."
+                        <ReactQuill
+                            theme="snow"
                             value={product.features || ""}
-                            onChange={(e) => setProduct({ ...product, features: e.target.value })}
-                            style={{ minHeight: "100px", resize: "vertical" }}
-                        ></textarea>
-                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
-                            Place each feature on its own line. Use a colon (:) to bold the feature name.
-                        </span>
+                            onChange={(val) => setProduct({ ...product, features: val })}
+                            style={{ background: "transparent", color: "var(--text-main)", borderRadius: "8px" }}
+                        />
                     </div>
 
                     <div style={{ border: "1px solid var(--border)", padding: "24px", borderRadius: "12px", background: "rgba(0,0,0,0.01)" }}>

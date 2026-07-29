@@ -9,7 +9,7 @@ import { slugify } from "@/lib/slug";
 
 
 export const metadata = {
-    title: "TIVAA - Jewellery & School Supplies Online",
+    title: "Buy Fashion Jewellery & School Supplies Online India",
     description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India."
 };
 

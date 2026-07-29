@@ -36,7 +36,33 @@ export async function generateMetadata({ params }) {
     const name = product.name || "Product";
     const canonicalSlug = getProductSlug(product);
     const mainImage = product.image_url ? product.image_url.split(",")[0].trim() : "https://tivaa.in/favicon.png";
-    const desc = `Buy ${name} online at TIVAA. Premium quality, secure payments, fast delivery and great prices across India.`;
+    
+    // Clean and extract actual description for SEO
+    let descriptionText = "";
+    if (product.description) {
+        descriptionText = product.description
+            .replace(/<[^>]*>/g, " ")
+            .replace(/&nbsp;/g, " ")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"')
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    
+    // Combine product name and description
+    let desc = `Buy ${name} online at TIVAA.`;
+    if (descriptionText.length > 5) {
+        desc = `Buy ${name} online at TIVAA - ${descriptionText}`;
+    } else {
+        desc = `Buy ${name} online at TIVAA. Premium quality, secure payments, fast delivery and great prices across India.`;
+    }
+    
+    // Truncate to 155 characters for search results
+    if (desc.length > 155) {
+        desc = desc.substring(0, 152) + "...";
+    }
 
     return {
         title: `${name} | Buy Online at TIVAA`,
@@ -201,12 +227,22 @@ export default async function ProductPage({ params }) {
         discountBadge = `-${disc}%`;
     }
 
+    const cleanDesc = product.description ? product.description
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, " ")
+        .trim() : "";
+
     const productJsonLd = {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.name,
         "image": images,
-        "description": product.description || `Buy ${product.name} online at TIVAA.`,
+        "description": cleanDesc || `Buy ${product.name} online at TIVAA.`,
         "sku": `TIVAA-${product.id}`,
         "brand": {
             "@type": "Brand",
@@ -261,11 +297,11 @@ export default async function ProductPage({ params }) {
                 
                 {/* Breadcrumbs */}
                 <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                    <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'none' }}>Home</Link>
+                    <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Home</Link>
                     <span>&gt;</span>
                     {product.category_name ? (
                         <>
-                            <Link href={`/category/${slugify(product.category_name)}`} style={{ color: 'var(--text-main)', textDecoration: 'none' }}>
+                            <Link href={`/category/${slugify(product.category_name)}`} style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>
                                 {product.category_name}
                             </Link>
                             <span>&gt;</span>

@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Disallow administrative and cart checkout routes
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /login/
+Disallow: /register/
+Disallow: /forgot-password/
+Disallow: /reset-password/
+Disallow: /reset-password/*
+
+# Host & sitemap location
+Host: https://tivaa.in
+Sitemap: https://tivaa.in/sitemap.xml

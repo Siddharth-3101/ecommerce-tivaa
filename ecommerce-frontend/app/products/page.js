@@ -4,6 +4,7 @@ import SortSelect from "@/components/SortSelect";
 import CategorySelect from "@/components/CategorySelect";
 import Heading from "@/components/Heading";
 import RelatedProductsSlider from "@/components/RelatedProductsSlider";
+import CategoryDescription from "@/components/CategoryDescription";
 import { getPaginationRange } from "@/lib/pagination";
 import { slugify } from "@/lib/slug";
 
@@ -232,18 +233,16 @@ export default async function ProductsPage({ searchParams }) {
     }
  
     let displayName = category || "Our Collections";
+    let selectedCat = null;
+    let parentCat = null;
     if (category && Array.isArray(categories)) {
-        const selectedCat = categories.find(
+        selectedCat = categories.find(
             c => c.name.trim().toLowerCase() === category.trim().toLowerCase()
         );
         if (selectedCat) {
+            displayName = selectedCat.name;
             if (selectedCat.parent_id) {
-                const parentCat = categories.find(c => c.id === selectedCat.parent_id);
-                if (parentCat) {
-                    displayName = `${parentCat.name} -> ${selectedCat.name}`;
-                }
-            } else {
-                displayName = selectedCat.name;
+                parentCat = categories.find(c => Number(c.id) === Number(selectedCat.parent_id));
             }
         }
     }
@@ -260,9 +259,34 @@ export default async function ProductsPage({ searchParams }) {
     return (
         <div className="animate-fade-in" style={{ padding: '20px 0 60px' }}>
             <div className="container" style={{ marginBottom: '12px' }}>
-                <Heading as="h2" variant="HomeHeader2" style={{ marginBottom: '12px', textTransform: 'none', letterSpacing: 'normal' }}>
+                {/* Breadcrumbs */}
+                {category && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Home</Link>
+                        <span>&gt;</span>
+                        <Link href="/categories" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Categories</Link>
+                        <span>&gt;</span>
+                        {parentCat && (
+                            <>
+                                <Link href={`/category/${slugify(parentCat.name)}`} style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>
+                                    {parentCat.name}
+                                </Link>
+                                <span>&gt;</span>
+                            </>
+                        )}
+                        <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{selectedCat ? selectedCat.name : category}</span>
+                    </div>
+                )}
+
+                <Heading as="h2" variant="HomeHeader2" className="category-page-title" style={{ fontSize: '0.85rem', marginBottom: '12px', textTransform: 'none', letterSpacing: 'normal' }}>
                     {query ? `Search results` : displayName}
                 </Heading>
+                {!query && selectedCat && (
+                    <CategoryDescription 
+                        description={selectedCat.description} 
+                        style={{ marginBottom: '16px' }} 
+                    />
+                )}
                 <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', maxWidth: '600px', lineHeight: 1.5, marginBottom: '20px' }}>
                     {query ? `${data.total || 0} items found matching your search "${query}"` : ""}
                 </p>
@@ -400,6 +424,9 @@ export default async function ProductsPage({ searchParams }) {
                 </section>
             )}
             <style dangerouslySetInnerHTML={{ __html: `
+                @media (max-width: 768px) {
+                    ${!query && category ? `.category-page-title { display: none !important; }` : ''}
+                }
                 .category-tile-btn:hover {
                     border-color: #0d9488 !important;
                     background-color: #f0fdfa !important;

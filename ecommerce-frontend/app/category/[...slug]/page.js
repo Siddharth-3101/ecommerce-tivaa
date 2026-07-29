@@ -1,6 +1,9 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { slugify } from "@/lib/slug";
+import SortSelect from "@/components/SortSelect";
+import CategorySelect from "@/components/CategorySelect";
+import CategoryDescription from "@/components/CategoryDescription";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +32,44 @@ async function fetchProductsData() {
     return [];
 }
 
+function partitionAndSortProducts(products, sort) {
+    const sortFn = (a, b) => {
+        const priceA = a.discounted_price && Number(a.discounted_price) > 0 ? Number(a.discounted_price) : Number(a.price || 0);
+        const priceB = b.discounted_price && Number(b.discounted_price) > 0 ? Number(b.discounted_price) : Number(b.price || 0);
+
+        if (sort === "price_low") {
+            return priceA - priceB;
+        } else if (sort === "price_high") {
+            return priceB - priceA;
+        } else if (sort === "name_asc") {
+            return (a.name || "").localeCompare(b.name || "");
+        } else if (sort === "name_desc") {
+            return (b.name || "").localeCompare(a.name || "");
+        }
+        return 0;
+    };
+
+    if (sort) {
+        const sorted = [...products];
+        sorted.sort(sortFn);
+        return sorted;
+    }
+
+    const inStock = [];
+    const outOfStock = [];
+
+    for (const p of products) {
+        const stockVal = p.stock === null || p.stock === undefined ? 0 : Number(p.stock);
+        if (stockVal > 0) {
+            inStock.push(p);
+        } else {
+            outOfStock.push(p);
+        }
+    }
+
+    return [...inStock, ...outOfStock];
+}
+
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const categories = await fetchCategoriesData();
@@ -38,7 +79,7 @@ export async function generateMetadata({ params }) {
     const subSlug = slugArray[1] || "";
 
     const parentCat = categories.find(c => !c.parent_id && slugify(c.name) === parentSlug);
-    const subCat = subSlug && parentCat ? categories.find(c => c.parent_id === parentCat.id && slugify(c.name) === subSlug) : null;
+    const subCat = subSlug && parentCat ? categories.find(c => Number(c.parent_id) === Number(parentCat.id) && slugify(c.name) === subSlug) : null;
 
     if (subCat && parentCat) {
         const subName = subCat.name;
@@ -69,8 +110,12 @@ export async function generateMetadata({ params }) {
     };
 }
 
-export default async function CategorySlugPage({ params }) {
-    const { slug } = await params;
+export default async function CategorySlugPage({ params, searchParams }) {
+    const resolvedParams = await params;
+    const sParams = await searchParams || {};
+    const sort = sParams.sort || "";
+    
+    const slug = resolvedParams.slug;
     const categories = await fetchCategoriesData();
     const allProducts = await fetchProductsData();
 
@@ -79,45 +124,52 @@ export default async function CategorySlugPage({ params }) {
     const subSlug = slugArray[1] || "";
 
     const parentCat = categories.find(c => !c.parent_id && slugify(c.name) === parentSlug);
-    const subCat = subSlug && parentCat ? categories.find(c => c.parent_id === parentCat.id && slugify(c.name) === subSlug) : null;
+    const subCat = subSlug && parentCat ? categories.find(c => Number(c.parent_id) === Number(parentCat.id) && slugify(c.name) === subSlug) : null;
 
     let targetCategoryIds = [];
     let titleText = "Category Products";
     let breadcrumbParent = null;
+    let categoryDescription = "";
 
     if (subCat && parentCat) {
         targetCategoryIds = [subCat.id];
         titleText = subCat.name;
         breadcrumbParent = parentCat;
+        categoryDescription = subCat.description;
     } else if (parentCat) {
-        const childCatIds = categories.filter(c => c.parent_id === parentCat.id).map(c => c.id);
+        const childCatIds = categories.filter(c => Number(c.parent_id) === Number(parentCat.id)).map(c => c.id);
         targetCategoryIds = [parentCat.id, ...childCatIds];
         titleText = parentCat.name;
+        categoryDescription = parentCat.description;
     } else {
         // Fallback matching by name slug
         const matched = categories.find(c => slugify(c.name) === parentSlug);
         if (matched) {
             targetCategoryIds = [matched.id];
             titleText = matched.name;
+            categoryDescription = matched.description;
         }
     }
 
-    const filteredProducts = allProducts.filter(p => {
+    let filteredProducts = allProducts.filter(p => {
         if (targetCategoryIds.length === 0) return true;
         return targetCategoryIds.includes(p.category_id);
     });
+
+    // Apply sorting and stock partitioning
+    filteredProducts = partitionAndSortProducts(filteredProducts, sort);
 
     return (
         <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '30px 16px' }}>
             {/* Breadcrumbs */}
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'none' }}>Home</Link>
+                <Link href="/" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Home</Link>
                 <span>&gt;</span>
-                <Link href="/categories" style={{ color: 'var(--text-main)', textDecoration: 'none' }}>Categories</Link>
+                <Link href="/categories" style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>Categories</Link>
                 <span>&gt;</span>
                 {breadcrumbParent && (
                     <>
-                        <Link href={`/category/${slugify(breadcrumbParent.name)}`} style={{ color: 'var(--text-main)', textDecoration: 'none' }}>
+                        <Link href={`/category/${slugify(breadcrumbParent.name)}`} style={{ color: 'var(--text-main)', textDecoration: 'underline' }}>
                             {breadcrumbParent.name}
                         </Link>
                         <span>&gt;</span>
@@ -126,14 +178,37 @@ export default async function CategorySlugPage({ params }) {
                 <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{titleText}</span>
             </div>
 
-            {/* Title Header */}
-            <div style={{ marginBottom: '28px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+            {/* Title Header with filters */}
+            <div style={{ marginBottom: '28px', borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
+                <h1 className="category-page-title" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
                     {titleText}
                 </h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '6px' }}>
+                {categoryDescription && (
+                    <CategoryDescription 
+                        description={categoryDescription} 
+                        style={{ marginTop: '8px', marginBottom: '0' }} 
+                    />
+                )}
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '12px', marginBottom: '16px' }}>
                     Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
                 </p>
+
+                {/* Categories and Sort Filter Bar */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '16px',
+                    marginTop: '12px'
+                }}>
+                    <CategorySelect
+                        categories={categories}
+                        currentCategory={titleText}
+                        currentSort={sort}
+                    />
+                    <SortSelect currentSort={sort} />
+                </div>
             </div>
 
             {/* Products Grid */}
@@ -150,6 +225,13 @@ export default async function CategorySlugPage({ params }) {
                     ))}
                 </div>
             )}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media (max-width: 768px) {
+                    .category-page-title {
+                        display: none !important;
+                    }
+                }
+            `}} />
         </div>
     );
 }

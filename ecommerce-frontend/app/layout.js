@@ -7,7 +7,7 @@ import StyledJsxRegistry from "./registry";
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://tivaa.in"),
   title: {
-    default: "TIVAA - Jewellery & School Supplies Online",
+    default: "Buy Fashion Jewellery & School Supplies Online India",
     template: "%s | TIVAA"
   },
   description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India.",
@@ -15,7 +15,7 @@ export const metadata = {
     canonical: "./",
   },
   openGraph: {
-    title: "TIVAA - Jewellery & School Supplies Online",
+    title: "Buy Fashion Jewellery & School Supplies Online India",
     description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA. Quality products with fast delivery across India.",
     url: "https://tivaa.in",
     siteName: "TIVAA",
@@ -32,7 +32,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TIVAA - Jewellery & School Supplies Online",
+    title: "Buy Fashion Jewellery & School Supplies Online India",
     description: "Shop premium jewellery, school supplies, kids accessories and everyday essentials online at TIVAA.",
     images: ["/favicon.png"],
   },
