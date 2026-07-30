@@ -86,7 +86,7 @@ export default function ProductTabs({ description, features }) {
                 {hasDesc && activeTab === "description" && (
                     <div 
                         className="quill-content"
-                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400, wordBreak: 'keep-all' }}
                         dangerouslySetInnerHTML={{ __html: description }}
                     />
                 )}
@@ -94,7 +94,7 @@ export default function ProductTabs({ description, features }) {
                 {hasFeatures && activeTab === "features" && (
                     <div 
                         className="quill-content"
-                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400, wordBreak: 'keep-all' }}
                         dangerouslySetInnerHTML={{ __html: features }}
                     />
                 )}
