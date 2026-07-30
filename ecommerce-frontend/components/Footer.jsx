@@ -101,7 +101,7 @@ export default function Footer() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <Heading as="h4" variant="h3" style={{ color: '#ffffff', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>Customer Service</Heading>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <li><Link href="/faq" className="footer-link-navy">Shipping & Delivery</Link></li>
+                            <li><Link href="/shipping-policy" className="footer-link-navy">Shipping & Delivery</Link></li>
                             <li><Link href="/refund-policy" className="footer-link-navy">Returns & Exchanges</Link></li>
                             <li><Link href="/contact" className="footer-link-navy">Contact Us</Link></li>
                         </ul>

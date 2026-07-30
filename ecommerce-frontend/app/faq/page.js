@@ -10,7 +10,7 @@ export default function FAQPage() {
     const faqs = [
         {
             question: "How long does shipping take?",
-            answer: "Orders are typically processed within 1–2 business days and delivered within 3–7 business days depending on location."
+            answer: "Orders are typically processed within 1–2 business days and delivered within 5–10 business days depending on location."
         },
         {
             question: "Do you offer Cash on Delivery (COD)?",
@@ -22,7 +22,7 @@ export default function FAQPage() {
         },
         {
             question: "How can I cancel the order",
-            answer: "Currently there is no order cancellation allowed in the website. Once placed ,orders cannot be cancelled unless approved by TIVAA admin which will be reviewed case to case basis."
+            answer: "Orders cannot be cancelled once they have been placed through the website. In exceptional circumstances, cancellation requests may be reviewed by the TIVAA team at its sole discretion before the order is shipped."
         },
         {
             question: "What if I receive a damaged product?",

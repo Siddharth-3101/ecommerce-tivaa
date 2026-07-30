@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft, Truck } from "lucide-react";
 
 export const metadata = {
-    title: "Refund & Cancellation Policy | Tivaa Elegance",
-    description: "Refund and return eligibility, timelines, and cancellation guidelines for Tivaa.in.",
+    title: "Shipping Policy | Tivaa Elegance",
+    description: "Shipping options, processing times, and delivery coverage details for Tivaa.in.",
 };
 
-export default function RefundPolicyPage() {
+export default function ShippingPolicyPage() {
     return (
         <div style={{ background: 'var(--bg, #F8FAFC)', minHeight: '100vh', padding: '30px 0 80px' }}>
             <div className="container animate-fade-in" style={{ maxWidth: '850px' }}>
@@ -26,7 +26,7 @@ export default function RefundPolicyPage() {
                         alignItems: 'center',
                         gap: '14px'
                     }}>
-                        <RotateCcw style={{ color: 'var(--accent, #0F9D94)' }} size={36} /> Refund &amp; Cancellation Policy
+                        <Truck style={{ color: 'var(--accent, #0F9D94)' }} size={36} /> Shipping Policy
                     </h1>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', margin: 0 }}>
                         Last Updated: July 30, 2026
@@ -43,143 +43,115 @@ export default function RefundPolicyPage() {
                     gap: '32px'
                 }}>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                        At Tivaa, customer satisfaction is important to us. We strive to ensure that every order reaches you in perfect condition. If you receive a damaged, defective, incorrect, or incomplete product, we are here to help.
+                        At Tivaa, we are committed to delivering your orders safely and on time. This Shipping Policy explains how we process, ship, and deliver your purchases.
                     </p>
 
                     {/* Section 1 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Order Cancellation
+                            Order Processing
                         </h2>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            Once an order has been shipped, it cannot be cancelled. However, you may be eligible for a return in accordance with this Refund &amp; Cancellation Policy.
-                        </p>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            To request an order cancellation, please contact us as soon as possible with your order details.
-                        </p>
+                        <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <li>Orders are typically processed within <strong>1–2 business days</strong> after successful payment confirmation.</li>
+                            <li>Orders placed on weekends or public holidays will be processed on the next business day.</li>
+                            <li>Processing times may be extended during festivals, sales, or unforeseen circumstances.</li>
+                        </ul>
                     </section>
 
                     {/* Section 2 */}
-                    <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Return Eligibility
+                            Delivery Timeline
                         </h2>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            You may request a return if:
-                        </p>
                         <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <li>You received a damaged product.</li>
-                            <li>You received the wrong product.</li>
-                            <li>The product has a manufacturing defect.</li>
-                            <li>You received an incomplete order.</li>
-                        </ul>
-                        
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: '8px 0 0 0' }}>
-                            To be eligible for a return:
-                        </p>
-                        <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <li>The return request must be submitted within <strong>2 days</strong> of delivery.</li>
-                            <li>The product must be unused and in its original condition.</li>
-                            <li>Original packaging, labels, and accessories must be included.</li>
-                            <li>Proof of the issue (photos or videos) may be required.</li>
-                            <li>The product must include all original accessories, tags, manuals (if any), and packaging.</li>
-                            <li>Return shipping shall be managed by the customer.</li>
+                            <li>Most orders are delivered within <strong>5–10 business days</strong>, depending on the delivery location.</li>
+                            <li>Delivery timelines are estimates and may vary due to courier operations, weather conditions, public holidays, or other factors beyond our control.</li>
                         </ul>
                     </section>
 
                     {/* Section 3 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Non-Returnable Items
+                            Shipping Charges
                         </h2>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: '0 0 8px 0' }}>
-                            The following items cannot be returned unless they are damaged or defective upon delivery:
-                        </p>
                         <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <li>Used products</li>
-                            <li>Customized or personalized products</li>
-                            <li>Clearance or sale items</li>
-                            <li>Products damaged due to misuse or improper handling</li>
+                            <li>Shipping charges, if applicable, will be displayed during checkout before payment.</li>
+                            <li>Any promotional free shipping offers will be clearly communicated on the website.</li>
                         </ul>
                     </section>
 
                     {/* Section 4 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Return Approval
+                            Order Tracking
                         </h2>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            All return requests are reviewed after the required information is received. Tivaa reserves the right to approve or reject a return request if it does not meet the eligibility criteria described in this policy.
+                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: '0 0 8px 0' }}>
+                            Once your order has been shipped:
                         </p>
+                        <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <li>Your order status will be available under <strong>My Orders</strong> in your TIVAA account.</li>
+                            <li>Tracking information will be updated as it becomes available.</li>
+                        </ul>
                     </section>
 
                     {/* Section 5 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Refund Process
+                            Delivery Address
                         </h2>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: '0 0 8px 0' }}>
-                            After the returned product is received and successfully inspected:
+                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
+                            Customers are responsible for providing an accurate and complete shipping address. TIVAA is not responsible for delays or failed deliveries resulting from incorrect or incomplete address information provided by the customer.
                         </p>
-                        <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <li>Approved refunds will be processed within <strong>5–10 business days</strong>.</li>
-                            <li>Refunds will be credited to the original payment method used for the purchase.</li>
-                            <li>Depending on your bank or payment provider, it may take additional time for the refund to appear in your account.</li>
-                        </ul>
                     </section>
 
                     {/* Section 6 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Replacement
+                            Failed Delivery Attempts
                         </h2>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            Tivaa currently follows a refund-only policy for approved return requests. Replacement products are generally not provided. If a return request is approved, the applicable refund will be processed in accordance with this policy.
+                            If delivery cannot be completed because the customer is unavailable or the address is incorrect, the courier partner may make additional delivery attempts or return the shipment to us. Additional shipping charges may apply if re-shipment is required.
                         </p>
                     </section>
 
                     {/* Section 7 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Return Shipping
+                            Order Cancellation
                         </h2>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            If the return is due to an error by Tivaa (wrong product, damaged product, or manufacturing defect), return shipping charges, if any, will be borne by Tivaa.
-                        </p>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            For returns not caused by an error on our part (where accepted), the customer may be responsible for return shipping charges.
+                            Orders cannot be cancelled once they have been placed through the website. In exceptional circumstances, cancellation requests may be reviewed by the TIVAA team at its sole discretion before the order is shipped.
                         </p>
                     </section>
 
                     {/* Section 8 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <h2 style={{ fontSize: '1.4rem', borderBottom: '1px solid var(--border, #E5E7EB)', paddingBottom: '8px', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif" }}>
-                            Fraud Prevention
+                            Delivery Coverage
                         </h2>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
-                            To protect our customers and business, Tivaa reserves the right to refuse returns or refunds in cases of suspected misuse, fraudulent claims, repeated abuse of the return policy, or violations of these Terms.
+                            TIVAA currently ships to locations within India. Availability of delivery services may vary based on your PIN code.
                         </p>
                     </section>
 
                     {/* Section 9 */}
                     <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(23, 59, 99, 0.03)', border: '1px solid var(--border, #E5E7EB)', padding: '24px', borderRadius: '16px' }}>
                         <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main, #173B63)', fontFamily: "'Playfair Display', Georgia, serif", margin: '0 0 12px 0' }}>
-                            Damaged or Incorrect Orders
+                            Damaged or Lost Shipments
                         </h2>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.6', margin: '0 0 12px 0' }}>
-                            If your order arrives damaged, defective, or incorrect, please contact us within <strong>48 hours</strong> of delivery.
+                            If you receive a damaged package or believe your shipment has been lost or damaged in transit, please contact us within <strong>48 hours</strong> of delivery (or the expected delivery date for lost shipments).
                         </p>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.6', margin: '0 0 12px 0' }}>
                             Please include:
                         </p>
                         <ul style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.9rem', lineHeight: '1.6', paddingLeft: '20px', margin: '0 0 12px 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <li>Order Number</li>
-                            <li>Photos or video of the product opening and damage if any</li>
-                            <li>Photos of the packaging</li>
-                            <li>Brief description of the issue</li>
+                            <li>Photos of the package (if damaged)</li>
+                            <li>Description of the issue</li>
                         </ul>
-                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
-                            Send details to: <a href="mailto:tivaa2026@gmail.com" style={{ color: 'var(--accent, #0F9D94)', fontWeight: 600 }}>tivaa2026@gmail.com</a>
+                        <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                            We will investigate the matter with our logistics partner and provide an appropriate resolution.
                         </p>
                     </section>
 
@@ -189,7 +161,7 @@ export default function RefundPolicyPage() {
                             Contact Us
                         </h2>
                         <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.6', margin: 0 }}>
-                            For return, refund, or cancellation requests, please contact us:
+                            For shipping-related questions, please contact:
                             <br />
                             <br />
                             <strong>Tivaa Elegance</strong>
