@@ -332,6 +332,9 @@ export default function Navbar() {
                                                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</div>
                                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
                                             </div>
+                                            <Link href="/profile" onClick={() => setProfileOpen(false)} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
+                                                My Profile
+                                            </Link>
                                             <Link href="/orders" onClick={() => setProfileOpen(false)} className="dropdown-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', borderRadius: '6px' }}>
                                                 My Orders
                                             </Link>

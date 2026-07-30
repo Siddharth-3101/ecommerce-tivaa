@@ -30,6 +30,12 @@ export const runSetup = async () => {
                 reset_token VARCHAR(255) NULL,
                 reset_token_expires TIMESTAMP NULL,
                 auth_provider VARCHAR(50) DEFAULT 'local',
+                privacy_policy_accepted BOOLEAN DEFAULT false,
+                privacy_policy_accepted_on TIMESTAMP NULL,
+                terms_accepted BOOLEAN DEFAULT false,
+                terms_accepted_on TIMESTAMP NULL,
+                marketing_consent BOOLEAN DEFAULT false,
+                marketing_consent_on TIMESTAMP NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `, (err) => err ? rej(err) : res()));
@@ -324,6 +330,24 @@ export const runSetup = async () => {
         }
         if (!userCols.includes("auth_provider")) {
             await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local'", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("privacy_policy_accepted")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN privacy_policy_accepted BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("privacy_policy_accepted_on")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN privacy_policy_accepted_on TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("terms_accepted")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN terms_accepted BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("terms_accepted_on")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN terms_accepted_on TIMESTAMP NULL", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("marketing_consent")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN marketing_consent BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+        }
+        if (!userCols.includes("marketing_consent_on")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE users ADD COLUMN marketing_consent_on TIMESTAMP NULL", (err) => err ? rej(err) : res()));
         }
 
         if (!orderCols.includes("razorpay_order_id")) {

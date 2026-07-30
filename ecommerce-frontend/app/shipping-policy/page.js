@@ -40,7 +40,8 @@ export default function ShippingPolicyPage() {
                     boxShadow: 'var(--shadow-md)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '32px'
+                    gap: '32px',
+                    textAlign: 'justify'
                 }}>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
                         At Tivaa, we are committed to delivering your orders safely and on time. This Shipping Policy explains how we process, ship, and deliver your purchases.

@@ -40,7 +40,8 @@ export default function TermsOfServicePage() {
                     boxShadow: 'var(--shadow-md)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '32px'
+                    gap: '32px',
+                    textAlign: 'justify'
                 }}>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
                         Welcome to Tivaa.in (&ldquo;Tivaa&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). These Terms &amp; Conditions govern your access to and use of our website, products, and services. By accessing, browsing, registering an account, or placing an order through Tivaa.in, you acknowledge that you have read, understood, and agree to be bound by these Terms &amp; Conditions and our Privacy Policy.

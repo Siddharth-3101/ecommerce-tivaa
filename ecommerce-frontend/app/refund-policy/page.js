@@ -40,7 +40,8 @@ export default function RefundPolicyPage() {
                     boxShadow: 'var(--shadow-md)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '32px'
+                    gap: '32px',
+                    textAlign: 'justify'
                 }}>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
                         At Tivaa, customer satisfaction is important to us. We strive to ensure that every order reaches you in perfect condition. If you receive a damaged, defective, incorrect, or incomplete product, we are here to help.

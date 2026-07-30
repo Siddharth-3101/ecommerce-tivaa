@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import api from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, KeyRound, ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -18,6 +18,24 @@ function ResetPasswordForm() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [countdown, setCountdown] = useState(3);
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Password strength policy validator
+    const isPasswordStrong = (pwd) => {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return passwordRegex.test(pwd);
+    };
+
+    // Live password checklist flags
+    const passwordChecks = {
+        length: newPassword.length >= 8,
+        uppercase: /[A-Z]/.test(newPassword),
+        lowercase: /[a-z]/.test(newPassword),
+        number: /\d/.test(newPassword),
+        special: /[@$!%*?&]/.test(newPassword)
+    };
 
     // Sync query parameters on load
     useEffect(() => {
@@ -42,8 +60,8 @@ function ResetPasswordForm() {
         setLoading(true);
         setError("");
 
-        if (newPassword.length < 6) {
-            setError("Password must be at least 6 characters long.");
+        if (!isPasswordStrong(newPassword)) {
+            setError("Password does not meet the policy requirements.");
             setLoading(false);
             return;
         }
@@ -55,7 +73,7 @@ function ResetPasswordForm() {
         }
 
         try {
-            const res = await api.post("/auth/reset-password", {
+            await api.post("/auth/reset-password", {
                 email,
                 otp,
                 newPassword,
@@ -141,39 +159,86 @@ function ResetPasswordForm() {
 
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '500' }}>New Password</label>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             className="input-field"
                             placeholder="••••••••"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             required
-                            style={{ paddingLeft: '44px' }}
+                            style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%' }}
                             disabled={loading}
                         />
                         <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ position: 'absolute', right: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                    </div>
+
+                    {/* Password Requirements Dynamic checklist */}
+                    <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <p style={{ fontSize: '0.8rem', fontWeight: 600, margin: '0 0 4px 0', color: 'var(--text-main, #173B63)' }}>Password Requirements:</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                            <span style={{ fontSize: '0.75rem', color: passwordChecks.length ? 'var(--success, #10B981)' : 'var(--text-muted, #6B7280)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {passwordChecks.length ? "✓" : "•"} Min. 8 characters
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: passwordChecks.uppercase ? 'var(--success, #10B981)' : 'var(--text-muted, #6B7280)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {passwordChecks.uppercase ? "✓" : "•"} Uppercase letter
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: passwordChecks.lowercase ? 'var(--success, #10B981)' : 'var(--text-muted, #6B7280)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {passwordChecks.lowercase ? "✓" : "•"} Lowercase letter
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: passwordChecks.number ? 'var(--success, #10B981)' : 'var(--text-muted, #6B7280)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {passwordChecks.number ? "✓" : "•"} One number
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: passwordChecks.special ? 'var(--success, #10B981)' : 'var(--text-muted, #6B7280)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {passwordChecks.special ? "✓" : "•"} Special character
+                            </span>
+                        </div>
                     </div>
                 </div>
 
                 <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '500' }}>Confirm New Password</label>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <input
-                            type="password"
+                            type={showConfirmPassword ? "text" : "password"}
                             className="input-field"
                             placeholder="••••••••"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            style={{ paddingLeft: '44px' }}
+                            style={{ paddingLeft: '44px', paddingRight: '44px', width: '100%' }}
                             disabled={loading}
                         />
                         <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            style={{ position: 'absolute', right: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
                 </div>
 
-                <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', padding: '14px', marginTop: '8px' }}>
+                <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    disabled={loading} 
+                    style={{ 
+                        width: '100%', 
+                        padding: '14px', 
+                        marginTop: '8px',
+                        opacity: loading ? 0.5 : 1,
+                        cursor: loading ? 'not-allowed' : 'pointer'
+                    }}
+                >
                     {loading ? (
                         <span style={{ display: 'inline-block', width: '20px', height: '20px', border: '3px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 1s ease-in-out infinite' }}></span>
                     ) : "Verify & Reset Password"}

@@ -40,7 +40,8 @@ export default function PrivacyPolicyPage() {
                     boxShadow: 'var(--shadow-md)',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '32px'
+                    gap: '32px',
+                    textAlign: 'justify'
                 }}>
                     <p style={{ color: 'var(--text-muted, #6B7280)', fontSize: '0.95rem', lineHeight: '1.7', margin: 0 }}>
                         Welcome to Tivaa.in (&ldquo;Tivaa&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;). We value your privacy and are committed to protecting your personal information.

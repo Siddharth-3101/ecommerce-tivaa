@@ -10,7 +10,7 @@ const pendingRegistrations = new Map();
 // REGISTER USER
 // =====================================================
 export const registerUser = (req, res) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, address, privacyAccepted, termsAccepted, marketingConsent } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({
@@ -18,23 +18,46 @@ export const registerUser = (req, res) => {
     });
   }
 
-  // Check if email already exists
-  const checkEmailQuery = "SELECT id, auth_provider, role FROM users WHERE email = ?";
+  // Password strength policy
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+    });
+  }
 
-  db.query(checkEmailQuery, [email], async (err, result) => {
+  // Mobile number policy (10 digits)
+  const phoneRegex = /^\d{10}$/;
+  if (phone && !phoneRegex.test(phone)) {
+    return res.status(400).json({
+      message: "Mobile number must be exactly 10 digits."
+    });
+  }
+  const checkDuplicateQuery = "SELECT id, email, phone, auth_provider, role FROM users WHERE email = ? OR (phone IS NOT NULL AND phone = ?)";
+
+  db.query(checkDuplicateQuery, [email, phone || null], async (err, result) => {
     if (err) {
       console.error("DB error:", err);
       return res.status(500).json({ message: "Database error" });
     }
 
     if (result.length > 0) {
-      const existingUser = result[0];
-      if (existingUser.auth_provider === "google" && existingUser.role !== "admin") {
-        return res.status(400).json({
-          message: "This email is associated with a Google Sign-In account. Please sign in using Google."
-        });
+      const existingEmail = result.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (existingEmail) {
+        if (existingEmail.auth_provider === "google" && existingEmail.role !== "admin") {
+          return res.status(400).json({
+            message: "This email is associated with a Google Sign-In account. Please sign in using Google."
+          });
+        }
+        return res.status(400).json({ message: "Email already exists" });
       }
-      return res.status(400).json({ message: "Email already exists" });
+
+      if (phone) {
+        const existingPhone = result.find(u => u.phone === phone);
+        if (existingPhone) {
+          return res.status(400).json({ message: "Mobile number is already registered" });
+        }
+      }
     }
 
     try {
@@ -53,6 +76,9 @@ export const registerUser = (req, res) => {
         role,
         phone: phone || null,
         address: address || null,
+        privacyAccepted: !!privacyAccepted,
+        termsAccepted: !!termsAccepted,
+        marketingConsent: !!marketingConsent,
         otp,
         expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes expiration
       });
@@ -449,6 +475,14 @@ export const resetPassword = async (req, res) => {
     return res.status(400).json({ message: "Email, OTP, and new password are required" });
   }
 
+  // Password strength policy
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    return res.status(400).json({
+      message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+    });
+  }
+
   // Find user with correct email and active OTP
   const findUserQuery = "SELECT id FROM users WHERE email = ? AND reset_token = ? AND reset_token_expires > NOW()";
 
@@ -518,15 +552,27 @@ export const verifyRegister = (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    const { name, password, role, phone, address } = pending;
+    const { name, password, role, phone, address, privacyAccepted, termsAccepted, marketingConsent } = pending;
+    const now = new Date();
+
     const insertUserQuery = `
-      INSERT INTO users (name, email, password, role, phone, address, auth_provider)
-      VALUES (?, ?, ?, ?, ?, ?, 'local')
+      INSERT INTO users (
+        name, email, password, role, phone, address, auth_provider,
+        privacy_policy_accepted, privacy_policy_accepted_on,
+        terms_accepted, terms_accepted_on,
+        marketing_consent, marketing_consent_on
+      )
+      VALUES (?, ?, ?, ?, ?, ?, 'local', ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
       insertUserQuery,
-      [name, email, password, role, phone, address],
+      [
+        name, email, password, role, phone, address,
+        privacyAccepted ? 1 : 0, privacyAccepted ? now : null,
+        termsAccepted ? 1 : 0, termsAccepted ? now : null,
+        marketingConsent ? 1 : 0, marketingConsent ? now : null
+      ],
       (errInsert) => {
         if (errInsert) {
           console.error("DB error creating user from verified registration:", errInsert);
@@ -537,5 +583,160 @@ export const verifyRegister = (req, res) => {
         return res.json({ message: "User registered successfully!" });
       }
     );
+  });
+};
+
+// =====================================================
+// UPDATE CUSTOMER PROFILE
+// =====================================================
+export const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { name, email, phone, address, city, state, pincode, currentPassword, newPassword } = req.body;
+
+  // Find the current user
+  db.query("SELECT * FROM users WHERE id = ?", [userId], async (err, users) => {
+    if (err) {
+      console.error("DB error finding user for profile update:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = users[0];
+    let updateFields = [];
+    let updateValues = [];
+
+    // 1. Check Name
+    if (name) {
+      updateFields.push("name = ?");
+      updateValues.push(name);
+    }
+
+    // 2. Check Address, City, State, Pincode
+    if (address !== undefined) {
+      updateFields.push("address = ?");
+      updateValues.push(address || null);
+    }
+    if (city !== undefined) {
+      updateFields.push("city = ?");
+      updateValues.push(city || null);
+    }
+    if (state !== undefined) {
+      updateFields.push("state = ?");
+      updateValues.push(state || null);
+    }
+    if (pincode !== undefined) {
+      updateFields.push("pincode = ?");
+      updateValues.push(pincode || null);
+    }
+
+    // 3. Check Phone (Mobile Number validation for 10 digits, uniqueness)
+    if (phone && phone !== user.phone) {
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).json({ message: "Mobile number must be exactly 10 digits." });
+      }
+
+      // Check duplicate phone
+      try {
+        const checkPhone = await new Promise((resolve, reject) => {
+          db.query("SELECT id FROM users WHERE phone = ? AND id != ?", [phone, userId], (errCheck, results) => {
+            if (errCheck) reject(errCheck);
+            else resolve(results && results.length > 0);
+          });
+        });
+        if (checkPhone) {
+          return res.status(400).json({ message: "Mobile number is already registered to another account." });
+        }
+      } catch (checkErr) {
+        console.error("Error checking phone duplicate:", checkErr);
+        return res.status(500).json({ message: "Database error checking phone duplicates" });
+      }
+
+      updateFields.push("phone = ?");
+      updateValues.push(phone);
+    }
+
+    // 4. Check Email (Uniqueness)
+    if (email && email.toLowerCase() !== user.email.toLowerCase()) {
+      // Check duplicate email
+      try {
+        const checkEmail = await new Promise((resolve, reject) => {
+          db.query("SELECT id FROM users WHERE email = ? AND id != ?", [email, userId], (errCheck, results) => {
+            if (errCheck) reject(errCheck);
+            else resolve(results && results.length > 0);
+          });
+        });
+        if (checkEmail) {
+          return res.status(400).json({ message: "Email is already registered to another account." });
+        }
+      } catch (checkErr) {
+        console.error("Error checking email duplicate:", checkErr);
+        return res.status(500).json({ message: "Database error checking email duplicates" });
+      }
+
+      updateFields.push("email = ?");
+      updateValues.push(email);
+    }
+
+    // 5. Change Password
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password is required to set a new password." });
+      }
+
+      try {
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Incorrect current password." });
+        }
+      } catch (compareErr) {
+        console.error("Password comparison error:", compareErr);
+        return res.status(500).json({ message: "Error verifying current password" });
+      }
+
+      // Enforce strength policy
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        return res.status(400).json({
+          message: "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+        });
+      }
+
+      try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        updateFields.push("password = ?");
+        updateValues.push(hashedPassword);
+      } catch (hashError) {
+        console.error("Hashing error during profile password update:", hashError);
+        return res.status(500).json({ message: "Error hashing new password" });
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return res.json({ message: "No changes to update." });
+    }
+
+    updateValues.push(userId);
+    const updateQuery = `UPDATE users SET ${updateFields.join(", ")} WHERE id = ?`;
+
+    db.query(updateQuery, updateValues, (updateErr) => {
+      if (updateErr) {
+        console.error("Profile update query error:", updateErr);
+        return res.status(500).json({ message: "Database error updating profile" });
+      }
+
+      // Return updated user data (except password)
+      db.query("SELECT id, name, email, role, phone, address, city, state, pincode FROM users WHERE id = ?", [userId], (errSelect, rows) => {
+        if (errSelect || rows.length === 0) {
+          return res.json({ message: "Profile updated successfully!" });
+        }
+        return res.json({
+          message: "Profile updated successfully!",
+          user: rows[0]
+        });
+      });
+    });
   });
 };

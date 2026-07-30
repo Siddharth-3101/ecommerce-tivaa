@@ -5,7 +5,8 @@ import {
   loginUser,
   googleAuth,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updateProfile
 } from "../controllers/authController.js";
 
 import {
@@ -36,6 +37,9 @@ router.post("/forgot-password", forgotPassword);
 
 // Reset Password confirmation
 router.post("/reset-password", resetPassword);
+
+// Update user profile details
+router.put("/profile", verifyToken, updateProfile);
 
 // Get logged-in user details (profile)
 router.get("/me", verifyToken, currentUser);
