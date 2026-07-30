@@ -7,6 +7,12 @@ export default function ProductTabs({ description, features }) {
     const hasDesc = description && description.trim() && description.trim() !== "<p><br></p>" && description.trim() !== "<p></p>";
     const hasFeatures = features && features.trim() && features.trim() !== "<p><br></p>" && features.trim() !== "<p></p>";
 
+    const formatHyphens = (html) => {
+        if (!html) return "";
+        // Replaces hyphens only when they are not part of HTML tag structures (class names, styles, etc.)
+        return html.replace(/-(?=[^<>]*<|[^<>]*$)/g, '\u2011');
+    };
+
     // Use state to track active tab
     const [activeTab, setActiveTab] = useState("description");
 
@@ -86,16 +92,16 @@ export default function ProductTabs({ description, features }) {
                 {hasDesc && activeTab === "description" && (
                     <div 
                         className="quill-content"
-                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400, wordBreak: 'keep-all' }}
-                        dangerouslySetInnerHTML={{ __html: description }}
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
+                        dangerouslySetInnerHTML={{ __html: formatHyphens(description) }}
                     />
                 )}
                 
                 {hasFeatures && activeTab === "features" && (
                     <div 
                         className="quill-content"
-                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400, wordBreak: 'keep-all' }}
-                        dangerouslySetInnerHTML={{ __html: features }}
+                        style={{ color: 'var(--text-main)', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}
+                        dangerouslySetInnerHTML={{ __html: formatHyphens(features) }}
                     />
                 )}
             </div>
