@@ -1107,7 +1107,7 @@ export default function CheckoutPage() {
 
                 .review-item-row {
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     gap: 12px;
                 }
 
@@ -1137,9 +1137,9 @@ export default function CheckoutPage() {
                     font-weight: 600;
                     color: var(--text-main);
                     margin: 0;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    white-space: normal;
+                    word-break: break-word;
+                    line-height: 1.4;
                 }
 
                 .review-item-variation {
@@ -1532,7 +1532,7 @@ export default function CheckoutPage() {
                 .summary-item-row {
                     display: flex;
                     gap: 16px;
-                    align-items: center;
+                    align-items: flex-start;
                 }
 
                 .summary-item-thumbnail {
@@ -1564,10 +1564,9 @@ export default function CheckoutPage() {
                     font-weight: 600;
                     color: var(--text-main);
                     margin: 0;
-                    line-height: 1.35;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    line-height: 1.4;
+                    white-space: normal;
+                    word-break: break-word;
                 }
 
                 .summary-item-variation {
