@@ -636,14 +636,38 @@ export default function OrderDetailsPage({ params }) {
                                     <span>Subtotal ({items.reduce((acc, it) => acc + (it.quantity || 1), 0)} {items.reduce((acc, it) => acc + (it.quantity || 1), 0) === 1 ? 'item' : 'items'})</span>
                                     <span>₹{items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0).toFixed(2)}</span>
                                 </div>
-                                <div className="price-row">
-                                    <span>Shipping</span>
+                                <div className="price-row" style={ (order.coupon_code && Number(order.discount_amount || 0) === 0) ? { color: 'var(--success)', fontWeight: '500' } : {} }>
+                                    <span>Shipping { (order.coupon_code && Number(order.discount_amount || 0) === 0) ? `(${order.coupon_code})` : "" }</span>
                                     {Number(order.shipping_cost || 0) > 0 ? (
                                         <span>₹{Number(order.shipping_cost).toFixed(2)}</span>
                                     ) : (
                                         <span style={{ color: 'var(--success)', fontWeight: '600' }}>FREE</span>
                                     )}
                                 </div>
+                                {order.coupon_code && Number(order.discount_amount || 0) > 0 && (
+                                    <div className="price-row" style={{ color: 'var(--success)', fontWeight: '500' }}>
+                                        <span>
+                                            Discount ({order.coupon_code})
+                                            ({(() => {
+                                                if (order.coupon_type === "percentage") {
+                                                    return `${parseFloat(order.coupon_value)}%`;
+                                                }
+                                                if (order.coupon_type === "flat_amount") {
+                                                    return `Rs.${parseFloat(order.coupon_value)} Off`;
+                                                }
+                                                const subtotal = items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+                                                if (subtotal > 0) {
+                                                    const pct = Math.round((Number(order.discount_amount) / subtotal) * 100);
+                                                    if (pct > 0 && pct < 100) {
+                                                        return `${pct}%`;
+                                                    }
+                                                }
+                                                return `Rs.${Number(order.discount_amount).toFixed(0)} Off`;
+                                            })()})
+                                        </span>
+                                        <span>-₹{Number(order.discount_amount || 0).toFixed(2)}</span>
+                                    </div>
+                                )}
                                 
                                 <div className="price-row total-row">
                                     <span className="price-total-label">Total Amount</span>

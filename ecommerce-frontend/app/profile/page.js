@@ -7,12 +7,36 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, MapPin, ShieldCheck, Eye, EyeOff, ArrowLeft, Save } from "lucide-react";
 
+const INDIAN_STATES = [
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
+    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
+    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+    "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
+    "Uttar Pradesh", "Uttarakhand", "West Bengal", 
+    "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", 
+    "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
 export default function CustomerProfilePage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState("personal"); // personal, address, security
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [gstStateList, setGstStateList] = useState([]);
+
+    useEffect(() => {
+        const fetchGstStates = async () => {
+            try {
+                const res = await api.get("/gst-states");
+                setGstStateList(res.data || []);
+            } catch (err) {
+                console.warn("Failed to fetch GST states list", err);
+            }
+        };
+        fetchGstStates();
+    }, []);
 
     // Form states
     const [personalForm, setPersonalForm] = useState({
@@ -360,12 +384,24 @@ export default function CustomerProfilePage() {
                                     </div>
                                     <div>
                                         <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem", color: "var(--text-muted, #6B7280)", fontWeight: 500 }}>State</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             className="input-field"
                                             value={addressForm.state}
                                             onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                                        />
+                                            style={{ 
+                                                width: "100%", 
+                                                padding: "10px 14px", 
+                                                border: "1px solid var(--border)", 
+                                                borderRadius: "8px", 
+                                                background: "#ffffff", 
+                                                fontSize: "0.95rem" 
+                                            }}
+                                        >
+                                            <option value="">Select State</option>
+                                            {(gstStateList.length > 0 ? gstStateList.map(s => s.state_name) : INDIAN_STATES).map(sName => (
+                                                <option key={sName} value={sName}>{sName}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 

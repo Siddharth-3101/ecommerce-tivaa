@@ -98,7 +98,7 @@ export const registerUser = (req, res) => {
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px; background: #fff;">
               <h2 style="color: #7A38C2; text-align: center; margin-bottom: 24px; font-family: 'Playfair Display', Georgia, serif;">Verify Your Email</h2>
               <p>Hello <strong>${name}</strong>,</p>
-              <p>Thank you for creating an account on Tivaa Elegance handcrafted jewelry store.</p>
+              <p>Thank you for creating an account on Tivaa Elegance Online Store.</p>
               <p>Please use the following One-Time Password (OTP) to complete your registration. This OTP will expire in 10 minutes.</p>
               <div style="text-align: center; margin: 32px 0;">
                 <span style="font-size: 2.5rem; font-weight: bold; letter-spacing: 6px; color: #7A38C2; border: 2px dashed #7A38C2; padding: 12px 28px; border-radius: 8px; background: #fffdfa; display: inline-block;">${otp}</span>

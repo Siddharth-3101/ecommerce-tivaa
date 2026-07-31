@@ -226,6 +226,22 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("User logins table verified/created");
 
+        // 15. Create coupons table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS coupons (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                code VARCHAR(100) UNIQUE NOT NULL,
+                type ENUM('percentage', 'flat_amount', 'free_shipping') NOT NULL,
+                value DECIMAL(10, 2) DEFAULT 0.00,
+                min_bill_amount DECIMAL(10, 2) DEFAULT 0.00,
+                is_active BOOLEAN DEFAULT true,
+                start_date TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                end_date TIMESTAMP NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Coupons table verified/created");
+
         // Seed mock user logins if empty
         const loginsCount = await new Promise((res) => {
             db.query("SELECT COUNT(*) AS cnt FROM user_logins", (err, rows) => {
@@ -359,6 +375,14 @@ export const runSetup = async () => {
         if (!orderCols.includes("order_type")) {
             await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN order_type ENUM('Online', 'Store') DEFAULT 'Online'", (err) => err ? rej(err) : res()));
             console.log("Migration: added order_type to orders");
+        }
+        if (!orderCols.includes("coupon_code")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN coupon_code VARCHAR(100) NULL", (err) => err ? rej(err) : res()));
+            console.log("Migration: added coupon_code to orders");
+        }
+        if (!orderCols.includes("discount_amount")) {
+            await new Promise((res, rej) => db.query("ALTER TABLE orders ADD COLUMN discount_amount DECIMAL(10, 2) DEFAULT 0.00", (err) => err ? rej(err) : res()));
+            console.log("Migration: added discount_amount to orders");
         }
         
         await new Promise((res, rej) => db.query("ALTER TABLE orders MODIFY COLUMN order_status ENUM('pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded') DEFAULT 'pending'", (err) => err ? rej(err) : res()));

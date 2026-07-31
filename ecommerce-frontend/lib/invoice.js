@@ -282,10 +282,26 @@ export function downloadInvoice(order, items) {
                         <td class="totals-label" style="border-top: 1px solid #EADCF8; padding-top: 8px;">Subtotal</td>
                         <td class="totals-value" style="border-top: 1px solid #EADCF8; padding-top: 8px;">₹${subtotal.toFixed(2)}</td>
                     </tr>
-                    <tr class="totals-row">
-                        <td class="totals-label">Shipping</td>
-                        <td class="totals-value" style="color: ${shippingCost > 0 ? '#2B1B35' : '#10B981'}; font-weight: 600;">${shippingCost > 0 ? `₹${shippingCost.toFixed(2)}` : "Free"}</td>
+                    <tr class="totals-row" style="${ (order.coupon_code && Number(order.discount_amount || 0) === 0) ? 'color: #10B981; font-weight: 500;' : '' }">
+                        <td class="totals-label">Shipping ${ (order.coupon_code && Number(order.discount_amount || 0) === 0) ? `(${order.coupon_code})` : "" }</td>
+                        <td class="totals-value" style="color: ${shippingCost > 0 ? '#2B1B35' : '#10B981'}; font-weight: 600;">
+                            ${shippingCost > 0 ? `₹${shippingCost.toFixed(2)}` : "Free"}
+                        </td>
                     </tr>
+                    ${order.coupon_code && Number(order.discount_amount || 0) > 0 ? `
+                    <tr class="totals-row" style="color: #10B981; font-weight: 500;">
+                        <td class="totals-label">
+                            Discount (${order.coupon_code})(${
+                                order.coupon_type === "percentage" 
+                                    ? `${parseFloat(order.coupon_value)}%` 
+                                    : (order.coupon_type === "flat_amount" 
+                                        ? `Rs.${parseFloat(order.coupon_value)} Off` 
+                                        : (subtotal > 0 ? `${Math.round(Number(order.discount_amount) / subtotal * 100)}%` : `Rs.${Number(order.discount_amount).toFixed(0)} Off`))
+                            })
+                        </td>
+                        <td class="totals-value">-₹${Number(order.discount_amount || 0).toFixed(2)}</td>
+                    </tr>
+                    ` : ''}
                     <tr class="totals-row">
                         <td class="totals-label" style="font-weight: 600; padding-top: 12px; border-top: 1px solid #EADCF8;">Total Amount Paid</td>
                         <td class="totals-value totals-grand" style="padding-top: 12px; border-top: 1px solid #EADCF8;">₹${Number(order.total).toFixed(2)}</td>

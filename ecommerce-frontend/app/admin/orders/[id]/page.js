@@ -137,7 +137,46 @@ export default function AdminOrderDetails({ params }) {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "24px", marginTop: "8px" }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '16px', fontSize: '0.95rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
+                                <span style={{ fontWeight: 600 }}>₹{items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0).toFixed(2)}</span>
+                            </div>
+                            {order.coupon_code && Number(order.discount_amount || 0) > 0 && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981' }}>
+                                    <span>
+                                        Discount ({order.coupon_code})
+                                        ({(() => {
+                                            if (order.coupon_type === "percentage") {
+                                                return `${parseFloat(order.coupon_value)}%`;
+                                            }
+                                            if (order.coupon_type === "flat_amount") {
+                                                return `Rs.${parseFloat(order.coupon_value)} Off`;
+                                            }
+                                            const subtotal = items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+                                            if (subtotal > 0) {
+                                                const pct = Math.round((Number(order.discount_amount) / subtotal) * 100);
+                                                if (pct > 0 && pct < 100) {
+                                                    return `${pct}%`;
+                                                }
+                                            }
+                                            return `Rs.${Number(order.discount_amount).toFixed(0)} Off`;
+                                        })()})
+                                    </span>
+                                    <span style={{ fontWeight: 600 }}>-₹{Number(order.discount_amount || 0).toFixed(2)}</span>
+                                </div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: (order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : 'inherit' }}>
+                                <span style={{ color: (order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : 'var(--text-muted)' }}>
+                                    Shipping { (order.coupon_code && Number(order.discount_amount || 0) === 0) ? `(${order.coupon_code})` : "" }
+                                </span>
+                                <span style={{ fontWeight: 600 }}>
+                                    {Number(order.shipping_cost) === 0 ? "FREE" : `₹${Number(order.shipping_cost).toFixed(2)}`}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "16px", borderTop: "1px solid var(--border)", marginTop: "12px" }}>
                             <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>Total Paid</span>
                             <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>₹{order.total}</span>
                         </div>

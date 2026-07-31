@@ -8,10 +8,12 @@ export const sendOrderEmailToAdmins = async (orderId) => {
     // 1. Fetch order metadata, shipping details, and customer info
     const orderQuery = `
       SELECT o.*, u.name AS customer_name, u.email AS customer_email,
-             s.address, s.city, s.state, s.pincode, s.phone
+             s.address, s.city, s.state, s.pincode, s.phone,
+             c.type AS coupon_type, c.value AS coupon_value
       FROM orders o
       JOIN users u ON u.id = o.user_id
       LEFT JOIN shipping_details s ON s.order_id = o.id
+      LEFT JOIN coupons c ON o.coupon_code = c.code
       WHERE o.id = ?
     `;
 
@@ -49,6 +51,8 @@ export const sendOrderEmailToAdmins = async (orderId) => {
         else resolve(rows);
       });
     });
+
+    const subtotal = items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
 
     // 3. Format the email HTML body
     const emailsList = ["lalithanagaraj@gmail.com", "siddharth310107@gmail.com", "rohinitn@gmail.com"];
@@ -116,11 +120,29 @@ export const sendOrderEmailToAdmins = async (orderId) => {
               ${itemsListHtml}
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; border-top: 1px solid #ddd; color: #666;">Subtotal:</td>
-                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(Number(order.total || 0) - Number(order.shipping_cost || 0)).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${subtotal.toFixed(2)}</td>
               </tr>
+              ${order.coupon_code && Number(order.discount_amount || 0) > 0 ? `
               <tr>
-                <td colspan="3" style="padding: 10px; text-align: right; color: #666;">Shipping:</td>
-                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost || 0).toFixed(2)}</td>
+                <td colspan="3" style="padding: 10px; text-align: right; color: #10b981;">
+                  Discount (${order.coupon_code})(${
+                    order.coupon_type === "percentage" 
+                      ? `${parseFloat(order.coupon_value)}%` 
+                      : (order.coupon_type === "flat_amount" 
+                          ? `Rs.${parseFloat(order.coupon_value)} Off` 
+                          : (subtotal > 0 ? `${Math.round(Number(order.discount_amount) / subtotal * 100)}%` : `Rs.${Number(order.discount_amount).toFixed(0)} Off`))
+                  }):
+                </td>
+                <td style="padding: 10px; text-align: right; color: #10b981;">-₹${Number(order.discount_amount || 0).toFixed(2)}</td>
+              </tr>
+              ` : ""}
+              <tr>
+                <td colspan="3" style="padding: 10px; text-align: right; color: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : '#666'}; font-weight: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '600' : 'normal'};">
+                  Shipping ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? `(${order.coupon_code})` : ""}:
+                </td>
+                <td style="padding: 10px; text-align: right; color: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : 'inherit'}; font-weight: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '600' : 'normal'};">
+                  ${Number(order.shipping_cost || 0) === 0 ? "FREE" : `₹${Number(order.shipping_cost || 0).toFixed(2)}`}
+                </td>
               </tr>
               <tr style="font-weight: bold; font-size: 1.1em;">
                 <td colspan="3" style="padding: 15px 10px 10px 10px; text-align: right; border-top: 1px solid #ddd;">Total Amount Paid:</td>
@@ -173,10 +195,12 @@ export const sendOrderEmailToCustomer = async (orderId) => {
     // 1. Fetch order metadata, shipping details, and customer info
     const orderQuery = `
       SELECT o.*, u.name AS customer_name, u.email AS customer_email,
-             s.address, s.city, s.state, s.pincode, s.phone
+             s.address, s.city, s.state, s.pincode, s.phone,
+             c.type AS coupon_type, c.value AS coupon_value
       FROM orders o
       JOIN users u ON u.id = o.user_id
       LEFT JOIN shipping_details s ON s.order_id = o.id
+      LEFT JOIN coupons c ON o.coupon_code = c.code
       WHERE o.id = ?
     `;
 
@@ -215,6 +239,8 @@ export const sendOrderEmailToCustomer = async (orderId) => {
       });
     });
 
+    const subtotal = items.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+
     const itemsListHtml = items.map(item => `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: left;">
@@ -230,6 +256,7 @@ export const sendOrderEmailToCustomer = async (orderId) => {
     const mailOptions = {
       from: process.env.SMTP_FROM || '"Tivaa Elegance Store" <noreply@tivaajewelery.com>',
       to: order.customer_email,
+      bcc: "tivaa2026@gmail.com",
       subject: `Your Order Confirmation: ${formattedOrderId} - Tivaa Elegance`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 12px; background: #ffffff;">
@@ -266,11 +293,29 @@ export const sendOrderEmailToCustomer = async (orderId) => {
               ${itemsListHtml}
               <tr>
                 <td colspan="3" style="padding: 10px; text-align: right; border-top: 1px solid #ddd; color: #666;">Subtotal:</td>
-                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${(Number(order.total || 0) - Number(order.shipping_cost || 0)).toFixed(2)}</td>
+                <td style="padding: 10px; text-align: right; border-top: 1px solid #ddd;">₹${subtotal.toFixed(2)}</td>
               </tr>
+              ${order.coupon_code && Number(order.discount_amount || 0) > 0 ? `
               <tr>
-                <td colspan="3" style="padding: 10px; text-align: right; color: #666;">Shipping:</td>
-                <td style="padding: 10px; text-align: right;">₹${Number(order.shipping_cost || 0).toFixed(2)}</td>
+                <td colspan="3" style="padding: 10px; text-align: right; color: #10b981;">
+                  Discount (${order.coupon_code})(${
+                    order.coupon_type === "percentage" 
+                      ? `${parseFloat(order.coupon_value)}%` 
+                      : (order.coupon_type === "flat_amount" 
+                          ? `Rs.${parseFloat(order.coupon_value)} Off` 
+                          : (subtotal > 0 ? `${Math.round(Number(order.discount_amount) / subtotal * 100)}%` : `Rs.${Number(order.discount_amount).toFixed(0)} Off`))
+                  }):
+                </td>
+                <td style="padding: 10px; text-align: right; color: #10b981;">-₹${Number(order.discount_amount || 0).toFixed(2)}</td>
+              </tr>
+              ` : ""}
+              <tr>
+                <td colspan="3" style="padding: 10px; text-align: right; color: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : '#666'}; font-weight: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '600' : 'normal'};">
+                  Shipping ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? `(${order.coupon_code})` : ""}:
+                </td>
+                <td style="padding: 10px; text-align: right; color: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '#10b981' : 'inherit'}; font-weight: ${(order.coupon_code && Number(order.discount_amount || 0) === 0) ? '600' : 'normal'};">
+                  ${Number(order.shipping_cost || 0) === 0 ? "FREE" : `₹${Number(order.shipping_cost || 0).toFixed(2)}`}
+                </td>
               </tr>
               <tr style="font-weight: bold; font-size: 1.1em;">
                 <td colspan="3" style="padding: 15px 10px 10px 10px; text-align: right; border-top: 1px solid #ddd;">Total Paid:</td>

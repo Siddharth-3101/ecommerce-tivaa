@@ -163,6 +163,9 @@ export default function CheckoutPage() {
     const [showAllItems, setShowAllItems] = useState(false);
     const [currentCheckoutStep, setCurrentCheckoutStep] = useState(2);
     const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponInput, setCouponInput] = useState("");
+    const [couponError, setCouponError] = useState("");
+    const [couponLoading, setCouponLoading] = useState(false);
     const [gstStateList, setGstStateList] = useState([]);
 
     const [formData, setFormData] = useState({
@@ -306,10 +309,22 @@ export default function CheckoutPage() {
     }, [router]);
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const isFreeShipping = false;
-    const activeShippingCost = shippingCost;
-    const couponDiscount = 0;
-    const total = Math.max(0, subtotal + activeShippingCost);
+    const isFreeShipping = appliedCoupon && appliedCoupon.type === "free_shipping";
+    const activeShippingCost = isFreeShipping ? 0 : shippingCost;
+    
+    let couponDiscount = 0;
+    if (appliedCoupon) {
+        if (appliedCoupon.type === "percentage") {
+            couponDiscount = parseFloat(((subtotal * parseFloat(appliedCoupon.value)) / 100).toFixed(2));
+        } else if (appliedCoupon.type === "flat_amount") {
+            couponDiscount = parseFloat(appliedCoupon.value);
+        }
+        if (couponDiscount > subtotal) {
+            couponDiscount = subtotal;
+        }
+    }
+    
+    const total = Math.max(0, subtotal - couponDiscount + activeShippingCost);
 
     const handleDetectLocation = () => {
         setDetecting(true);
@@ -322,6 +337,27 @@ export default function CheckoutPage() {
             }));
             setDetecting(false);
         }, 800);
+    };
+
+    const handleApplyCoupon = async (e) => {
+        if (e) e.preventDefault();
+        if (!couponInput.trim()) return;
+        setCouponError("");
+        setCouponLoading(true);
+
+        try {
+            const res = await api.post("/coupons/validate", {
+                code: couponInput.trim().toUpperCase(),
+                subtotal: subtotal
+            });
+            setAppliedCoupon(res.data.coupon);
+            setCouponInput("");
+        } catch (err) {
+            setCouponError(err.response?.data?.message || "Invalid coupon code");
+            setAppliedCoupon(null);
+        } finally {
+            setCouponLoading(false);
+        }
     };
 
     const handleRemoveCoupon = () => {
@@ -358,7 +394,8 @@ export default function CheckoutPage() {
                 gst_state: formData.gst_state,
                 pincode: formData.pincode,
                 phone: formData.phone,
-                payment_method: formData.payment_method
+                payment_method: formData.payment_method,
+                coupon_code: appliedCoupon ? appliedCoupon.code : null
             };
 
             if (isBuyNow && productId) {
@@ -574,7 +611,7 @@ export default function CheckoutPage() {
                                             <input type="checkbox" id="save-address" className="checkbox-input" />
                                             <label htmlFor="save-address" className="checkbox-label">Save this address for faster checkout</label>
                                         </div>
-                                        <button type="submit" disabled={submitting} className="review-order-btn">
+                                        <button type="submit" disabled={submitting} className="review-order-btn desktop-only-btn">
                                             {submitting ? "Processing..." : "Continue"}
                                         </button>
                                     </div>
@@ -637,16 +674,95 @@ export default function CheckoutPage() {
                                 </div>
                             )}
 
+                            {/* Coupon Input Area */}
+                            <div className="coupon-card-section" style={{
+                                padding: "16px",
+                                background: "rgba(0, 0, 0, 0.02)",
+                                borderRadius: "8px",
+                                border: "1px dashed var(--border)",
+                                marginTop: "16px",
+                                marginBottom: "16px"
+                            }}>
+                                <h4 style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px", color: "var(--text-main)" }}>Promo Code / Coupon</h4>
+                                {!appliedCoupon ? (
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            style={{ flex: 1, padding: "8px 12px", fontSize: "0.85rem", textTransform: "uppercase" }}
+                                            placeholder="Enter coupon code"
+                                            value={couponInput}
+                                            onChange={(e) => {
+                                                setCouponInput(e.target.value);
+                                                if (couponError) setCouponError("");
+                                            }}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            disabled={couponLoading}
+                                            onClick={handleApplyCoupon}
+                                            style={{
+                                                padding: "8px 20px",
+                                                fontSize: "0.85rem",
+                                                fontWeight: "600",
+                                                color: "#ffffff",
+                                                background: "var(--accent)",
+                                                border: "none",
+                                                borderRadius: "6px",
+                                                cursor: "pointer",
+                                                transition: "opacity 0.2s",
+                                                whiteSpace: "nowrap"
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.opacity = 0.9}
+                                            onMouseLeave={(e) => e.currentTarget.style.opacity = 1}
+                                        >
+                                            {couponLoading ? "..." : "Apply"}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "6px", padding: "8px 12px" }}>
+                                        <div>
+                                            <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#10b981" }}>{appliedCoupon.code}</span>
+                                            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginLeft: "6px" }}>
+                                                ({appliedCoupon.type === "percentage" ? `${parseFloat(appliedCoupon.value)}% Off` : 
+                                                  appliedCoupon.type === "flat_amount" ? `₹${parseFloat(appliedCoupon.value)} Off` : "Free Shipping"})
+                                            </span>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={handleRemoveCoupon} 
+                                            style={{ background: "none", border: "none", color: "var(--danger, #ef4444)", fontSize: "0.85rem", fontWeight: "600", cursor: "pointer" }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                )}
+                                {couponError && (
+                                    <p style={{ color: "var(--danger, #ef4444)", fontSize: "0.75rem", marginTop: "6px", margin: "6px 0 0 0" }}>{couponError}</p>
+                                )}
+                            </div>
+
                             {/* Breakdown lines */}
                             <div className="breakdown-lines-container">
                                 <div className="breakdown-line">
                                     <span>Subtotal</span>
                                     <span>₹{subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="breakdown-line">
-                                    <span>Shipping</span>
+                                {couponDiscount > 0 && (
+                                    <div className="breakdown-line" style={{ color: "#10b981" }}>
+                                        <span>
+                                            Discount ({appliedCoupon?.code})
+                                            ({appliedCoupon?.type === "percentage" 
+                                                ? `${parseFloat(appliedCoupon?.value)}%` 
+                                                : `Rs.${parseFloat(appliedCoupon?.value)} Off`})
+                                        </span>
+                                        <span>-₹{couponDiscount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="breakdown-line" style={isFreeShipping ? { color: "#10b981" } : {}}>
+                                    <span>Shipping {isFreeShipping ? `(${appliedCoupon?.code})` : ""}</span>
                                     <span>
-                                        {shippingCost === 0 ? "FREE" : `₹${shippingCost.toFixed(2)}`}
+                                        {activeShippingCost === 0 ? "FREE" : `₹${activeShippingCost.toFixed(2)}`}
                                     </span>
                                 </div>
 
@@ -671,6 +787,12 @@ export default function CheckoutPage() {
                             </div>
                         </div>
                     </aside>
+
+                    <div className="mobile-only-btn-container">
+                        <button type="submit" form="checkout-form" disabled={submitting} className="review-order-btn" style={{ marginTop: '0px' }}>
+                            {submitting ? "Processing..." : "Continue"}
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div className="review-parent-container">
@@ -711,7 +833,10 @@ export default function CheckoutPage() {
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                                     <h3>Order Items</h3>
                                 </div>
-                                <span className="items-count-badge">{cartItems.reduce((acc, curr) => acc + curr.quantity, 0)} Items</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <button type="button" className="change-step-link" onClick={() => setCurrentCheckoutStep(2)}>Change</button>
+                                    <span className="items-count-badge">{cartItems.reduce((acc, curr) => acc + curr.quantity, 0)} Items</span>
+                                </div>
                             </div>
                             
                             <div className="review-items-list">
@@ -773,9 +898,20 @@ export default function CheckoutPage() {
                                     <span>Subtotal</span>
                                     <span>₹{subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="breakdown-row">
-                                    <span>Shipping</span>
-                                    <span>{shippingCost === 0 ? "FREE" : `₹${shippingCost.toFixed(2)}`}</span>
+                                {couponDiscount > 0 && (
+                                    <div className="breakdown-row" style={{ color: "#10b981" }}>
+                                        <span>
+                                            Discount ({appliedCoupon?.code})
+                                            ({appliedCoupon?.type === "percentage" 
+                                                ? `${parseFloat(appliedCoupon?.value)}%` 
+                                                : `Rs.${parseFloat(appliedCoupon?.value)} Off`})
+                                        </span>
+                                        <span>-₹{couponDiscount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="breakdown-row" style={isFreeShipping ? { color: "#10b981" } : {}}>
+                                    <span>Shipping {isFreeShipping ? `(${appliedCoupon?.code})` : ""}</span>
+                                    <span>{activeShippingCost === 0 ? "FREE" : `₹${activeShippingCost.toFixed(2)}`}</span>
                                 </div>
                                 <div className="breakdown-row">
                                     <span>Taxes</span>
@@ -800,6 +936,33 @@ export default function CheckoutPage() {
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                     </>
                                 )}
+                            </button>
+
+                            <button 
+                                type="button" 
+                                onClick={() => {
+                                    setCurrentCheckoutStep(2);
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                }}
+                                className="secondary-back-btn"
+                                style={{
+                                    width: "100%",
+                                    padding: "12px",
+                                    background: "transparent",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: "8px",
+                                    color: "var(--text-muted)",
+                                    fontWeight: "600",
+                                    fontSize: "0.85rem",
+                                    cursor: "pointer",
+                                    marginTop: "12px",
+                                    textAlign: "center",
+                                    transition: "background 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                            >
+                                Back to Shipping & Coupon
                             </button>
 
                             <div className="payment-redirect-notice">
@@ -1583,8 +1746,23 @@ export default function CheckoutPage() {
                     font-size: 11px;
                     color: var(--text-muted);
                 }
+                .desktop-only-btn {
+                    display: block;
+                }
+                .mobile-only-btn-container {
+                    display: none;
+                }
 
                 @media (max-width: 992px) {
+                    .desktop-only-btn {
+                        display: none !important;
+                    }
+                    .mobile-only-btn-container {
+                        display: block !important;
+                        width: 100% !important;
+                        box-sizing: border-box !important;
+                        margin-top: 16px !important;
+                    }
                     .container {
                         width: 100% !important;
                         max-width: 100% !important;

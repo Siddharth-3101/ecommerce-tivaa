@@ -286,11 +286,13 @@ export const adminOrderDetails = (req, res) => {
             u.email AS customer_email,
             s.address, s.city, s.state, s.pincode, s.phone,
             s.shipped_date, s.delivery_date,
-            pay.payment_reference AS payment_id
+            pay.payment_reference AS payment_id,
+            c.type AS coupon_type, c.value AS coupon_value
         FROM orders o
         JOIN users u ON u.id = o.user_id
         LEFT JOIN shipping_details s ON s.order_id = o.id
         LEFT JOIN payments pay ON pay.order_id = o.id
+        LEFT JOIN coupons c ON o.coupon_code = c.code
         WHERE o.id = ?
     `;
 

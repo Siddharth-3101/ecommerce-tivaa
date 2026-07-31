@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 // =============================================================
 export const createOrder = (req, res) => {
   const userId = req.user.id;
-  const { payment_method, shipping_address, city, state, state_code, gst_state, pincode, phone, buy_now } = req.body;
+  const { payment_method, shipping_address, city, state, state_code, gst_state, pincode, phone, buy_now, coupon_code } = req.body;
 
   if (!payment_method) {
     return res.status(400).json({ message: "Payment method required" });
@@ -38,20 +38,78 @@ export const createOrder = (req, res) => {
         }
       }
 
-      // Step 3 — Calculate total amount including shipping cost
+      // Step 3 — Calculate total amount including shipping cost and coupon discount
       const subtotal = cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-      const total = subtotal + shippingCost;
 
-      // Step 4 — Create main order with shipping_cost column
-      const sqlCreateOrder = `
-              INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status)
-              VALUES (?, ?, ?, ?, 'pending')
-          `;
+      const checkCouponAndProcess = (callback) => {
+        if (!coupon_code) {
+          return callback(null, null);
+        }
 
-      db.query(sqlCreateOrder, [userId, total, shippingCost, payment_method], (err2, result) => {
+        const cleanCode = coupon_code.trim().toUpperCase();
+        db.query("SELECT * FROM coupons WHERE code = ?", [cleanCode], (errCoupon, rows) => {
+          if (errCoupon) {
+            console.error("DB error fetching coupon:", errCoupon);
+            return res.status(500).json({ message: "Database error validating coupon" });
+          }
+
+          if (rows.length === 0) {
+            return res.status(400).json({ message: "Invalid coupon code" });
+          }
+
+          const coupon = rows[0];
+          if (!coupon.is_active) {
+            return res.status(400).json({ message: "This coupon is currently inactive" });
+          }
+          if (coupon.start_date && new Date(coupon.start_date) > new Date()) {
+            return res.status(400).json({ message: "This coupon is not active yet" });
+          }
+          if (coupon.end_date && new Date(coupon.end_date) < new Date()) {
+            return res.status(400).json({ message: "This coupon has expired" });
+          }
+          if (subtotal < parseFloat(coupon.min_bill_amount)) {
+            return res.status(400).json({
+              message: `Minimum bill amount of ₹${parseFloat(coupon.min_bill_amount).toFixed(2)} is required for this coupon`
+            });
+          }
+
+          return callback(null, coupon);
+        });
+      };
+
+      checkCouponAndProcess((err, coupon) => {
+        if (err) return; // database error handled already
+
+        let discountAmount = 0.00;
+        let finalShippingCost = shippingCost;
+
+        if (coupon) {
+          if (coupon.type === "percentage") {
+            discountAmount = parseFloat(((subtotal * parseFloat(coupon.value)) / 100).toFixed(2));
+          } else if (coupon.type === "flat_amount") {
+            discountAmount = parseFloat(coupon.value);
+          } else if (coupon.type === "free_shipping") {
+            finalShippingCost = 0.00;
+          }
+
+          // Cap discount at subtotal
+          if (discountAmount > subtotal) {
+            discountAmount = subtotal;
+          }
+        }
+
+        const total = Math.max(0, subtotal - discountAmount + finalShippingCost);
+
+        // Step 4 — Create main order with shipping_cost column and coupon info
+        const sqlCreateOrder = `
+                INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status, coupon_code, discount_amount)
+                VALUES (?, ?, ?, ?, 'pending', ?, ?)
+            `;
+
+        db.query(sqlCreateOrder, [userId, total, finalShippingCost, payment_method, coupon ? coupon.code : null, discountAmount], (err2, result) => {
         if (err2) {
           console.error("DB error:", err2);
           return res.status(500).json({ message: "Database error" });
@@ -179,7 +237,8 @@ export const createOrder = (req, res) => {
         });
       });
     });
-  };
+  });
+};
 
     if (buy_now) {
       // Fetch single product details for buy now
@@ -383,11 +442,13 @@ export const getOrderDetails = (req, res) => {
   const sqlOrder = `
         SELECT o.*, u.name AS customer_name, u.email AS customer_email, 
                s.address, s.city, s.state, s.pincode, s.phone,
-               p.payment_reference, p.status AS payment_status
+               p.payment_reference, p.status AS payment_status,
+               c.type AS coupon_type, c.value AS coupon_value
         FROM orders o
         JOIN users u ON o.user_id = u.id
         LEFT JOIN shipping_details s ON o.id = s.order_id
         LEFT JOIN payments p ON o.id = p.order_id
+        LEFT JOIN coupons c ON o.coupon_code = c.code
         WHERE o.id = ? AND o.user_id = ?
     `;
 
