@@ -366,6 +366,18 @@ export const searchProducts = (req, res) => {
 export const filterProducts = (req, res) => {
   const { category, min_price, max_price, sort } = req.query;
 
+  // Extract custom attribute filters
+  const attrFilters = {};
+  const reservedKeys = ['category', 'min_price', 'max_price', 'sort', 'page', 'limit'];
+  Object.keys(req.query).forEach(key => {
+    if (!reservedKeys.includes(key)) {
+      const vals = String(req.query[key]).split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (vals.length > 0) {
+        attrFilters[key.toLowerCase()] = vals;
+      }
+    }
+  });
+
   let sql = `
         SELECT p.*, c.name AS category_name
         FROM products p
@@ -388,6 +400,21 @@ export const filterProducts = (req, res) => {
   if (max_price) {
     sql += " AND COALESCE(NULLIF(p.discounted_price, 0), p.price) <= ?";
     params.push(max_price);
+  }
+
+  // Apply product_attributes mappings filters dynamically on the SQL level
+  if (Object.keys(attrFilters).length > 0) {
+    Object.entries(attrFilters).forEach(([filterName, filterVals]) => {
+      const placeholders = filterVals.map(() => "?").join(",");
+      sql += ` AND p.id IN (
+        SELECT pa.product_id 
+        FROM product_attributes pa
+        JOIN attributes a ON pa.attribute_id = a.id
+        JOIN attribute_values av ON pa.attribute_value_id = av.id
+        WHERE LOWER(a.code) = ? AND LOWER(av.code) IN (${placeholders})
+      )`;
+      params.push(filterName, ...filterVals);
+    });
   }
 
   if (sort === "price_low") sql += " ORDER BY COALESCE(NULLIF(p.discounted_price, 0), p.price) ASC";
@@ -604,6 +631,45 @@ export const checkDatabaseIntegrity = (req, res) => {
           });
         });
       });
+    });
+  });
+};
+
+// Retrieve public active attributes and values list
+export const getPublicFilters = (req, res) => {
+  db.query("SELECT * FROM attributes WHERE status = 'Active' ORDER BY display_order ASC, id ASC", (err, attrs) => {
+    if (err) {
+      console.error("Error fetching public attributes:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    db.query("SELECT * FROM attribute_values WHERE status = 'Active' ORDER BY display_order ASC, id ASC", (err2, vals) => {
+      if (err2) {
+        console.error("Error fetching public attribute values:", err2);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      const valuesMap = {};
+      vals.forEach(v => {
+        if (!valuesMap[v.attribute_id]) {
+          valuesMap[v.attribute_id] = [];
+        }
+        valuesMap[v.attribute_id].push(v);
+      });
+
+      const filters = attrs.map(a => ({
+        id: a.id,
+        name: a.name,
+        code: a.code,
+        level: a.level,
+        category_id: a.category_id,
+        subcategory_id: a.subcategory_id,
+        control_type: a.control_type,
+        show_in_filter: a.show_in_filter,
+        values: valuesMap[a.id] || []
+      }));
+
+      res.json(filters);
     });
   });
 };

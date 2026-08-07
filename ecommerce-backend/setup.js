@@ -242,6 +242,61 @@ export const runSetup = async () => {
         `, (err) => err ? rej(err) : res()));
         console.log("Coupons table verified/created");
 
+        // 16. Create attributes table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS attributes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                code VARCHAR(100) UNIQUE NOT NULL,
+                description TEXT NULL,
+                level ENUM('Universal', 'Category', 'Subcategory') NOT NULL DEFAULT 'Universal',
+                category_id INT NULL,
+                subcategory_id INT NULL,
+                control_type ENUM('Dropdown', 'Multi Select', 'Text', 'Number', 'Yes/No', 'Color Palette') NOT NULL DEFAULT 'Dropdown',
+                display_order INT DEFAULT 0,
+                status ENUM('Active', 'Inactive') DEFAULT 'Active',
+                show_in_filter BOOLEAN DEFAULT true,
+                allow_multiple_values BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+                FOREIGN KEY (subcategory_id) REFERENCES categories(id) ON DELETE SET NULL
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Attributes table verified/created");
+
+        // 17. Create attribute_values table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS attribute_values (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                attribute_id INT NOT NULL,
+                value VARCHAR(255) NOT NULL,
+                code VARCHAR(100) NOT NULL,
+                display_order INT DEFAULT 0,
+                status ENUM('Active', 'Inactive') DEFAULT 'Active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE,
+                UNIQUE KEY attr_val_code (attribute_id, code)
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Attribute values table verified/created");
+
+        // 17.5. Create product_attributes table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS product_attributes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                product_id INT NOT NULL,
+                attribute_id INT NOT NULL,
+                attribute_value_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+                FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE,
+                FOREIGN KEY (attribute_value_id) REFERENCES attribute_values(id) ON DELETE CASCADE,
+                UNIQUE KEY product_attr_val (product_id, attribute_id, attribute_value_id)
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Product attributes table verified/created");
+
+
         // Seed mock user logins if empty
         const loginsCount = await new Promise((res) => {
             db.query("SELECT COUNT(*) AS cnt FROM user_logins", (err, rows) => {
@@ -292,6 +347,8 @@ export const runSetup = async () => {
         const cartCols = await getExistingColumns("cart");
         const orderItemCols = await getExistingColumns("order_items");
         const shippingCols = await getExistingColumns("shipping_details");
+        const attributeCols = await getExistingColumns("attributes");
+        const attributeValueCols = await getExistingColumns("attribute_values");
 
         if (!productCols.includes("is_active")) {
             await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
@@ -451,6 +508,86 @@ export const runSetup = async () => {
         if (!productCols.includes("is_visible")) {
             await new Promise((res, rej) => db.query("ALTER TABLE products ADD COLUMN is_visible BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
         }
+
+        // 14. Attributes Table ALTER Migrations
+        if (attributeCols.length > 0) {
+            if (!attributeCols.includes("code")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN code VARCHAR(100) NULL", (err) => err ? rej(err) : res()));
+                await new Promise((res) => {
+                    db.query("UPDATE attributes SET code = UPPER(REPLACE(TRIM(name), ' ', '_')) WHERE code IS NULL OR code = ''", () => res());
+                });
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes MODIFY COLUMN code VARCHAR(100) NOT NULL UNIQUE", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("description")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN description TEXT NULL", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("level")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN level ENUM('Universal', 'Category', 'Subcategory') NOT NULL DEFAULT 'Universal'", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("category_id")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN category_id INT NULL", (err) => err ? rej(err) : res()));
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD CONSTRAINT fk_attributes_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
+                    if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
+                        rej(err);
+                    } else {
+                        res();
+                    }
+                }));
+            }
+            if (!attributeCols.includes("subcategory_id")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN subcategory_id INT NULL", (err) => err ? rej(err) : res()));
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD CONSTRAINT fk_attributes_subcategory FOREIGN KEY (subcategory_id) REFERENCES categories(id) ON DELETE SET NULL", (err) => {
+                    if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists") && !err.message.includes("FK")) {
+                        rej(err);
+                    } else {
+                        res();
+                    }
+                }));
+            }
+            if (!attributeCols.includes("control_type")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN control_type ENUM('Dropdown', 'Multi Select', 'Text', 'Number', 'Yes/No', 'Color Palette') NOT NULL DEFAULT 'Dropdown'", (err) => err ? rej(err) : res()));
+            } else {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes MODIFY COLUMN control_type ENUM('Dropdown', 'Multi Select', 'Text', 'Number', 'Yes/No', 'Color Palette') NOT NULL DEFAULT 'Dropdown'", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("display_order")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN display_order INT DEFAULT 0", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("status")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN status ENUM('Active', 'Inactive') DEFAULT 'Active'", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("show_in_filter")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN show_in_filter BOOLEAN DEFAULT true", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeCols.includes("allow_multiple_values")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attributes ADD COLUMN allow_multiple_values BOOLEAN DEFAULT false", (err) => err ? rej(err) : res()));
+                console.log("Migration: added allow_multiple_values to attributes");
+            }
+        }
+
+        // 15. Attribute Values Table ALTER Migrations
+        if (attributeValueCols.length > 0) {
+            if (!attributeValueCols.includes("code")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attribute_values ADD COLUMN code VARCHAR(100) NULL", (err) => err ? rej(err) : res()));
+                await new Promise((res) => {
+                    db.query("UPDATE attribute_values SET code = UPPER(REPLACE(TRIM(value), ' ', '_')) WHERE code IS NULL OR code = ''", () => res());
+                });
+                await new Promise((res, rej) => db.query("ALTER TABLE attribute_values MODIFY COLUMN code VARCHAR(100) NOT NULL", (err) => err ? rej(err) : res()));
+                await new Promise((res, rej) => db.query("ALTER TABLE attribute_values ADD CONSTRAINT attr_val_code UNIQUE KEY (attribute_id, code)", (err) => {
+                    if (err && !err.message.includes("Duplicate") && !err.message.includes("already exists")) {
+                        rej(err);
+                    } else {
+                        res();
+                    }
+                }));
+            }
+            if (!attributeValueCols.includes("display_order")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attribute_values ADD COLUMN display_order INT DEFAULT 0", (err) => err ? rej(err) : res()));
+            }
+            if (!attributeValueCols.includes("status")) {
+                await new Promise((res, rej) => db.query("ALTER TABLE attribute_values ADD COLUMN status ENUM('Active', 'Inactive') DEFAULT 'Active'", (err) => err ? rej(err) : res()));
+            }
+        }
+
         console.log("Database schema migrations verified successfully");
 
     } catch (err) {

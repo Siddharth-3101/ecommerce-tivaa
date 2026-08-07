@@ -14,6 +14,7 @@ export const getSettings = (req, res) => {
       settings[row.key] = row.value;
     });
     
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     return res.json(settings);
   });
 };

@@ -6,7 +6,8 @@ import {
   updateProduct,
   deleteProduct,
   searchProducts,
-  filterProducts
+  filterProducts,
+  getPublicFilters
 } from "../controllers/productController.js";
 
 import { verifyToken } from "../middleware/auth.js";
@@ -19,6 +20,7 @@ const router = express.Router();
 // ======================================================
 router.get("/search", searchProducts);     // /products/search?q=...
 router.get("/filter", filterProducts);     // /products/filter?category=...
+router.get("/filters-list", getPublicFilters);
 
 // ======================================================
 // PUBLIC: PRODUCT LIST + PAGINATION

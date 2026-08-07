@@ -572,6 +572,7 @@ export default function AdminProductsPage() {
                                             style={{ cursor: "pointer" }}
                                         />
                                     </th>
+                                    <th style={{ padding: "16px 24px", fontWeight: 600, width: "80px" }}>ID</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Product Name</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Selling Price</th>
                                     <th style={{ padding: "16px 24px", fontWeight: 600 }}>Discounted Price</th>
@@ -595,8 +596,9 @@ export default function AdminProductsPage() {
                                                 style={{ cursor: "pointer" }}
                                             />
                                         </td>
+                                        <td style={{ padding: "16px 24px", fontWeight: 600, color: "var(--text-muted)", fontFamily: "monospace" }}>#{p.id}</td>
                                         <td style={{ padding: "16px 24px", display: "flex", alignItems: "center", gap: "16px" }}>
-                                            <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#1e2130" }}>
+                                            <div style={{ width: "40px", height: "40px", borderRadius: "8px", overflow: "hidden", background: "#1e2130", flexShrink: 0 }}>
                                                 <img src={p.image_url ? p.image_url.split(",")[0].trim() : "/placeholder.png"} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={p.name} />
                                             </div>
                                             <span style={{ fontWeight: 500 }}>{p.name}</span>
@@ -641,7 +643,7 @@ export default function AdminProductsPage() {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="9" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
+                                        <td colSpan="10" style={{ padding: "40px", textAlign: "center", color: "var(--text-muted)" }}>
                                             No products found matching the criteria.
                                         </td>
                                     </tr>

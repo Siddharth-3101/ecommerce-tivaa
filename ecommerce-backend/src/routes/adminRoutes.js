@@ -38,6 +38,21 @@ import {
 
 import { verifyToken } from "../middleware/auth.js";
 import { verifyAdmin } from "../middleware/admin.js";
+import {
+  getAttributes,
+  createAttribute,
+  updateAttribute,
+  deleteAttribute,
+  getAttributeValues,
+  createAttributeValue,
+  updateAttributeValue,
+  deleteAttributeValue,
+  bulkImportAttributes,
+  bulkImportAttributeValues,
+  getProductAttributesList,
+  getProductAttributes,
+  updateProductAttributes
+} from "../controllers/attributeController.js";
 
 const router = express.Router();
 
@@ -98,6 +113,26 @@ router.get("/gst-states", getGstStates);
 router.post("/gst-states", verifyToken, verifyAdmin, createGstState);
 router.put("/gst-states/:id", verifyToken, verifyAdmin, updateGstState);
 router.delete("/gst-states/:id", verifyToken, verifyAdmin, deleteGstState);
+
+// ======================================================
+// ATTRIBUTES & VALUES MASTERS (ADMIN ONLY)
+// ======================================================
+router.get("/attributes", verifyToken, verifyAdmin, getAttributes);
+router.post("/attributes", verifyToken, verifyAdmin, createAttribute);
+router.put("/attributes/:id", verifyToken, verifyAdmin, updateAttribute);
+router.delete("/attributes/:id", verifyToken, verifyAdmin, deleteAttribute);
+
+router.get("/attribute-values", verifyToken, verifyAdmin, getAttributeValues);
+router.post("/attribute-values", verifyToken, verifyAdmin, createAttributeValue);
+router.put("/attribute-values/:id", verifyToken, verifyAdmin, updateAttributeValue);
+router.delete("/attribute-values/:id", verifyToken, verifyAdmin, deleteAttributeValue);
+
+router.post("/attributes/bulk", verifyToken, verifyAdmin, bulkImportAttributes);
+router.post("/attribute-values/bulk", verifyToken, verifyAdmin, bulkImportAttributeValues);
+
+router.get("/product-attributes", verifyToken, verifyAdmin, getProductAttributesList);
+router.get("/product-attributes/:productId", verifyToken, verifyAdmin, getProductAttributes);
+router.put("/product-attributes/:productId", verifyToken, verifyAdmin, updateProductAttributes);
 
 // ======================================================
 // REPORTS & EXCEL EXPORTS (ADMIN ONLY)

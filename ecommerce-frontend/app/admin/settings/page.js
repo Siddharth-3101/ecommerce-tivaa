@@ -18,6 +18,7 @@ const INDIAN_STATES = [
 export default function AdminSettingsPage() {
     const [slides, setSlides] = useState([]);
     const [showHeroBanner, setShowHeroBanner] = useState(true);
+    const [showFiltersSidebar, setShowFiltersSidebar] = useState(true);
     const [shippingCost, setShippingCost] = useState("0");
     const [businessState, setBusinessState] = useState("Tamil Nadu");
     const [storeUpiName, setStoreUpiName] = useState("");
@@ -59,6 +60,7 @@ export default function AdminSettingsPage() {
                     }
                     setSlides(parsedSlides);
                     setShowHeroBanner(res.data.show_hero_banner !== "false");
+                    setShowFiltersSidebar(res.data.show_filters_sidebar !== "false");
                     setShippingCost(res.data.shipping_cost || "0");
                     setBusinessState(res.data.business_state || "Tamil Nadu");
                     setStoreUpiName(res.data.store_upi_name || "");
@@ -136,6 +138,7 @@ export default function AdminSettingsPage() {
                     desktop_banner: cleanedSlides[0]?.desktop_url || "",
                     mobile_banner: cleanedSlides[0]?.mobile_url || "",
                     show_hero_banner: showHeroBanner ? "true" : "false",
+                    show_filters_sidebar: showFiltersSidebar ? "true" : "false",
                     shipping_cost: shippingCost,
                     business_state: businessState,
                     store_upi_name: storeUpiName,
@@ -251,6 +254,24 @@ export default function AdminSettingsPage() {
                         type="checkbox" 
                         checked={showHeroBanner}
                         onChange={(e) => setShowHeroBanner(e.target.checked)}
+                        style={{ width: '24px', height: '24px', cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
+                    />
+                </div>
+
+                {/* 1.5. ENABLE / DISABLE PRODUCTS FILTER SIDEBAR */}
+                <div className="card" style={{ padding: '24px', background: '#ffffff', border: '1px solid var(--border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ paddingRight: '16px' }}>
+                        <label style={{ display: 'block', fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
+                            Enable Products Filter Sidebar
+                        </label>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Check this to show the left-aligned Collections, Price, and Dynamic Attributes filters sidebar on search and category pages.
+                        </span>
+                    </div>
+                    <input 
+                        type="checkbox" 
+                        checked={showFiltersSidebar}
+                        onChange={(e) => setShowFiltersSidebar(e.target.checked)}
                         style={{ width: '24px', height: '24px', cursor: 'pointer', accentColor: 'var(--accent)', flexShrink: 0 }}
                     />
                 </div>
