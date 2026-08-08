@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { saveUser, getUser, getToken } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MapPin, ShieldCheck, Eye, EyeOff, ArrowLeft, Save } from "lucide-react";
+import { User, MapPin, ShieldCheck, Eye, EyeOff, ArrowLeft, Save, UserX } from "lucide-react";
 
 const INDIAN_STATES = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
@@ -25,6 +25,9 @@ export default function CustomerProfilePage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [gstStateList, setGstStateList] = useState([]);
+    const [deletionReason, setDeletionReason] = useState("");
+    const [isDeletedRequested, setIsDeletedRequested] = useState(false);
+    const [userRole, setUserRole] = useState("user");
 
     useEffect(() => {
         const fetchGstStates = async () => {
@@ -90,6 +93,7 @@ export default function CustomerProfilePage() {
                 setLoading(true);
                 const res = await api.get("/auth/me");
                 const u = res.data;
+                setUserRole(u.role || "user");
 
                 setPersonalForm({
                     name: u.name || "",
@@ -208,6 +212,23 @@ export default function CustomerProfilePage() {
         }
     };
 
+    const handleRequestDeletion = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+        setSuccess("");
+
+        try {
+            await api.post("/auth/profile/delete-request", { reason: deletionReason });
+            setIsDeletedRequested(true);
+            setSuccess("Account deletion request submitted successfully.");
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to submit account deletion request. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div style={{ background: "var(--bg, #F8FAFC)", minHeight: "100vh", padding: "40px 24px 80px" }}>
             <div style={{ maxWidth: "900px", margin: "0 auto" }}>
@@ -305,6 +326,28 @@ export default function CustomerProfilePage() {
                             }}
                         >
                             <ShieldCheck size={18} /> Password &amp; Security
+                        </button>
+
+                        <button
+                            onClick={() => { setActiveTab("deletion"); setError(""); setSuccess(""); }}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                padding: "12px 16px",
+                                width: "100%",
+                                border: "none",
+                                borderRadius: "10px",
+                                background: activeTab === "deletion" ? "var(--text-main, #173B63)" : "transparent",
+                                color: activeTab === "deletion" ? "#ffffff" : "var(--text-muted, #6B7280)",
+                                fontWeight: 600,
+                                fontSize: "0.9rem",
+                                cursor: "pointer",
+                                textAlign: "left",
+                                transition: "all 0.2s"
+                            }}
+                        >
+                            <UserX size={18} /> Request Deletion
                         </button>
                     </div>
 
@@ -520,6 +563,80 @@ export default function CustomerProfilePage() {
                                     <Save size={16} /> {loading ? "Updating..." : "Update Password"}
                                 </button>
                             </form>
+                        )}
+
+                        {/* 4. REQUEST ACCOUNT DELETION FORM */}
+                        {activeTab === "deletion" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                                <h3 style={{ margin: "0 0 8px 0", color: "var(--text-main, #173B63)" }}>Request Account Deletion</h3>
+                                
+                                {userRole === "admin" ? (
+                                    <div style={{ padding: "24px", background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.15)", borderRadius: "12px", color: "#EF4444" }}>
+                                        <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 600 }}>
+                                            Deletion requests are not permitted for administrator accounts.
+                                        </p>
+                                    </div>
+                                ) : isDeletedRequested ? (
+                                    <div style={{ padding: "32px 24px", background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: "12px", textAlign: "center", color: "var(--text-main, #173B63)" }}>
+                                        <div style={{ fontSize: "2rem", marginBottom: "12px" }}>✅</div>
+                                        <h4 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 8px 0" }}>Your account deletion request has been submitted.</h4>
+                                        <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-muted, #6B7280)", lineHeight: 1.5 }}>
+                                            Our team will review your request and process it in accordance with applicable legal requirements.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleRequestDeletion} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                                        <p style={{ margin: 0, fontSize: "0.95rem", color: "var(--text-main, #173B63)", fontWeight: 500 }}>
+                                            Are you sure you want to request deletion of your TIVAA account?
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted, #6B7280)", lineHeight: 1.5 }}>
+                                            Once approved, your personal information will be deleted or anonymized, except where we are required by law to retain certain records (such as invoices and tax records).
+                                        </p>
+
+                                        <div>
+                                            <label style={{ display: "block", marginBottom: "12px", fontSize: "0.9rem", color: "var(--text-muted, #6B7280)", fontWeight: 600 }}>Reason (optional)</label>
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                                {[
+                                                    "I no longer use TIVAA",
+                                                    "Privacy concerns",
+                                                    "Created another account",
+                                                    "Other"
+                                                ].map((r) => (
+                                                    <label key={r} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer" }}>
+                                                        <input
+                                                            type="radio"
+                                                            name="deletionReason"
+                                                            value={r}
+                                                            checked={deletionReason === r}
+                                                            onChange={(e) => setDeletionReason(e.target.value)}
+                                                            style={{ width: "16px", height: "16px", accentColor: "var(--text-main, #173B63)" }}
+                                                        />
+                                                        {r}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <button 
+                                            type="submit" 
+                                            className="btn btn-primary" 
+                                            disabled={loading} 
+                                            style={{ 
+                                                alignSelf: "flex-start", 
+                                                padding: "12px 24px", 
+                                                background: "#EF4444", 
+                                                borderColor: "#EF4444", 
+                                                color: "#ffffff", 
+                                                fontWeight: 600,
+                                                borderRadius: "8px",
+                                                cursor: "pointer"
+                                            }}
+                                        >
+                                            {loading ? "Submitting..." : "Request Deletion"}
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>

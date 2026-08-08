@@ -167,6 +167,8 @@ export default function CheckoutPage() {
     const [couponError, setCouponError] = useState("");
     const [couponLoading, setCouponLoading] = useState(false);
     const [gstStateList, setGstStateList] = useState([]);
+    const [agreeChecked, setAgreeChecked] = useState(false);
+    const [verifying, setVerifying] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -395,7 +397,9 @@ export default function CheckoutPage() {
                 pincode: formData.pincode,
                 phone: formData.phone,
                 payment_method: formData.payment_method,
-                coupon_code: appliedCoupon ? appliedCoupon.code : null
+                coupon_code: appliedCoupon ? appliedCoupon.code : null,
+                terms_accepted: agreeChecked,
+                privacy_accepted: agreeChecked
             };
 
             if (isBuyNow && productId) {
@@ -425,7 +429,7 @@ export default function CheckoutPage() {
                 order_id: razorpayOrder.id,
                 handler: async function (response) {
                     try {
-                        setSubmitting(true);
+                        setVerifying(true);
                         await api.post("/payment/verify", {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
@@ -438,7 +442,7 @@ export default function CheckoutPage() {
                         alert("Payment verification failed. Please contact support.");
                         router.push(`/orders/${orderId}?success=false`);
                     } finally {
-                        setSubmitting(false);
+                        setVerifying(false);
                     }
                 },
                 prefill: {
@@ -459,13 +463,14 @@ export default function CheckoutPage() {
 
             if (window.Razorpay) {
                 const rzp = new window.Razorpay(options);
+                setSubmitting(false);
                 rzp.open();
             } else {
                 alert("Razorpay SDK failed to load. Please refresh the page and try again.");
                 setSubmitting(false);
             }
         } catch (err) {
-            console.error("❌ Checkout Error:", err);
+            console.warn("⚠️ Checkout Error:", err);
             alert(err.response?.data?.message || "Failed to place order. Please try again.");
             setSubmitting(false);
         }
@@ -481,7 +486,42 @@ export default function CheckoutPage() {
     const itemsToRender = showAllItems ? cartItems : cartItems.slice(0, 4);
 
     return (
-        <div className="container animate-fade-in" style={{ paddingTop: '32px', paddingBottom: '80px' }}>
+        <div className="container animate-fade-in" style={{ paddingTop: '32px', paddingBottom: '80px', position: 'relative' }}>
+            {verifying && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(10, 11, 16, 0.85)",
+                    backdropFilter: "blur(6px)",
+                    zIndex: 99999,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#ffffff"
+                }}>
+                    <span style={{ 
+                        display: 'inline-block', 
+                        width: '50px', 
+                        height: '50px', 
+                        border: '5px solid rgba(255,255,255,0.1)', 
+                        borderRadius: '50%', 
+                        borderTopColor: 'var(--accent)', 
+                        animation: 'spin 1s ease-in-out infinite',
+                        marginBottom: '20px'
+                    }}></span>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0, letterSpacing: '0.5px' }}>Verifying Payment & Completing Order...</h3>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: '#94a3b8' }}>Please do not refresh the page or close the window.</p>
+                    <style dangerouslySetInnerHTML={{ __html: `
+                        @keyframes spin {
+                            to { transform: rotate(360deg); }
+                        }
+                    `}} />
+                </div>
+            )}
             <CheckoutSteps currentStep={currentCheckoutStep} />
             
             {currentCheckoutStep === 2 ? (
@@ -924,11 +964,25 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
+                            <div style={{ margin: "20px 0 16px 0", display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                                <input
+                                    id="terms-privacy-agree"
+                                    type="checkbox"
+                                    checked={agreeChecked}
+                                    onChange={(e) => setAgreeChecked(e.target.checked)}
+                                    style={{ width: "18px", height: "18px", marginTop: "2px", accentColor: "var(--accent)", cursor: "pointer" }}
+                                />
+                                <label htmlFor="terms-privacy-agree" style={{ fontSize: "0.85rem", color: "var(--text-main)", cursor: "pointer", lineHeight: "1.4", userSelect: "none" }}>
+                                    I have read and agree to the <Link href="/privacy-policy" target="_blank" style={{ color: "var(--accent)", textDecoration: "underline", fontWeight: 600 }}>Privacy Policy</Link> and <Link href="/terms-and-conditions" target="_blank" style={{ color: "var(--accent)", textDecoration: "underline", fontWeight: 600 }}>Terms & Conditions</Link>.
+                                </label>
+                            </div>
+
                             <button 
                                 type="button" 
-                                disabled={submitting} 
+                                disabled={submitting || !agreeChecked} 
                                 className="pay-securely-btn"
                                 onClick={handleFinalPayment}
+                                style={!agreeChecked ? { opacity: 0.6, cursor: "not-allowed" } : {}}
                             >
                                 {submitting ? "Processing..." : (
                                     <>

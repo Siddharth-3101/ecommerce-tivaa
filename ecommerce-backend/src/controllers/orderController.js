@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
 // =============================================================
 export const createOrder = (req, res) => {
   const userId = req.user.id;
-  const { payment_method, shipping_address, city, state, state_code, gst_state, pincode, phone, buy_now, coupon_code } = req.body;
+  const { payment_method, shipping_address, city, state, state_code, gst_state, pincode, phone, buy_now, coupon_code, terms_accepted, privacy_accepted } = req.body;
 
   if (!payment_method) {
     return res.status(400).json({ message: "Payment method required" });
@@ -104,12 +104,15 @@ export const createOrder = (req, res) => {
         const total = Math.max(0, subtotal - discountAmount + finalShippingCost);
 
         // Step 4 — Create main order with shipping_cost column and coupon info
+        const termsAcceptedOn = terms_accepted ? new Date() : null;
+        const privacyAcceptedOn = privacy_accepted ? new Date() : null;
+
         const sqlCreateOrder = `
-                INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status, coupon_code, discount_amount)
-                VALUES (?, ?, ?, ?, 'pending', ?, ?)
+                INSERT INTO orders (user_id, total, shipping_cost, payment_method, order_status, coupon_code, discount_amount, terms_accepted_on, privacy_accepted_on)
+                VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)
             `;
 
-        db.query(sqlCreateOrder, [userId, total, finalShippingCost, payment_method, coupon ? coupon.code : null, discountAmount], (err2, result) => {
+        db.query(sqlCreateOrder, [userId, total, finalShippingCost, payment_method, coupon ? coupon.code : null, discountAmount, termsAcceptedOn, privacyAcceptedOn], (err2, result) => {
         if (err2) {
           console.error("DB error:", err2);
           return res.status(500).json({ message: "Database error" });

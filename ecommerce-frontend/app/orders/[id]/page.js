@@ -327,10 +327,28 @@ export default function OrderDetailsPage({ params }) {
                 border: '1px solid #FCA5A5'
             };
         }
+    };
+
+    const getHighlightedStatusBadgeStyle = (status) => {
+        const s = status?.toLowerCase();
+        if (s === 'delivered' || s === 'paid' || s === 'out for delivery' || s === 'completed') {
+            return {
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                border: 'none'
+            };
+        }
+        if (s === 'pending' || s === 'processing') {
+            return {
+                backgroundColor: '#f59e0b',
+                color: '#ffffff',
+                border: 'none'
+            };
+        }
         return {
-            backgroundColor: '#F3F4F6',
-            color: '#4B5563',
-            border: '1px solid #E5E7EB'
+            backgroundColor: '#ef4444',
+            color: '#ffffff',
+            border: 'none'
         };
     };
 
@@ -496,84 +514,84 @@ export default function OrderDetailsPage({ params }) {
 
                     {/* MOBILE HIGHLIGHT PILLS */}
                     <div className="mobile-pills-row">
-                        <div className="mobile-pill">
-                            <div className="mobile-pill-icon-wrapper">
+                        <div className="mobile-pill" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 12px rgba(30, 58, 138, 0.15)' }}>
+                            <div className="mobile-pill-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <FileText size={16} />
                             </div>
-                            <span className="mobile-pill-value" style={{ color: 'var(--accent)' }}>
+                            <span className="mobile-pill-value" style={{ color: '#ffffff', fontWeight: '800' }}>
                                 {order.order_status === 'paid' || order.order_status === 'delivered' || order.order_status === 'completed' ? 'Paid' : (order.order_status?.toLowerCase() === "processing" ? "Confirmed" : "Pending")}
                             </span>
-                            <span className="mobile-pill-label">Payment</span>
+                            <span className="mobile-pill-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Payment</span>
                         </div>
                         
-                        <div className="mobile-pill">
-                            <div className="mobile-pill-icon-wrapper">
+                        <div className="mobile-pill" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 12px rgba(30, 58, 138, 0.15)' }}>
+                            <div className="mobile-pill-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <IndianRupee size={16} />
                             </div>
-                            <span className="mobile-pill-value" style={{ color: 'var(--accent)' }}>
+                            <span className="mobile-pill-value" style={{ color: '#ffffff', fontWeight: '800' }}>
                                 ₹{Number(order.total).toFixed(2)}
                             </span>
-                            <span className="mobile-pill-label">Total Amount</span>
+                            <span className="mobile-pill-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Total Amount</span>
                         </div>
 
-                        <div className="mobile-pill">
-                            <div className="mobile-pill-icon-wrapper">
+                        <div className="mobile-pill" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 12px rgba(30, 58, 138, 0.15)' }}>
+                            <div className="mobile-pill-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <CreditCard size={16} />
                             </div>
-                            <span className="mobile-pill-value" style={{ color: 'var(--text-main)', textTransform: 'capitalize' }}>
+                            <span className="mobile-pill-value" style={{ color: '#ffffff', fontWeight: '800', textTransform: 'capitalize' }}>
                                 {order.payment_method}
                             </span>
-                            <span className="mobile-pill-label">Payment Method</span>
+                            <span className="mobile-pill-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Payment Method</span>
                         </div>
                     </div>
 
                     {/* DESKTOP HIGHLIGHTS GRID */}
                     <div className="highlights-grid">
-                        <div className="highlight-card">
-                            <div className="highlight-icon-wrapper">
+                        <div className="highlight-card" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 15px rgba(30, 58, 138, 0.2)' }}>
+                            <div className="highlight-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <FileText size={16} />
                             </div>
                             <div className="highlight-info">
-                                <span className="highlight-label">Status</span>
+                                <span className="highlight-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Status</span>
                                 <div>
-                                    <span className="status-badge" style={getStatusBadgeStyle(order.order_status)}>
+                                    <span className="status-badge" style={getHighlightedStatusBadgeStyle(order.order_status)}>
                                         {order.order_status?.toLowerCase() === "processing" ? "Confirmed" : order.order_status}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="highlight-card">
-                            <div className="highlight-icon-wrapper">
+                        <div className="highlight-card" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 15px rgba(30, 58, 138, 0.2)' }}>
+                            <div className="highlight-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <CreditCard size={16} />
                             </div>
                             <div className="highlight-info">
-                                <span className="highlight-label">Payment</span>
+                                <span className="highlight-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Payment</span>
                                 <div>
-                                    <span className="status-badge" style={getStatusBadgeStyle(order.order_status === 'paid' || order.order_status === 'delivered' || order.order_status === 'completed' ? 'paid' : 'pending')}>
+                                    <span className="status-badge" style={getHighlightedStatusBadgeStyle(order.order_status === 'paid' || order.order_status === 'delivered' || order.order_status === 'completed' ? 'paid' : 'pending')}>
                                         {order.order_status === 'paid' || order.order_status === 'delivered' || order.order_status === 'completed' ? 'Paid' : (order.order_status?.toLowerCase() === "processing" ? "Confirmed" : "Pending")}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="highlight-card">
-                            <div className="highlight-icon-wrapper">
+                        <div className="highlight-card" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 15px rgba(30, 58, 138, 0.2)' }}>
+                            <div className="highlight-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <IndianRupee size={16} />
                             </div>
                             <div className="highlight-info">
-                                <span className="highlight-label">Total Amount</span>
-                                <span className="highlight-value" style={{ color: 'var(--accent)' }}>₹{Number(order.total).toFixed(2)}</span>
+                                <span className="highlight-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Total Amount</span>
+                                <span className="highlight-value" style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800' }}>₹{Number(order.total).toFixed(2)}</span>
                             </div>
                         </div>
 
-                        <div className="highlight-card">
-                            <div className="highlight-icon-wrapper">
+                        <div className="highlight-card" style={{ background: '#1e3a8a', borderColor: '#1e3a8a', color: '#ffffff', boxShadow: '0 4px 15px rgba(30, 58, 138, 0.2)' }}>
+                            <div className="highlight-icon-wrapper" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff' }}>
                                 <CreditCard size={16} />
                             </div>
                             <div className="highlight-info">
-                                <span className="highlight-label">Payment Method</span>
-                                <span className="highlight-value" style={{ textTransform: 'capitalize' }}>{order.payment_method}</span>
+                                <span className="highlight-label" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>Payment Method</span>
+                                <span className="highlight-value" style={{ color: '#ffffff', fontSize: '15px', fontWeight: '800', textTransform: 'capitalize' }}>{order.payment_method}</span>
                             </div>
                         </div>
                     </div>

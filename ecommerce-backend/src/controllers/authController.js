@@ -163,6 +163,10 @@ export const loginUser = (req, res) => {
 
     const user = users[0];
 
+    if (user.status === 'DELETED') {
+      return res.status(403).json({ message: "Account has been deleted or deactivated." });
+    }
+
     if (user.auth_provider === "google" && user.role !== "admin") {
       return res.status(400).json({
         message: "This account was created using Google Sign-In. Please sign in using Google."
@@ -264,6 +268,10 @@ export const googleAuth = async (req, res) => {
       if (users.length > 0) {
         // User exists, log them in
         const user = users[0];
+
+        if (user.status === 'DELETED') {
+          return res.status(403).json({ message: "Account has been deleted or deactivated." });
+        }
 
         if (user.auth_provider !== "google" && user.role !== "admin") {
           return res.status(400).json({
@@ -736,6 +744,94 @@ export const updateProfile = async (req, res) => {
           message: "Profile updated successfully!",
           user: rows[0]
         });
+      });
+    });
+  });
+};
+
+// =====================================================
+// REQUEST ACCOUNT DELETION (Customer/User)
+// =====================================================
+export const requestAccountDeletion = (req, res) => {
+  const userId = req.user.id;
+  const { reason } = req.body;
+
+  // Retrieve user details first to send email confirmation
+  db.query("SELECT email, name, role FROM users WHERE id = ?", [userId], (err, users) => {
+    if (err) {
+      console.error("DB error fetching user details for deletion request:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { email, name, role } = users[0];
+
+    if (role === 'admin') {
+      return res.status(403).json({ message: "Deletion requests are not permitted for administrator accounts." });
+    }
+
+    // Check if there is already a pending deletion request for this user
+    const checkSql = "SELECT * FROM customer_deletion_requests WHERE user_id = ? AND status = 'Pending'";
+    db.query(checkSql, [userId], (checkErr, requests) => {
+      if (checkErr) {
+        console.error("DB error checking existing deletion request:", checkErr);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (requests.length > 0) {
+        return res.status(400).json({ message: "You have already submitted an account deletion request." });
+      }
+
+      // Insert new request
+      const insertSql = "INSERT INTO customer_deletion_requests (user_id, reason, status) VALUES (?, ?, 'Pending')";
+      db.query(insertSql, [userId, reason || null], (insertErr, result) => {
+        if (insertErr) {
+          console.error("DB error creating account deletion request:", insertErr);
+          return res.status(500).json({ message: "Database error" });
+        }
+
+        // Send Email notification to customer
+        try {
+          const mailOptions = {
+            from: process.env.SMTP_FROM || '"Tivaa Elegance Support" <noreply@tivaajewelery.com>',
+            to: email,
+            subject: "Account Deletion Request Received - Tivaa Elegance",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px; background: #fff;">
+                <h2 style="color: #EF4444; text-align: center; margin-bottom: 24px; font-family: 'Playfair Display', Georgia, serif;">Account Deletion Request</h2>
+                <p>Hello <strong>${name}</strong>,</p>
+                <p>We have received your request to delete your TIVAA account.</p>
+                <p>Once approved, your personal information will be deleted or anonymized, except where we are required by law to retain certain records (such as invoices and tax records for regulatory compliance).</p>
+                <p>Our team will process your request in accordance with applicable legal timeframes.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
+                <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
+              </div>
+            `,
+          };
+
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+
+          transporter.sendMail(mailOptions, (mailErr) => {
+            if (mailErr) {
+              console.warn("📧 Account deletion email sending failed:", mailErr.message);
+            } else {
+              console.log(`✅ Account deletion email sent successfully to ${email}`);
+            }
+          });
+        } catch (mailError) {
+          console.warn("📧 Account deletion email transporter initialization failed:", mailError.message);
+        }
+
+        return res.json({ message: "Your account deletion request has been submitted successfully." });
       });
     });
   });

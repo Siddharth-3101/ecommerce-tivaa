@@ -88,6 +88,8 @@ export const runSetup = async () => {
                 order_type ENUM('Online', 'Store') DEFAULT 'Online',
                 razorpay_order_id VARCHAR(255) NULL,
                 invoice_number VARCHAR(255) NULL,
+                terms_accepted_on TIMESTAMP NULL,
+                privacy_accepted_on TIMESTAMP NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
@@ -295,6 +297,65 @@ export const runSetup = async () => {
             )
         `, (err) => err ? rej(err) : res()));
         console.log("Product attributes table verified/created");
+
+        // 17.6. Alter users table for account deletions
+        await new Promise((res) => {
+            db.query("ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'ACTIVE'", (err) => {
+                if (err && !err.message.includes("duplicate column")) {
+                    console.error("Alter users status error:", err.message);
+                }
+                res();
+            });
+        });
+        await new Promise((res) => {
+            db.query("ALTER TABLE users ADD COLUMN deleted_on TIMESTAMP NULL", (err) => {
+                if (err && !err.message.includes("duplicate column")) {
+                    console.error("Alter users deleted_on error:", err.message);
+                }
+                res();
+            });
+        });
+        await new Promise((res) => {
+            db.query("ALTER TABLE users ADD COLUMN deleted_by INT NULL", (err) => {
+                if (err && !err.message.includes("duplicate column")) {
+                    console.error("Alter users deleted_by error:", err.message);
+                }
+                res();
+            });
+        });
+
+        // 17.7. Create customer_deletion_requests table
+        await new Promise((res, rej) => db.query(`
+            CREATE TABLE IF NOT EXISTS customer_deletion_requests (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                reason VARCHAR(255) NULL,
+                status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+                requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                processed_at TIMESTAMP NULL,
+                processed_by INT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, (err) => err ? rej(err) : res()));
+        console.log("Customer deletion requests table verified/created");
+
+        // 17.8. Alter orders table for terms/privacy acceptance timestamps
+        await new Promise((res) => {
+            db.query("ALTER TABLE orders ADD COLUMN terms_accepted_on TIMESTAMP NULL", (err) => {
+                if (err && !err.message.includes("duplicate column")) {
+                    console.error("Alter orders terms_accepted_on error:", err.message);
+                }
+                res();
+            });
+        });
+        await new Promise((res) => {
+            db.query("ALTER TABLE orders ADD COLUMN privacy_accepted_on TIMESTAMP NULL", (err) => {
+                if (err && !err.message.includes("duplicate column")) {
+                    console.error("Alter orders privacy_accepted_on error:", err.message);
+                }
+                res();
+            });
+        });
 
 
         // Seed mock user logins if empty

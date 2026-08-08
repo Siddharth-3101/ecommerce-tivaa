@@ -333,4 +333,53 @@ db.query(`
   }
 });
 
+// Auto-migrate users table for account deletions
+db.query(`ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'ACTIVE';`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration users status note:", err.message);
+  }
+});
+db.query(`ALTER TABLE users ADD COLUMN deleted_on TIMESTAMP NULL;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration users deleted_on note:", err.message);
+  }
+});
+db.query(`ALTER TABLE users ADD COLUMN deleted_by INT NULL;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration users deleted_by note:", err.message);
+  }
+});
+
+// Auto-migrate customer_deletion_requests table
+db.query(`
+  CREATE TABLE IF NOT EXISTS customer_deletion_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reason VARCHAR(255) NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    processed_by INT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+`, (err) => {
+  if (err) {
+    console.error("Auto-migration customer_deletion_requests note:", err.message);
+  } else {
+    console.log("customer_deletion_requests table verified/created.");
+  }
+});
+
+// Auto-migrate orders table for terms/privacy acceptance timestamps
+db.query(`ALTER TABLE orders ADD COLUMN terms_accepted_on TIMESTAMP NULL;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration orders terms_accepted_on note:", err.message);
+  }
+});
+db.query(`ALTER TABLE orders ADD COLUMN privacy_accepted_on TIMESTAMP NULL;`, (err) => {
+  if (err && !err.message.includes("duplicate column name") && !err.message.includes("Duplicate column name")) {
+    console.error("Auto-migration orders privacy_accepted_on note:", err.message);
+  }
+});
+
 export default db;

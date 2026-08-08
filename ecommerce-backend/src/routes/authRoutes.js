@@ -6,7 +6,8 @@ import {
   googleAuth,
   forgotPassword,
   resetPassword,
-  updateProfile
+  updateProfile,
+  requestAccountDeletion
 } from "../controllers/authController.js";
 
 import {
@@ -40,6 +41,9 @@ router.post("/reset-password", resetPassword);
 
 // Update user profile details
 router.put("/profile", verifyToken, updateProfile);
+
+// Request Account Deletion (DPDP)
+router.post("/profile/delete-request", verifyToken, requestAccountDeletion);
 
 // Get logged-in user details (profile)
 router.get("/me", verifyToken, currentUser);

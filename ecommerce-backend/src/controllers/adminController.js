@@ -1,5 +1,6 @@
 import db from "../config/db.js";
 import { sendOrderEmailToCustomer } from "../utils/orderEmail.js";
+import nodemailer from "nodemailer";
 
 // ===========================================================
 // CATEGORY MANAGEMENT
@@ -507,7 +508,7 @@ export const searchCustomer = (req, res) => {
         return res.status(400).json({ message: "Email or phone query parameter required" });
     }
 
-    let sql = "SELECT name, email, phone FROM users WHERE 1=0";
+    let sql = "SELECT name, email, phone FROM users WHERE (status IS NULL OR status != 'DELETED') AND (1=0";
     const params = [];
     if (email) {
         sql += " OR email = ?";
@@ -518,6 +519,7 @@ export const searchCustomer = (req, res) => {
         sql += " OR REPLACE(REPLACE(phone, '+91', ''), ' ', '') = ?";
         params.push(cleanPhone);
     }
+    sql += ")";
 
     db.query(sql, params, (err, rows) => {
         if (err) {
@@ -792,5 +794,185 @@ export const getDashboardAnalytics = async (req, res) => {
         console.error("Error fetching dashboard analytics:", error);
         res.status(500).json({ message: "Error fetching dashboard analytics: " + error.message });
     }
+};
+
+// ===========================================================
+// ADMIN: GET ACCOUNT DELETION REQUESTS (DPDP)
+// ===========================================================
+export const getDeletionRequests = (req, res) => {
+    const sql = `
+        SELECT cdr.*, u.name AS user_name, u.email AS user_email, u.phone AS user_phone 
+        FROM customer_deletion_requests cdr
+        JOIN users u ON cdr.user_id = u.id
+        ORDER BY cdr.requested_at DESC
+    `;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.error("DB error fetching deletion requests:", err);
+            return res.status(500).json({ message: "Database error fetching requests" });
+        }
+        res.json(rows);
+    });
+};
+
+// ===========================================================
+// ADMIN: APPROVE ACCOUNT DELETION (Anonymize & Soft Delete)
+// ===========================================================
+export const approveDeletionRequest = (req, res) => {
+    const requestId = req.params.id;
+    const adminId = req.user.id;
+
+    const getRequestSql = `
+        SELECT cdr.*, u.email AS user_email, u.name AS user_name, u.role AS user_role 
+        FROM customer_deletion_requests cdr
+        JOIN users u ON cdr.user_id = u.id
+        WHERE cdr.id = ?
+    `;
+
+    db.query(getRequestSql, [requestId], async (err, rows) => {
+        if (err) {
+            console.error("DB error fetching deletion request details:", err);
+            return res.status(500).json({ message: "Database error fetching request details" });
+        }
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Deletion request not found." });
+        }
+
+        const request = rows[0];
+        const targetUserId = request.user_id;
+        const originalEmail = request.user_email;
+        const originalName = request.user_name;
+
+        if (request.user_role === 'admin') {
+            return res.status(400).json({ message: "Cannot delete or anonymize administrator accounts." });
+        }
+
+        if (request.status !== 'Pending') {
+            return res.status(400).json({ message: `Request is already ${request.status}.` });
+        }
+
+        // 1. Send confirmation email to user BEFORE DB anonymization
+        try {
+            const mailOptions = {
+                from: process.env.SMTP_FROM || '"Tivaa Elegance Support" <noreply@tivaajewelery.com>',
+                to: originalEmail,
+                subject: "Account Deleted Successfully - Tivaa Elegance",
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px; background: #fff;">
+                    <h2 style="color: #10B981; text-align: center; margin-bottom: 24px; font-family: 'Playfair Display', Georgia, serif;">Account Deleted</h2>
+                    <p>Hello <strong>${originalName}</strong>,</p>
+                    <p>This is to confirm that your TIVAA account has been successfully deleted/anonymized in accordance with your request.</p>
+                    <p>All of your personal profile data, shipping addresses, wishlist items, and saved carts have been permanently removed from our databases.</p>
+                    <p>In accordance with statutory tax and auditing requirements under Indian law, records of your past orders, invoices, and payments will be retained securely for the required compliance duration. However, these will no longer be linked to active personal credentials.</p>
+                    <p>Thank you for shopping with TIVAA.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin-top: 32px;" />
+                    <p style="font-size: 0.8rem; color: #888; text-align: center;">Tivaa Elegance &copy; 2026</p>
+                  </div>
+                `,
+            };
+
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
+                },
+            });
+
+            await transporter.sendMail(mailOptions);
+            console.log(`✅ Deletion success email sent to ${originalEmail}`);
+        } catch (mailError) {
+            console.warn("📧 Deletion success email sending failed:", mailError.message);
+        }
+
+        // 2. Anonymize user details & delete related records
+        try {
+            const anonymizeSql = `
+                UPDATE users 
+                SET 
+                    name = 'Deleted Customer', 
+                    email = CONCAT('deleted_', id, '@tivaa.com'), 
+                    password = 'DELETED_ACCOUNT_PLACEHOLDER', 
+                    phone = NULL, 
+                    address = NULL, 
+                    city = NULL, 
+                    state = NULL, 
+                    pincode = NULL, 
+                    reset_token = NULL, 
+                    reset_token_expires = NULL,
+                    privacy_policy_accepted = 0,
+                    terms_accepted = 0,
+                    marketing_consent = 0,
+                    status = 'DELETED',
+                    deleted_on = NOW(),
+                    deleted_by = ?
+                WHERE id = ?
+            `;
+            await new Promise((resP, rejP) => {
+                db.query(anonymizeSql, [adminId, targetUserId], (updErr) => {
+                    if (updErr) rejP(updErr);
+                    else resP();
+                });
+            });
+
+            // Delete wishlists
+            await new Promise((resP) => {
+                db.query("DELETE FROM wishlists WHERE user_id = ?", [targetUserId], () => resP());
+            });
+
+            // Delete cart
+            await new Promise((resP) => {
+                db.query("DELETE FROM cart WHERE user_id = ?", [targetUserId], () => resP());
+            });
+
+            // Delete user_logins
+            await new Promise((resP) => {
+                db.query("DELETE FROM user_logins WHERE user_id = ?", [targetUserId], () => resP());
+            });
+
+            // Update request status
+            const updateRequestSql = `
+                UPDATE customer_deletion_requests 
+                SET status = 'Approved', processed_at = NOW(), processed_by = ? 
+                WHERE id = ?
+            `;
+            await new Promise((resP, rejP) => {
+                db.query(updateRequestSql, [adminId, requestId], (updReqErr) => {
+                    if (updReqErr) rejP(updReqErr);
+                    else resP();
+                });
+            });
+
+            res.json({ message: "Customer account deletion request approved and processed successfully." });
+        } catch (dbError) {
+            console.error("Database error during deletion processing:", dbError);
+            res.status(500).json({ message: "Error processing deletion: " + dbError.message });
+        }
+    });
+};
+
+// ===========================================================
+// ADMIN: REJECT ACCOUNT DELETION
+// ===========================================================
+export const rejectDeletionRequest = (req, res) => {
+    const requestId = req.params.id;
+    const adminId = req.user.id;
+
+    const sql = `
+        UPDATE customer_deletion_requests 
+        SET status = 'Rejected', processed_at = NOW(), processed_by = ? 
+        WHERE id = ? AND status = 'Pending'
+    `;
+    db.query(sql, [adminId, requestId], (err, result) => {
+        if (err) {
+            console.error("DB error rejecting deletion request:", err);
+            return res.status(500).json({ message: "Database error rejecting request" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ message: "Request not found or already processed." });
+        }
+        res.json({ message: "Customer account deletion request rejected successfully." });
+    });
 };
 

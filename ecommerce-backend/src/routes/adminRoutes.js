@@ -22,6 +22,9 @@ import {
   updateGstState,
   deleteGstState,
   getDashboardAnalytics,
+  getDeletionRequests,
+  approveDeletionRequest,
+  rejectDeletionRequest,
 } from "../controllers/adminController.js";
 
 import {
@@ -144,5 +147,12 @@ router.get("/reports/orders", verifyToken, verifyAdmin, downloadOrderReport);
 // DASHBOARD ANALYTICS (ADMIN ONLY)
 // ======================================================
 router.get("/dashboard/analytics", verifyToken, verifyAdmin, getDashboardAnalytics);
+
+// ======================================================
+// CUSTOMER ACCOUNT DELETION REQUESTS (DPDP - ADMIN ONLY)
+// ======================================================
+router.get("/deletion-requests", verifyToken, verifyAdmin, getDeletionRequests);
+router.put("/deletion-requests/:id/approve", verifyToken, verifyAdmin, approveDeletionRequest);
+router.put("/deletion-requests/:id/reject", verifyToken, verifyAdmin, rejectDeletionRequest);
 
 export default router;

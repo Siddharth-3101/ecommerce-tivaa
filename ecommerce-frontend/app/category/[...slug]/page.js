@@ -307,7 +307,7 @@ export default async function CategorySlugPage({ params, searchParams }) {
                             <Link href="/products" className="btn btn-primary">Browse All Products</Link>
                         </div>
                     ) : (
-                        <div className="product-grid-boutique" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+                        <div className="product-grid-boutique">
                             {filteredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
@@ -326,8 +326,20 @@ export default async function CategorySlugPage({ params, searchParams }) {
                     width: 320px !important;
                     flex-shrink: 0 !important;
                 }
-                .listing-column {
-                    flex-grow: 1 !important;
+                .product-grid-boutique {
+                    display: grid !important;
+                    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+                    gap: 20px !important;
+                }
+                @media (max-width: 1400px) {
+                    .product-grid-boutique {
+                        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                    }
+                }
+                @media (max-width: 992px) {
+                    .product-grid-boutique {
+                        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                    }
                 }
                 @media (max-width: 768px) {
                     .products-layout-wrapper {
@@ -340,7 +352,7 @@ export default async function CategorySlugPage({ params, searchParams }) {
                         display: none !important;
                     }
                     .product-grid-boutique {
-                        grid-template-columns: repeat(2, 1fr) !important;
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                         gap: 12px !important;
                     }
                 }
